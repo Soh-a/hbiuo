@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>School ERP – Admin Panel</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Firebase -->
+  <script type="module" src="js/firebase.js"></script>
+
+  <!-- Page Scripts -->
+  <script type="module" src="js/students.js"></script>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">🏫 School ERP</div>
+
+  <a class="menu active" onclick="loadPage('students')">👨‍🎓 Students</a>
+  <a class="menu" onclick="loadPage('attendance')">📅 Attendance</a>
+  <a class="menu" onclick="loadPage('exams')">📝 Exams</a>
+  <a class="menu" onclick="loadPage('fees')">💰 Fees</a>
+  <a class="menu" onclick="loadPage('receipts')">🧾 Receipts</a>
+  <a class="menu" onclick="loadPage('reports')">📊 Reports</a>
+
+  <div class="footer">Admin • Sai DRS Kids</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <div id="pageContent">
+    <!-- Students page loads by default -->
+    <h1>Student Details</h1>
+
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>Admission No</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Phone</th>
+          <th>Fee Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="6">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function loadPage(page) {
+  document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const content = document.getElementById("pageContent");
+
+  if (page === "students") {
+    content.innerHTML = document.getElementById("studentsPage").innerHTML;
+  }
+  if (page === "attendance") {
+    content.innerHTML = "<h1>Attendance</h1><p>Upload photo & auto-calculate attendance.</p>";
+  }
+  if (page === "exams") {
+    content.innerHTML = "<h1>Exams</h1><p>Upload exam details → auto timetable.</p>";
+  }
+  if (page === "fees") {
+    content.innerHTML = "<h1>Fees</h1><p>Firebase-based fee management.</p>";
+  }
+  if (page === "receipts") {
+    content.innerHTML = "<h1>Receipts</h1><p>Generate & print receipts.</p>";
+  }
+  if (page === "reports") {
+    content.innerHTML = "<h1>Reports</h1><p>Graphs & analytics dashboard.</p>";
+  }
+}
+</script>
+
+<!-- TEMPLATE -->
+<template id="studentsPage">
+  <h1>Student Details</h1>
+  <table id="studentTable">
+    <thead>
+      <tr>
+        <th>Admission No</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Section</th>
+        <th>Phone</th>
+        <th>Fee Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</template>
+
+</body>
+</html>

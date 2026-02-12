@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ERP – Master Setup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root{
+  --primary:#1e40af;
+  --bg:#f1f5f9;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial}
+body{background:var(--bg)}
+.wrapper{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  background:#0f172a;
+  color:#fff;
+  padding:20px;
+}
+.sidebar h2{
+  text-align:center;
+  margin-bottom:25px;
+}
+.sidebar a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  color:#cbd5f5;
+  text-decoration:none;
+  border-radius:8px;
+  margin-bottom:8px;
+}
+.sidebar a:hover,.sidebar a.active{
+  background:#1e293b;
+  color:#fff;
+}
+
+/* MAIN */
+.main{flex:1;padding:30px}
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:14px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
+  max-width:650px;
+}
+.card h3{margin-bottom:15px}
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #cbd5f5;
+}
+button{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+button:hover{background:#1d4ed8}
+.list{
+  margin-top:15px;
+  font-size:14px;
+}
+.list div{
+  padding:8px;
+  border-bottom:1px solid #e5e7eb;
+}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<script>
+/* 🔐 SECURITY */
+if(localStorage.getItem("erpRole")!=="DV"){
+  alert("Unauthorized access");
+  location.href="login.html";
+}
+
+/* 🔥 FIREBASE */
+var firebaseConfig={
+  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain:"students-6e271.firebaseapp.com",
+  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
+  projectId:"students-6e271"
+};
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
+}
+const db=firebase.database();
+</script>
+
+<div class="wrapper">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>MASTER SETUP</h2>
+  <a class="active" onclick="show('school')"><i class="fa-solid fa-school"></i> School</a>
+  <a onclick="show('class')"><i class="fa-solid fa-layer-group"></i> Classes</a>
+  <a onclick="show('fee')"><i class="fa-solid fa-indian-rupee-sign"></i> Fee</a>
+  <a onclick="show('year')"><i class="fa-solid fa-calendar"></i> Academic Year</a>
+  <a onclick="show('role')"><i class="fa-solid fa-user-tie"></i> Staff Roles</a>
+  <a href="dv-dashboard.html"><i class="fa-solid fa-arrow-left"></i> Back</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- SCHOOL -->
+<div id="school" class="card">
+  <h3>🏫 School Profile</h3>
+  <input id="schoolName" placeholder="School Name">
+  <input id="schoolAddress" placeholder="Address">
+  <input id="schoolPhone" placeholder="Phone">
+  <button onclick="saveSchool()">Save</button>
+</div>
+
+<!-- CLASS -->
+<div id="class" class="card hidden">
+  <h3>📚 Class Setup</h3>
+  <input id="className" placeholder="Class Name (e.g. Class 1)">
+  <button onclick="addClass()">Add Class</button>
+  <div id="classList" class="list"></div>
+</div>
+
+<!-- FEE -->
+<div id="fee" class="card hidden">
+  <h3>💰 Fee Structure</h3>
+  <input id="feeClass" placeholder="Class Name">
+  <input id="feeAmount" type="number" placeholder="Monthly Fee">
+  <button onclick="saveFee()">Save Fee</button>
+</div>
+
+<!-- YEAR -->
+<div id="year" class="card hidden">
+  <h3>📅 Academic Year</h3>
+  <input id="academicYear" placeholder="2025-26">
+  <button onclick="saveYear()">Save</button>
+</div>
+
+<!-- ROLE -->
+<div id="role" class="card hidden">
+  <h3>👨‍🏫 Staff Roles</h3>
+  <input id="roleName" placeholder="Role Name">
+  <button onclick="addRole()">Add Role</button>
+  <div id="roleList" class="list"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll(".card").forEach(c=>c.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll(".sidebar a").forEach(a=>a.classList.remove("active"));
+  event.target.classList.add("active");
+}
+
+/* SAVE FUNCTIONS */
+function saveSchool(){
+  db.ref("master/school").set({
+    name:schoolName.value,
+    address:schoolAddress.value,
+    phone:schoolPhone.value
+  });
+  alert("School Saved");
+}
+
+function addClass(){
+  if(!className.value) return alert("Enter class name");
+  db.ref("master/classes").push({name:className.value});
+  className.value="";
+  loadClasses();
+}
+
+function saveFee(){
+  db.ref("master/fees/"+feeClass.value).set({
+    monthly:feeAmount.value
+  });
+  alert("Fee Saved");
+}
+
+function saveYear(){
+  db.ref("master/academicYear").set(academicYear.value);
+  alert("Academic Year Saved");
+}
+
+function addRole(){
+  if(!roleName.value) return;
+  db.ref("master/roles").push(roleName.value);
+  roleName.value="";
+  loadRoles();
+}
+
+/* LOAD LISTS */
+function loadClasses(){
+  db.ref("master/classes").on("value",snap=>{
+    classList.innerHTML="";
+    snap.forEach(c=>{
+      classList.innerHTML+=`<div>${c.val().name}</div>`;
+    });
+  });
+}
+function loadRoles(){
+  db.ref("master/roles").on("value",snap=>{
+    roleList.innerHTML="";
+    snap.forEach(r=>{
+      roleList.innerHTML+=`<div>${r.val()}</div>`;
+    });
+  });
+}
+
+loadClasses();
+loadRoles();
+</script>
+
+</body>
+</html>

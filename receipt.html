@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fee Receipt – Sai DRS Kids</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+  font-family:Segoe UI, sans-serif;
+  background:#f1f5f9;
+}
+.container{
+  max-width:800px;
+  margin:30px auto;
+  background:#fff;
+  padding:25px;
+  border-radius:10px;
+}
+h2{text-align:center;color:#1e40af}
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+}
+button{
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  border-radius:6px;
+}
+.month-box{
+  margin-top:15px;
+  border:1px solid #ddd;
+  padding:15px;
+  border-radius:6px;
+}
+.month{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+.generate{background:#16a34a}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Fee Receipt Generator</h2>
+
+  <input id="mobile" placeholder="Enter Student Mobile Number">
+  <button onclick="fetchStudent()">Check Paid Months</button>
+
+  <div id="studentInfo"></div>
+  <div id="monthsBox"></div>
+</div>
+
+<script>
+/* 🔥 FIREBASE CONFIG */
+firebase.initializeApp({
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271"
+});
+
+const db = firebase.database();
+let studentData = {};
+let mobileNo = "";
+
+/* 🔍 FETCH STUDENT FROM ROOT */
+function fetchStudent(){
+  mobileNo = mobile.value.trim();
+  studentInfo.innerHTML = "Loading...";
+  monthsBox.innerHTML = "";
+
+  db.ref(mobileNo).once("value", snap=>{
+    if(!snap.exists()){
+      studentInfo.innerHTML = "❌ Student not found";
+      return;
+    }
+
+    studentData = snap.val();
+
+    studentInfo.innerHTML = `
+      <b>Name:</b> ${studentData.name}<br>
+      <b>Class:</b> ${studentData.class}<br>
+      <b>Mobile:</b> ${mobileNo}
+    `;
+
+    showPaidMonths();
+  });
+}
+
+/* 📆 SHOW PAID MONTHS */
+function showPaidMonths(){
+  let html = `<div class="month-box"><b>Select Paid Months</b><br><br>`;
+  let found = false;
+
+  for(let m in studentData.fees){
+    if(studentData.fees[m].status === "paid"){
+      found = true;
+      const amt = Number(studentData.monthlyfee) + Number(studentData.fees[m].fine || 0);
+      html += `
+        <div class="month">
+          <label><input type="checkbox" value="${m}"> ${m.toUpperCase()}</label>
+          ₹${amt}
+        </div>`;
+    }
+  }
+
+  if(!found){
+    html += "No paid months available";
+  }else{
+    html += `<button class="generate" onclick="generatePDF()">Generate PDF Receipt</button>`;
+  }
+
+  html += `</div>`;
+  monthsBox.innerHTML = html;
+}
+
+/* 🧾 GENERATE PDF RECEIPT */
+function generatePDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p","mm","a4");
+
+  // Border
+  doc.rect(10,10,190,277);
+
+  // Header
+  doc.setFontSize(16);
+  doc.text("TUITION FEES RECEIPT",105,25,{align:"center"});
+  doc.setFontSize(11);
+  doc.text("SAI DRS KIDS SCHOOL",105,32,{align:"center"});
+  doc.text("Street, Place, Town – Pincode",105,38,{align:"center"});
+
+  doc.setFontSize(10);
+  doc.text("Date: " + new Date().toLocaleDateString(),150,35);
+
+  let y = 60;
+  const line = (label,value)=>{
+    doc.text(label,15,y);
+    doc.text(value,55,y);
+    doc.line(55,y+1,185,y+1);
+    y+=15;
+  };
+
+  line("Received from", studentData.name);
+  line("Class", studentData.class);
+  line("Mobile", mobileNo);
+
+  let months = [];
+  let total = 0;
+
+  document.querySelectorAll("input[type=checkbox]:checked").forEach(cb=>{
+    const f = studentData.fees[cb.value];
+    const amt = Number(studentData.monthlyfee) + Number(f.fine || 0);
+    months.push(cb.value.toUpperCase());
+    total += amt;
+  });
+
+  line("Being payment of", months.join(", "));
+  line("The sum of", "₹ " + total);
+
+  doc.line(20,230,90,230);
+  doc.line(120,230,185,230);
+  doc.text("Received By",35,238);
+  doc.text("Signature",145,238);
+
+  doc.save(`Fee_Receipt_${studentData.name}.pdf`);
+}
+</script>
+
+</body>
+</html>

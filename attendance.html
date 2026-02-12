@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Attendance</title>
+
+<style>
+body {
+  font-family: 'Segoe UI', Arial;
+  background:#f4f6f9;
+  padding:20px;
+}
+table {
+  width:100%;
+  background:#fff;
+  border-collapse:collapse;
+  margin-top:15px;
+}
+th,td {
+  padding:12px;
+  border:1px solid #ddd;
+}
+th {
+  background:#2563eb;
+  color:#fff;
+}
+img {
+  max-width:220px;
+  margin-top:10px;
+  display:none;
+  border-radius:6px;
+}
+button {
+  padding:10px 25px;
+  margin-top:15px;
+  background:#16a34a;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  border-radius:6px;
+}
+button:hover {
+  background:#15803d;
+}
+.summary {
+  background:#fff;
+  margin-top:20px;
+  padding:15px;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📅 Attendance Management</h2>
+
+<!-- PHOTO UPLOAD -->
+<label><b>Upload Attendance Photo</b></label><br>
+<input type="file" id="photo" accept="image/*" onchange="previewPhoto()">
+<br>
+<img id="preview">
+
+<hr>
+
+<!-- STUDENT ATTENDANCE -->
+<table id="attTable">
+<thead>
+<tr>
+  <th>Student Name</th>
+  <th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Rahul Sharma</td>
+  <td>
+    <select>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select>
+  </td>
+</tr>
+<tr>
+  <td>Anita Das</td>
+  <td>
+    <select>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select>
+  </td>
+</tr>
+</tbody>
+</table>
+
+<button onclick="calculate()">Save Attendance</button>
+
+<div class="summary">
+  <h3 id="result"></h3>
+</div>
+
+<script src="attendance.js"></script>
+</body>
+</html>

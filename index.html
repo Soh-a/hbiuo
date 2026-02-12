@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sai DRS Kids – ERP Dashboard</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --primary:#1e40af;
+  --secondary:#2563eb;
+  --bg:#f1f5f9;
+  --glass:rgba(255,255,255,.75);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{background:var(--bg);display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  background:linear-gradient(180deg,#1e3a8a,#1e40af);
+  color:#fff;
+  padding:20px;
+}
+.logo{
+  font-size:22px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:30px;
+}
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px 16px;
+  color:#fff;
+  text-decoration:none;
+  border-radius:12px;
+  margin-bottom:8px;
+  transition:.2s;
+}
+.nav a i{width:20px}
+.nav a:hover,.nav a.active{
+  background:rgba(255,255,255,0.2);
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:25px 30px;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+}
+.topbar h2{font-weight:600}
+.search{
+  background:#fff;
+  padding:10px 14px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 8px 20px rgba(0,0,0,.05);
+}
+.search input{
+  border:none;
+  outline:none;
+  font-size:14px;
+}
+
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:22px;
+  margin-bottom:30px;
+}
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(10px);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 12px 25px rgba(0,0,0,.08);
+}
+.card .icon{
+  font-size:26px;
+  margin-bottom:10px;
+}
+.card h4{color:#64748b;font-weight:500}
+.card h2{margin-top:6px;color:#1e293b}
+
+/* CHARTS */
+.chart-box{
+  background:#fff;
+  padding:20px;
+  border-radius:18px;
+  margin-bottom:25px;
+  box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+.chart-box h4{
+  margin-bottom:15px;
+  color:#1e293b;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">SAI DRS KIDS</div>
+
+  <div class="nav">
+
+    <!-- DASHBOARD -->
+    <a href="dv-dashboard.html" class="active">
+      <i class="fa-solid fa-chart-line"></i> Dashboard
+    </a>
+
+    <!-- MASTER / ADMIN -->
+    <a href="master-setup.html">
+      <i class="fa-solid fa-users-gear"></i> Master Setup
+    </a>
+
+    <a href="add-staff.html">
+      <i class="fa-solid fa-user-plus"></i> Add Staff
+    </a>
+
+    <!-- FEES -->
+    <a href="receipt.html">
+      <i class="fa-solid fa-receipt"></i> Fee Receipt
+    </a>
+
+    <a href="fees.html">
+      <i class="fa-solid fa-coins"></i> Fee Collected
+    </a>
+
+    <a href="defaulters.html">
+      <i class="fa-solid fa-file-csv"></i> Defaulters (CSV)
+    </a>
+
+    <!-- COMMUNICATION -->
+    <a href="sms-whatsapp.html">
+      <i class="fa-solid fa-comment-dots"></i> SMS → WhatsApp
+    </a>
+
+    <!-- SCHOOL MODULES -->
+    <a href="transport.html">
+      <i class="fa-solid fa-bus"></i> Transport
+    </a>
+
+    <a href="hostel.html">
+      <i class="fa-solid fa-bed"></i> Hostel
+    </a>
+
+    <a href="hrm.html">
+      <i class="fa-solid fa-user-tie"></i> HRM
+    </a>
+
+    <a href="accounts.html">
+      <i class="fa-solid fa-calculator"></i> Accounts
+    </a>
+
+    <a href="exams.html">
+      <i class="fa-solid fa-file-lines"></i> Examinations
+    </a>
+
+    <a href="library.html">
+      <i class="fa-solid fa-book"></i> Library
+    </a>
+
+    <!-- LOGOUT -->
+    <a onclick="logout()">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+
+  </div>
+</div>
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <h2>Admin Dashboard</h2>
+    <div class="search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search student, staff...">
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🎓</div>
+      <h4>Total Students</h4>
+      <h2 id="totalStudents">0</h2>
+    </div>
+
+    <div class="card">
+      <div class="icon">👨‍🏫</div>
+      <h4>Employees</h4>
+      <h2 id="totalEmployees">0</h2>
+    </div>
+
+    <div class="card">
+      <div class="icon">🚌</div>
+      <h4>Transport</h4>
+      <h2 id="totalTransport">0</h2>
+    </div>
+
+    <div class="card">
+      <div class="icon">🏨</div>
+      <h4>Hostel</h4>
+      <h2 id="totalHostel">0</h2>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="chart-box">
+    <h4>Class-wise Students</h4>
+    <canvas id="classChart"></canvas>
+  </div>
+
+  <div class="chart-box">
+    <h4>Fee Collection</h4>
+    <canvas id="feeChart"></canvas>
+  </div>
+
+</div>
+
+<!-- LOGIC -->
+<script src="admin.js"></script>
+
+<script>
+function logout(){
+  localStorage.clear();
+  location.href="erp-login.html";
+}
+</script>
+
+</body>
+</html> 
