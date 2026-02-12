@@ -14,51 +14,14 @@
   --card:#ffffff;
 }
 *{box-sizing:border-box;font-family:Inter,sans-serif}
-body{
-  margin:0;
-  background:var(--bg);
-  padding:30px;
-}
-h2{
-  margin-bottom:20px;
-  color:#1e293b;
-}
-
-/* CARD */
-.card{
-  background:var(--card);
-  border-radius:16px;
-  padding:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:14px;
-  text-align:left;
-}
-td{
-  padding:14px;
-  border-bottom:1px solid #e5e7eb;
-}
-.badge{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:5px 10px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:600;
-}
-.amount{
-  font-weight:700;
-  color:#dc2626;
-}
+body{margin:0;background:var(--bg);padding:30px;}
+h2{margin-bottom:20px;color:#1e293b;}
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+table{width:100%;border-collapse:collapse;}
+th{background:#fee2e2;color:#991b1b;padding:14px;text-align:left;}
+td{padding:14px;border-bottom:1px solid #e5e7eb;}
+.badge{background:#fee2e2;color:#991b1b;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.amount{font-weight:700;color:#dc2626;}
 </style>
 </head>
 
@@ -83,84 +46,7 @@ td{
 </div>
 
 <!-- Firebase & Defaulters JS -->
-<script type="module">
-// Import Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-// Your Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271",
-  storageBucket: "students-6e271.firebasestorage.app",
-  messagingSenderId: "336382170224",
-  appId: "1:336382170224:web:21b2ace0bb69d5459810b5",
-  measurementId: "G-0CHLNTP6HG
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// DOM
-const defaulterBody = document.getElementById("defaulterBody");
-
-// Root reference
-const rootRef = ref(db);
-
-get(rootRef).then(snapshot => {
-  if (!snapshot.exists()) {
-    defaulterBody.innerHTML = `<tr><td colspan="6">No data found</td></tr>`;
-    return;
-  }
-
-  defaulterBody.innerHTML = "";
-
-  snapshot.forEach(studentSnap => {
-    const student = studentSnap.val();
-
-    if (!student.fees) return;
-
-    const name = student.name || "N/A";
-    const cls = student.class || "N/A";
-    const mobile = student.mobile || studentSnap.key;
-    const monthlyFee = Number(student.monthlyfee) || 0;
-
-    Object.keys(student.fees).forEach(month => {
-      const fee = student.fees[month];
-
-      if (fee.status !== "paid") {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${name}</td>
-          <td>${cls}</td>
-          <td>${mobile}</td>
-          <td>${month.toUpperCase()}</td>
-          <td><span class="badge">UNPAID</span></td>
-          <td class="amount">₹${monthlyFee}</td>
-        `;
-        defaulterBody.appendChild(row);
-      }
-    });
-  });
-
-  if (defaulterBody.innerHTML === "") {
-    defaulterBody.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align:center;color:green;font-weight:600">
-          🎉 No Fee Defaulters
-        </td>
-      </tr>
-    `;
-  }
-
-}).catch(err => {
-  console.error(err);
-  defaulterBody.innerHTML = `<tr><td colspan="6">Error loading data</td></tr>`;
-});
-</script>
+<script type="module" src="./js/defaulters.js"></script>
 
 </body>
 </html>
