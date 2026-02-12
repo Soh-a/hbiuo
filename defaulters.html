@@ -1,90 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Fee Defaulters – Sai DRS Kids</title>
-
-<!-- Firebase -->
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/defaulters.js"></script>
-
-<!-- Font -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-<style>
-:root{
-  --primary:#dc2626;
-  --bg:#f1f5f9;
-  --card:#ffffff;
-}
-*{box-sizing:border-box;font-family:Inter,sans-serif}
-body{
-  margin:0;
-  background:var(--bg);
-  padding:30px;
-}
-h2{
-  margin-bottom:20px;
-  color:#1e293b;
-}
-
-/* CARD */
-.card{
-  background:var(--card);
-  border-radius:16px;
-  padding:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:14px;
-  text-align:left;
-}
-td{
-  padding:14px;
-  border-bottom:1px solid #e5e7eb;
-}
-.badge{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:5px 10px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:600;
-}
-.amount{
-  font-weight:700;
-  color:#dc2626;
-}
-</style>
+  <title>Defaulters List</title>
+  <link rel="stylesheet" href="defaulters.css">
 </head>
-
 <body>
 
-<h2>🚨 Fee Defaulters List</h2>
+<h2>Defaulters List</h2>
+<button id="downloadBtn">Download Defaulters CSV</button>
 
-<div class="card">
-  <table>
-    <thead>
-      <tr>
-        <th>Student Name</th>
-        <th>Class</th>
-        <th>Mobile</th>
-        <th>Month</th>
-        <th>Status</th>
-        <th>Due Amount</th>
-      </tr>
-    </thead>
-    <tbody id="defaulterBody"></tbody>
-  </table>
-</div>
-<script src="defaulters.js"></script>
+<table id="defaultersTable">
+  <thead>
+    <tr>
+      <th>Student ID</th>
+      <th>Name</th>
+      <th>Month</th>
+      <th>Fine</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Link to separate JS file -->
+<script type="module" src="defaulters.js"></script>
 </body>
 </html>
