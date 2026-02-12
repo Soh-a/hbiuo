@@ -1,53 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Monthly Fee Summary</title>
+  <title>Student Fees</title>
   <style>
-    /* General body styling */
-    body { 
-      font-family: Arial, sans-serif; 
-      margin: 40px; 
-      background: #f5f5f5; 
-    }
-
-    /* Heading */
-    h2 { 
-      text-align: center; 
-      margin-bottom: 30px; 
-      color: #333;
-    }
-
-    /* Summary box */
-    .summary { 
-      text-align: center; 
-      font-size: 20px; 
-      background: #fff; 
-      padding: 20px; 
-      border-radius: 8px; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      max-width: 400px; 
-      margin: 0 auto; 
-    }
-
-    .summary p { 
-      margin: 15px 0; 
-    }
-
-    .summary b { 
-      color: #4CAF50; 
-      font-size: 22px;
-    }
+    body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background: #4CAF50; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #e6f7e6; }
+    .summary { text-align: center; margin-top: 20px; font-size: 18px; }
+    .summary b { color: #4CAF50; }
   </style>
 </head>
 <body>
 
-<h2>Monthly Fee Summary</h2>
+<h2>Student Fee Details</h2>
+
+<table id="feesTable">
+  <thead>
+    <tr>
+      <th>Student ID</th>
+      <th>Name</th>
+      <th>Month</th>
+      <th>Status</th>
+      <th>Fine</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
 <div class="summary">
   <p>Total Fee Collected: <b id="collected">₹0</b></p>
   <p>Total Fee To Be Collected: <b id="toCollect">₹0</b></p>
 </div>
 
-<!-- Link to separate JS file -->
 <script type="module" src="fees.js"></script>
 </body>
 </html>
