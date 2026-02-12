@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Dashboard</title>
+  <style>
+    /* Reset and basic styling */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; }
+
+    /* Header */
+    header {
+      background: #4CAF50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Sidebar */
+    nav {
+      width: 220px;
+      background: #ffffff;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 30px;
+      border-right: 1px solid #ddd;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+
+    nav a {
+      display: block;
+      padding: 15px 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      margin: 5px 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    nav a:hover {
+      background: #4CAF50;
+      color: white;
+      transform: translateX(5px);
+    }
+
+    /* Main content */
+    main {
+      margin-left: 240px;
+      padding: 30px;
+      min-height: 100vh;
+    }
+
+    main h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    main p {
+      font-size: 16px;
+      margin-bottom: 15px;
+      line-height: 1.6;
+      color: #555;
+    }
+
+    main ul {
+      list-style-type: disc;
+      margin-left: 20px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    main ul li {
+      margin-bottom: 10px;
+    }
+
+    /* Cards for info (optional) */
+    .info-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      transition: transform 0.2s;
+    }
+
+    .info-card:hover {
+      transform: translateY(-5px);
+    }
+
+    /* Responsive for mobile */
+    @media (max-width: 768px) {
+      nav {
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-right: none;
+      }
+      main { margin-left: 0; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>Teacher Dashboard</header>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="attendance.html">Attendance Calculator</a>
+  <a href="exam.html">Exam Upload</a>
+  <a href="fees.html">Fees</a>
+  <a href="timetable.html">Teacher Timetable</a>
+</nav>
+
+<main>
+  <h2>Welcome, Teacher!</h2>
+
+  <div class="info-card">
+    <p>Use this dashboard to manage all your classroom activities efficiently. Navigate using the sidebar to access different sections:</p>
+    <ul>
+      <li><b>Attendance Calculator:</b> Upload photos of the class register to calculate attendance automatically.</li>
+      <li><b>Exam Upload:</b> Upload scanned exam tables to keep track of student marks.</li>
+      <li><b>Fees:</b> View monthly fee summary and track pending payments.</li>
+      <li><b>Teacher Timetable:</b> Add, view, and manage your class timetable.</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <p>All tools are designed to work in-browser and are mobile-friendly. Future versions will integrate with Firebase to save data online and allow real-time updates.</p>
+  </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Timetable</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    form { margin-bottom: 20px; text-align: center; }
+    input, select { padding: 5px; margin: 5px; }
+    button { padding: 8px 15px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background: #4CAF50; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+  </style>
+</head>
+<body>
+
+<h2>Teacher Timetable</h2>
+
+<form id="timetableForm">
+  <input type="text" id="subject" placeholder="Subject" required>
+  <input type="text" id="className" placeholder="Class" required>
+  <select id="day" required>
+    <option value="">Select Day</option>
+    <option>Monday</option>
+    <option>Tuesday</option>
+    <option>Wednesday</option>
+    <option>Thursday</option>
+    <option>Friday</option>
+  </select>
+  <input type="time" id="startTime" required>
+  <input type="time" id="endTime" required>
+  <button type="submit">Add</button>
+</form>
+
+<table id="timetableTable">
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Class</th>
+      <th>Subject</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script type="module" src="timetable.js"></script>
+</body>
+</html>

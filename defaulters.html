@@ -1,92 +1,90 @@
-<!DOCTYPE html>  
-<html>  
-<head>  
-  <title>Defaulters List</title>  
-  <style>
-    /* General body styles */
-    body { 
-      font-family: Arial, sans-serif; 
-      margin: 40px; 
-      background: #f5f5f5; 
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fee Defaulters – Sai DRS Kids</title>
 
-    /* Heading */
-    h2 { 
-      text-align: center; 
-      margin-bottom: 20px; 
-      color: #333;
-    }
+<!-- Firebase -->
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/defaulters.js"></script>
 
-    /* Button styling */
-    #downloadBtn { 
-      display: block;
-      margin: 10px auto; 
-      padding: 10px 20px; 
-      cursor: pointer; 
-      background: #4CAF50; 
-      color: white; 
-      border: none; 
-      border-radius: 5px; 
-      font-size: 16px;
-    }
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-    #downloadBtn:hover {
-      background: #45a049;
-    }
+<style>
+:root{
+  --primary:#dc2626;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+}
+*{box-sizing:border-box;font-family:Inter,sans-serif}
+body{
+  margin:0;
+  background:var(--bg);
+  padding:30px;
+}
+h2{
+  margin-bottom:20px;
+  color:#1e293b;
+}
 
-    /* Table styling */
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin-top: 20px; 
-      background: #fff; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+/* CARD */
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
 
-    th, td { 
-      border: 1px solid #ccc; 
-      padding: 12px; 
-      text-align: center; 
-    }
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:14px;
+  text-align:left;
+}
+td{
+  padding:14px;
+  border-bottom:1px solid #e5e7eb;
+}
+.badge{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:5px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:600;
+}
+.amount{
+  font-weight:700;
+  color:#dc2626;
+}
+</style>
+</head>
 
-    th { 
-      background: #4CAF50; 
-      color: white; 
-      font-size: 16px;
-    }
+<body>
 
-    td { 
-      font-size: 14px; 
-      color: #333;
-    }
+<h2>🚨 Fee Defaulters List</h2>
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    tr:hover {
-      background-color: #e6f7e6;
-    }
-  </style>
-</head>  
-<body>  
-  
-<h2>Defaulters List</h2>  
-<button id="downloadBtn">Download Defaulters CSV</button>  
-  
-<table id="defaultersTable">  
-  <thead>  
-    <tr>  
-      <th>Student ID</th>  
-      <th>Name</th>  
-      <th>Month</th>  
-      <th>Fine</th>  
-    </tr>  
-  </thead>  
-  <tbody></tbody>  
-</table>  
-  
-<!-- Link to separate JS file -->  
-<script type="module" src="defaulters.js"></script>  
-</body>  
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Student Name</th>
+        <th>Class</th>
+        <th>Mobile</th>
+        <th>Month</th>
+        <th>Status</th>
+        <th>Due Amount</th>
+      </tr>
+    </thead>
+    <tbody id="defaulterBody"></tbody>
+  </table>
+</div>
+<script src="defaulters.js"></script>
+</body>
 </html>

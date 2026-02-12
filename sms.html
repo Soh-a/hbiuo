@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send Message</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 30px; color: #333; }
+    h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    input, textarea, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
+    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #status { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h2>Send Message to Students</h2>
+
+<div class="container">
+  <label for="studentSelect">Select Student</label>
+  <select id="studentSelect">
+    <option value="">-- Select Student --</option>
+  </select>
+
+  <label for="message">Message</label>
+  <textarea id="message" rows="4" placeholder="Type your message here..."></textarea>
+
+  <button id="sendBtn">Send Message</button>
+  <p id="status"></p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// Firebase config
+const firebaseConfig = {
+   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271",
+  storageBucket: "students-6e271.firebasestorage.app",
+  messagingSenderId: "336382170224",
+  appId: "1:336382170224:web:21b2ace0bb69d5459810b5",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const studentSelect = document.getElementById("studentSelect");
+const messageInput = document.getElementById("message");
+const sendBtn = document.getElementById("sendBtn");
+const status = document.getElementById("status");
+
+// Load students from Firebase
+const studentsRef = ref(db, '/'); // Root contains student IDs
+onValue(studentsRef, (snapshot) => {
+  const data = snapshot.val();
+  studentSelect.innerHTML = '<option value="">-- Select Student --</option>';
+  for (let id in data) {
+    studentSelect.innerHTML += `<option value="${id}">${data[id].name} (${data[id].mobile})</option>`;
+  }
+});
+
+// Send message
+sendBtn.addEventListener('click', () => {
+  const studentId = studentSelect.value;
+  const message = messageInput.value.trim();
+  if (!studentId) { status.textContent = "Please select a student."; status.style.color="red"; return; }
+  if (!message) { status.textContent = "Message cannot be empty."; status.style.color="red"; return; }
+
+  const msgRef = ref(db, `messages/${studentId}`);
+  const newMsgKey = push(msgRef).key;
+  set(ref(db, `messages/${studentId}/${newMsgKey}`), {
+    message: message,
+    sentAt: new Date().toISOString()
+  }).then(() => {
+    status.textContent = "Message sent successfully!";
+    status.style.color = "green";
+    messageInput.value = '';
+  }).catch((err) => {
+    status.textContent = "Error sending message: " + err.message;
+    status.style.color = "red";
+  });
+});
+</script>
+
+</body>
+</html>

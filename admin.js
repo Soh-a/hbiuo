@@ -30,6 +30,7 @@ loadDashboard();
 function loadDashboard() {
   loadStudents();
   loadFeeChart();
+  loadEmployees();
 }
 
 /***********************
@@ -43,8 +44,7 @@ function loadStudents() {
     let classCount = {};
 
     Object.values(data).forEach(s => {
-      // Detect student record
-      if (!s || !s.class || !s.fees) return;
+      if (!s || !s.fees) return; // skip if no fees → not a student
 
       studentCount++;
 
@@ -53,12 +53,36 @@ function loadStudents() {
     });
 
     document.getElementById("totalStudents").innerText = studentCount;
-    drawBarChart("classChart", classCount, "Students");
+    drawBarChart("classChart", classCount, "Students per Class");
   });
 }
 
 /***********************
- 💰 FEES (ROOT)
+ 👩‍💼 EMPLOYEES / STAFF
+***********************/
+function loadEmployees() {
+  db.ref("/staff").once("value", snap => {
+    const data = snap.val() || {};
+
+    let employeeCount = 0;
+    let departmentCount = {};
+
+    Object.values(data).forEach(emp => {
+      if (!emp || !emp.name) return;
+
+      employeeCount++;
+
+      const dept = emp.department || "Unknown";
+      departmentCount[dept] = (departmentCount[dept] || 0) + 1;
+    });
+
+    document.getElementById("totalEmployees").innerText = employeeCount;
+    drawBarChart("departmentChart", departmentCount, "Employees per Department");
+  });
+}
+
+/***********************
+ 💰 FEES (STUDENTS)
 ***********************/
 function loadFeeChart() {
   db.ref("/").once("value", snap => {
@@ -73,9 +97,9 @@ function loadFeeChart() {
     months.forEach(m => monthly[m] = 0);
 
     Object.values(data).forEach(s => {
-      if (!s || !s.fees || !s.monthlyfee) return;
+      if (!s || !s.fees || !s.monthlyFee) return;
 
-      const fee = Number(s.monthlyfee);
+      const fee = Number(s.monthlyFee);
 
       months.forEach(m => {
         if (s.fees[m]?.status === "paid") {

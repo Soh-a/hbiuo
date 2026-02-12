@@ -1,104 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Attendance</title>
+  <title>Attendance Calculator</title>
+  <style>
+    /* Reset and basic */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; padding: 30px; }
 
-<style>
-body {
-  font-family: 'Segoe UI', Arial;
-  background:#f4f6f9;
-  padding:20px;
-}
-table {
-  width:100%;
-  background:#fff;
-  border-collapse:collapse;
-  margin-top:15px;
-}
-th,td {
-  padding:12px;
-  border:1px solid #ddd;
-}
-th {
-  background:#2563eb;
-  color:#fff;
-}
-img {
-  max-width:220px;
-  margin-top:10px;
-  display:none;
-  border-radius:6px;
-}
-button {
-  padding:10px 25px;
-  margin-top:15px;
-  background:#16a34a;
-  border:none;
-  color:#fff;
-  cursor:pointer;
-  border-radius:6px;
-}
-button:hover {
-  background:#15803d;
-}
-.summary {
-  background:#fff;
-  margin-top:20px;
-  padding:15px;
-  border-radius:8px;
-}
-</style>
+    h2 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
+
+    /* Upload section */
+    #uploadSection { text-align: center; margin-bottom: 30px; }
+    #uploadSection p { font-size: 16px; color: #555; margin-bottom: 10px; }
+    input[type="file"] { padding: 10px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; }
+
+    /* Processing */
+    #processing { text-align: center; font-weight: bold; color: #4CAF50; margin-bottom: 20px; font-size: 16px; }
+
+    /* Result container */
+    #result { max-width: 700px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    #result ul { list-style-type: none; padding-left: 0; margin-bottom: 15px; }
+    #result li { padding: 8px 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; border-radius: 6px; transition: background 0.2s; }
+    #result li:hover { background: #f1f9f5; }
+    #result p { text-align: center; font-size: 18px; font-weight: bold; color: #2c3e50; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #result { width: 95%; padding: 15px; }
+    }
+  </style>
 </head>
-
 <body>
 
-<h2>📅 Attendance Management</h2>
+<h2>Attendance Calculator</h2>
 
-<!-- PHOTO UPLOAD -->
-<label><b>Upload Attendance Photo</b></label><br>
-<input type="file" id="photo" accept="image/*" onchange="previewPhoto()">
-<br>
-<img id="preview">
-
-<hr>
-
-<!-- STUDENT ATTENDANCE -->
-<table id="attTable">
-<thead>
-<tr>
-  <th>Student Name</th>
-  <th>Status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Rahul Sharma</td>
-  <td>
-    <select>
-      <option value="Present">Present</option>
-      <option value="Absent">Absent</option>
-    </select>
-  </td>
-</tr>
-<tr>
-  <td>Anita Das</td>
-  <td>
-    <select>
-      <option value="Present">Present</option>
-      <option value="Absent">Absent</option>
-    </select>
-  </td>
-</tr>
-</tbody>
-</table>
-
-<button onclick="calculate()">Save Attendance</button>
-
-<div class="summary">
-  <h3 id="result"></h3>
+<div id="uploadSection">
+  <p>Upload a clear photo of the class register (typed or neatly written)</p>
+  <input type="file" id="registerPhoto" accept="image/*">
 </div>
 
-<script src="attendance.js"></script>
+<div id="processing"></div>
+<div id="result"></div>
+
+<!-- Include Tesseract.js -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+<script type="module" src="attendance.js"></script>
+
 </body>
 </html>
