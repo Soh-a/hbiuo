@@ -26,19 +26,16 @@ body{
 }
 h2{text-align:center;color:#1e40af}
 
-/* 🔹 SLIDER */
-.switch-box{
-  margin:15px 0;
-  text-align:center;
-}
+/* SLIDER */
+.switch-box{text-align:center;margin:15px 0}
 .switch{
   position:relative;
-  display:inline-block;
   width:220px;
   height:44px;
   background:#e5e7eb;
   border-radius:30px;
   cursor:pointer;
+  margin:auto;
 }
 .slider{
   position:absolute;
@@ -46,8 +43,6 @@ h2{text-align:center;color:#1e40af}
   height:44px;
   background:#2563eb;
   border-radius:30px;
-  top:0;
-  left:0;
   transition:.3s;
 }
 .switch span{
@@ -57,33 +52,22 @@ h2{text-align:center;color:#1e40af}
   text-align:center;
   font-weight:bold;
   z-index:2;
-  color:#1f2937;
 }
-#teacherLbl{left:0}
-#dvLbl{right:0}
-
-.active{
-  color:#fff !important;
-}
+#teacherLbl{left:0;color:#fff}
+#dvLbl{right:0;color:#111}
 
 input,button{
   width:100%;
   padding:10px;
   margin-top:12px;
 }
-
 button{
   background:#2563eb;
   color:#fff;
   border:none;
   cursor:pointer;
 }
-
-#error{
-  color:red;
-  margin-top:10px;
-  text-align:center;
-}
+#error{text-align:center;color:red;margin-top:10px}
 </style>
 </head>
 
@@ -92,11 +76,10 @@ button{
 <div class="box">
   <h2>ERP Login</h2>
 
-  <!-- ROLE SLIDE -->
   <div class="switch-box">
     <div class="switch" onclick="toggleRole()">
       <div class="slider" id="slider"></div>
-      <span id="teacherLbl" class="active">Teacher</span>
+      <span id="teacherLbl">Teacher</span>
       <span id="dvLbl">DV</span>
     </div>
   </div>
@@ -109,52 +92,46 @@ button{
 </div>
 
 <script>
-/* 🔥 Firebase Config */
 firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
   databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
   projectId: "students-6e271"
 });
-
 const db = firebase.database();
 
-/* 🔁 ROLE STATE */
-let currentRole = "teacher";
+let role = "teacher";
 
 function toggleRole(){
   const slider = document.getElementById("slider");
-  const tLbl = document.getElementById("teacherLbl");
-  const dLbl = document.getElementById("dvLbl");
+  const t = document.getElementById("teacherLbl");
+  const d = document.getElementById("dvLbl");
 
-  if(currentRole === "teacher"){
-    currentRole = "dv";
+  if(role === "teacher"){
+    role = "dv";
     slider.style.left = "110px";
-    tLbl.classList.remove("active");
-    dLbl.classList.add("active");
+    t.style.color = "#111";
+    d.style.color = "#fff";
   }else{
-    currentRole = "teacher";
+    role = "teacher";
     slider.style.left = "0";
-    dLbl.classList.remove("active");
-    tLbl.classList.add("active");
+    d.style.color = "#111";
+    t.style.color = "#fff";
   }
 }
 
-/* ✅ LOGIN */
 function login(){
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
-  const error = document.getElementById("error");
-
+  const user = username.value.trim();
+  const pass = password.value.trim();
   error.innerText = "";
 
   if(!user || !pass){
-    error.innerText = "All fields are required";
+    error.innerText = "All fields required";
     return;
   }
 
-  /* 🔹 DV LOGIN */
-  if(currentRole === "dv"){
+  /* DV LOGIN */
+  if(role === "dv"){
     if(user === "6002425951" && pass === "sai_drs"){
       localStorage.setItem("isLoggedIn","yes");
       localStorage.setItem("erpRole","dv");
@@ -165,31 +142,20 @@ function login(){
     return;
   }
 
-  /* 🔹 TEACHER LOGIN */
-  db.ref("staff").once("value", snapshot=>{
+  /* TEACHER LOGIN */
+  db.ref("staff").once("value", snap=>{
     let ok = false;
-
-    snapshot.forEach(child=>{
-      const s = child.val();
-      if(
-        s.role === "Teacher" &&
-        s.username === user &&
-        s.password === pass &&
-        s.status === "Active"
-      ){
+    snap.forEach(c=>{
+      const s = c.val();
+      if(s.username === user && s.password === pass && s.role==="Teacher"){
         ok = true;
         localStorage.setItem("isLoggedIn","yes");
         localStorage.setItem("erpRole","teacher");
-        localStorage.setItem("teacherId", child.key);
-        localStorage.setItem("teacherName", s.name);
-        localStorage.setItem("assignedClass", s.assignedClass);
+        localStorage.setItem("teacherId",c.key);
         window.location.href = "teacher-dashboard.html";
       }
     });
-
-    if(!ok){
-      error.innerText = "Invalid teacher credentials";
-    }
+    if(!ok) error.innerText = "Invalid Teacher credentials";
   });
 }
 </script>
