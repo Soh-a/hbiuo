@@ -1,131 +1,74 @@
-/***********************
- 🔐 BASIC SECURITY
-***********************/
-if (localStorage.getItem("erpRole") !== "DV") {
+/* =========================
+   🔐 AUTH GUARD (DV ONLY)
+========================= */
+const isLoggedIn = localStorage.getItem("isLoggedIn");
+const role = localStorage.getItem("erpRole");
+
+if (isLoggedIn !== "yes" || role !== "dv") {
   alert("Unauthorized access");
-  window.location.href = "login.html";
+  window.location.href = "erp-login.html";
 }
 
-/***********************
- 🔥 FIREBASE CONFIG
-***********************/
-var firebaseConfig = {
+/* =========================
+   🔥 FIREBASE INIT
+========================= */
+firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
   databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
   projectId: "students-6e271"
-};
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+});
 
 const db = firebase.database();
 
-/***********************
- 📊 LOAD DASHBOARD
-***********************/
-loadDashboard();
+/* =========================
+   🎓 LOAD STUDENTS
+   (students are in ROOT)
+========================= */
+let totalStudents = 0;
+let classCount = {};
 
-function loadDashboard() {
-  loadStudents();
-  loadFeeChart();
-  loadEmployees();
-}
+db.ref("/").once("value", snap => {
+  snap.forEach(child => {
+    const s = child.val();
 
-/***********************
- 👩‍🎓 STUDENTS (ROOT)
-***********************/
-function loadStudents() {
-  db.ref("/").once("value", snap => {
-    const data = snap.val() || {};
+    // student पहचान
+    if (s && s.name && s.class && s.monthlyfee) {
+      totalStudents++;
 
-    let studentCount = 0;
-    let classCount = {};
-
-    Object.values(data).forEach(s => {
-      if (!s || !s.fees) return; // skip if no fees → not a student
-
-      studentCount++;
-
-      const cls = s.class || "Unknown";
-      classCount[cls] = (classCount[cls] || 0) + 1;
-    });
-
-    document.getElementById("totalStudents").innerText = studentCount;
-    drawBarChart("classChart", classCount, "Students per Class");
+      if (!classCount[s.class]) {
+        classCount[s.class] = 1;
+      } else {
+        classCount[s.class]++;
+      }
+    }
   });
-}
 
-/***********************
- 👩‍💼 EMPLOYEES / STAFF
-***********************/
-function loadEmployees() {
-  db.ref("/staff").once("value", snap => {
-    const data = snap.val() || {};
+  document.getElementById("totalStudents").innerText = totalStudents;
+  buildClassChart(classCount);
+});
 
-    let employeeCount = 0;
-    let departmentCount = {};
+/* =========================
+   👨‍🏫 LOAD STAFF
+========================= */
+db.ref("staff").once("value", snap => {
+  document.getElementById("totalEmployees").innerText = snap.numChildren();
+});
 
-    Object.values(data).forEach(emp => {
-      if (!emp || !emp.name) return;
+/* =========================
+   📊 CLASS WISE CHART
+========================= */
+function buildClassChart(data) {
+  const labels = Object.keys(data);
+  const values = Object.values(data);
 
-      employeeCount++;
-
-      const dept = emp.department || "Unknown";
-      departmentCount[dept] = (departmentCount[dept] || 0) + 1;
-    });
-
-    document.getElementById("totalEmployees").innerText = employeeCount;
-    drawBarChart("departmentChart", departmentCount, "Employees per Department");
-  });
-}
-
-/***********************
- 💰 FEES (STUDENTS)
-***********************/
-function loadFeeChart() {
-  db.ref("/").once("value", snap => {
-    const data = snap.val() || {};
-
-    const months = [
-      "april","may","june","july","august","september",
-      "october","november","december","january","february","march"
-    ];
-
-    let monthly = {};
-    months.forEach(m => monthly[m] = 0);
-
-    Object.values(data).forEach(s => {
-      if (!s || !s.fees || !s.monthlyFee) return;
-
-      const fee = Number(s.monthlyFee);
-
-      months.forEach(m => {
-        if (s.fees[m]?.status === "paid") {
-          monthly[m] += fee;
-        }
-      });
-    });
-
-    drawBarChart("feeChart", monthly, "Fees Collected");
-  });
-}
-
-/***********************
- 📈 CHART HELPERS
-***********************/
-function drawBarChart(canvasId, data, label) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-
-  new Chart(canvas, {
+  new Chart(document.getElementById("classChart"), {
     type: "bar",
     data: {
-      labels: Object.keys(data),
+      labels: labels,
       datasets: [{
-        label: label,
-        data: Object.values(data),
+        label: "Students",
+        data: values,
         backgroundColor: "#2563eb"
       }]
     },
@@ -136,22 +79,32 @@ function drawBarChart(canvasId, data, label) {
   });
 }
 
-function drawPieChart(canvasId, data) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
+/* =========================
+   💰 FEE COLLECTION CHART
+========================= */
+let paid = 0;
+let unpaid = 0;
 
-  new Chart(canvas, {
-    type: "pie",
+db.ref("/").once("value", snap => {
+  snap.forEach(child => {
+    const s = child.val();
+    if (s && s.fees) {
+      Object.values(s.fees).forEach(m => {
+        if (m.status === "paid") paid++;
+        else unpaid++;
+      });
+    }
+  });
+
+  new Chart(document.getElementById("feeChart"), {
+    type: "doughnut",
     data: {
-      labels: Object.keys(data),
+      labels: ["Paid", "Unpaid"],
       datasets: [{
-        data: Object.values(data),
-        backgroundColor: [
-          "#60a5fa","#34d399","#fbbf24",
-          "#f87171","#a78bfa","#fb7185"
-        ]
+        data: [paid, unpaid],
+        backgroundColor: ["#16a34a", "#dc2626"]
       }]
     },
     options: { responsive: true }
   });
-}
+});
