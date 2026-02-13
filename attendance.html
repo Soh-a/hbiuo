@@ -1,50 +1,234 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Attendance Calculator</title>
-  <style>
-    /* Reset and basic */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; padding: 30px; }
+<meta charset="UTF-8">
+<title>Attendance Marking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    h2 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
-
-    /* Upload section */
-    #uploadSection { text-align: center; margin-bottom: 30px; }
-    #uploadSection p { font-size: 16px; color: #555; margin-bottom: 10px; }
-    input[type="file"] { padding: 10px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; }
-
-    /* Processing */
-    #processing { text-align: center; font-weight: bold; color: #4CAF50; margin-bottom: 20px; font-size: 16px; }
-
-    /* Result container */
-    #result { max-width: 700px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    #result ul { list-style-type: none; padding-left: 0; margin-bottom: 15px; }
-    #result li { padding: 8px 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; border-radius: 6px; transition: background 0.2s; }
-    #result li:hover { background: #f1f9f5; }
-    #result p { text-align: center; font-size: 18px; font-weight: bold; color: #2c3e50; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      #result { width: 95%; padding: 15px; }
-    }
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f1f5f9;
+}
+.header{
+  background:#1e40af;
+  color:#fff;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.controls{
+  background:#fff;
+  padding:15px 20px;
+  display:flex;
+  gap:15px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+select,input{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #cbd5e1;
+}
+table{
+  width:calc(100% - 40px);
+  margin:20px;
+  background:#fff;
+  border-collapse:collapse;
+  box-shadow:0 6px 15px rgba(0,0,0,.08);
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:center;
+}
+th{
+  background:#e0e7ff;
+  color:#1e3a8a;
+}
+.present{ color:green; font-weight:bold; }
+.absent{ color:red; font-weight:bold; }
+button{
+  padding:6px 14px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+.btn-present{ background:#16a34a; color:#fff; }
+.btn-absent{ background:#dc2626; color:#fff; }
+.footer{
+  padding:20px;
+  text-align:right;
+}
+.save-btn{
+  background:#1e40af;
+  color:#fff;
+  padding:10px 18px;
+  border-radius:6px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Attendance Calculator</h2>
-
-<div id="uploadSection">
-  <p>Upload a clear photo of the class register (typed or neatly written)</p>
-  <input type="file" id="registerPhoto" accept="image/*">
+<div class="header">
+  <div>📋 Attendance Marking</div>
+  <div id="teacherName">Hi</div>
 </div>
 
-<div id="processing"></div>
-<div id="result"></div>
+<div class="controls">
+  <select id="classSelect" onchange="loadStudents()">
+    <option value="">Select Class</option>
+    <option value="IK-1">IK-1</option>
+    <option value="IK-2">IK-2</option>
+    <option value="IK-3">IK-3</option>
+    <option value="1">Class 1</option>
+    <option value="2">Class 2</option>
+    <option value="3">Class 3</option>
+    <option value="4">Class 4</option>
+  </select>
 
-<!-- Include Tesseract.js -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
-<script type="module" src="attendance.js"></script>
+  <input type="date" id="attendanceDate">
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Roll</th>
+  <th>Student Name</th>
+  <th>Status</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody id="studentRows"></tbody>
+</table>
+
+<div class="footer">
+  <button class="save-btn" onclick="saveAttendance()">💾 Save Attendance</button>
+</div>
+
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+/* ===============================
+   LOGIN CHECK (FIXED)
+================================ */
+const isLoggedIn = localStorage.getItem("isLoggedIn");
+const role = localStorage.getItem("erpRole");
+
+if (isLoggedIn !== "yes" || role !== "teacher") {
+  alert("Login required");
+  window.location.href = "login.html";
+}
+
+document.getElementById("teacherName").innerText =
+  "Hi, " + (localStorage.getItem("teacherName") || "Teacher");
+
+/* ===============================
+   FIREBASE CONFIG
+================================ */
+firebase.initializeApp({
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271"
+});
+
+const db = firebase.database();
+let students = {};
+
+/* ===============================
+   LOAD STUDENTS (ROOT)
+================================ */
+function loadStudents(){
+  const cls = document.getElementById("classSelect").value;
+  const tbody = document.getElementById("studentRows");
+  tbody.innerHTML = "";
+  students = {};
+
+  if(!cls) return;
+
+  db.ref("/").once("value", snap=>{
+    let roll = 1;
+
+    snap.forEach(child=>{
+      const s = child.val();
+      if(s && s.name && s.class === cls){
+        students[child.key] = {
+          roll: roll++,
+          name: s.name,
+          status: "Present"
+        };
+      }
+    });
+
+    if(Object.keys(students).length === 0){
+      tbody.innerHTML =
+        `<tr><td colspan="4">❌ No students found</td></tr>`;
+      return;
+    }
+
+    Object.keys(students).forEach(id=>{
+      const s = students[id];
+      tbody.innerHTML += `
+        <tr>
+          <td>${s.roll}</td>
+          <td>${s.name}</td>
+          <td id="status-${id}" class="present">Present</td>
+          <td>
+            <button class="btn-present" onclick="mark('${id}','Present')">P</button>
+            <button class="btn-absent" onclick="mark('${id}','Absent')">A</button>
+          </td>
+        </tr>
+      `;
+    });
+  });
+}
+
+/* ===============================
+   MARK ATTENDANCE
+================================ */
+function mark(id,status){
+  students[id].status = status;
+  const cell = document.getElementById("status-"+id);
+  cell.innerText = status;
+  cell.className = status === "Present" ? "present" : "absent";
+}
+
+/* ===============================
+   SAVE ATTENDANCE
+================================ */
+function saveAttendance(){
+  const cls = document.getElementById("classSelect").value;
+  const date = document.getElementById("attendanceDate").value;
+
+  if(!cls || !date){
+    alert("Select class and date");
+    return;
+  }
+
+  let updates = {};
+  Object.keys(students).forEach(id=>{
+    updates[`attendance/${cls}/${date}/${id}`] = {
+      name: students[id].name,
+      status: students[id].status
+    };
+  });
+
+  db.ref().update(updates).then(()=>{
+    alert("✅ Attendance saved");
+  });
+}
+
+/* ===============================
+   INIT DATE
+================================ */
+document.getElementById("attendanceDate").value =
+  new Date().toISOString().split("T")[0];
+</script>
 
 </body>
 </html>

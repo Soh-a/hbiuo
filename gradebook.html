@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gradebook Management</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      padding: 20px;
+    }
+    h2 {
+      color: #1e40af;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      max-width: 450px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    #result {
+      margin-top: 10px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>📘 Gradebook Management</h2>
+
+<div class="card">
+  <input type="text" id="studentId" placeholder="Student ID">
+  <input type="text" id="subject" placeholder="Subject">
+
+  <input type="number" id="assignment" placeholder="Assignment Marks">
+  <input type="number" id="test" placeholder="Class Test Marks">
+  <input type="number" id="exam" placeholder="Exam Marks">
+
+  <button onclick="saveMarks()">Save Marks</button>
+  <p id="result"></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="gradebook.js"></script>
+
+</body>
+</html>

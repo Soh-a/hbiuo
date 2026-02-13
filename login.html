@@ -10,7 +10,7 @@
 
 <style>
 body{
-  font-family:Arial;
+  font-family: Arial;
   background:#f1f5f9;
   display:flex;
   justify-content:center;
@@ -20,25 +20,69 @@ body{
 .box{
   background:#fff;
   padding:30px;
-  width:320px;
-  border-radius:8px;
-  box-shadow:0 0 12px rgba(0,0,0,.1);
+  width:340px;
+  border-radius:10px;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
 }
 h2{text-align:center;color:#1e40af}
-input,select,button{
+
+/* 🔹 SLIDER */
+.switch-box{
+  margin:15px 0;
+  text-align:center;
+}
+.switch{
+  position:relative;
+  display:inline-block;
+  width:220px;
+  height:44px;
+  background:#e5e7eb;
+  border-radius:30px;
+  cursor:pointer;
+}
+.slider{
+  position:absolute;
+  width:110px;
+  height:44px;
+  background:#2563eb;
+  border-radius:30px;
+  top:0;
+  left:0;
+  transition:.3s;
+}
+.switch span{
+  position:absolute;
+  width:110px;
+  line-height:44px;
+  text-align:center;
+  font-weight:bold;
+  z-index:2;
+  color:#1f2937;
+}
+#teacherLbl{left:0}
+#dvLbl{right:0}
+
+.active{
+  color:#fff !important;
+}
+
+input,button{
   width:100%;
   padding:10px;
   margin-top:12px;
 }
+
 button{
   background:#2563eb;
   color:#fff;
   border:none;
   cursor:pointer;
 }
+
 #error{
   color:red;
   margin-top:10px;
+  text-align:center;
 }
 </style>
 </head>
@@ -48,11 +92,14 @@ button{
 <div class="box">
   <h2>ERP Login</h2>
 
-  <select id="role">
-    <option value="">Select Role</option>
-    <option value="Teacher">Teacher</option>
-    <option value="DV">DV</option>
-  </select>
+  <!-- ROLE SLIDE -->
+  <div class="switch-box">
+    <div class="switch" onclick="toggleRole()">
+      <div class="slider" id="slider"></div>
+      <span id="teacherLbl" class="active">Teacher</span>
+      <span id="dvLbl">DV</span>
+    </div>
+  </div>
 
   <input type="text" id="username" placeholder="Username">
   <input type="password" id="password" placeholder="Password">
@@ -62,58 +109,85 @@ button{
 </div>
 
 <script>
-/* Firebase Config */
-var firebaseConfig = {
+/* 🔥 Firebase Config */
+firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
   databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
   projectId: "students-6e271"
-};
-firebase.initializeApp(firebaseConfig);
+});
 
+const db = firebase.database();
+
+/* 🔁 ROLE STATE */
+let currentRole = "teacher";
+
+function toggleRole(){
+  const slider = document.getElementById("slider");
+  const tLbl = document.getElementById("teacherLbl");
+  const dLbl = document.getElementById("dvLbl");
+
+  if(currentRole === "teacher"){
+    currentRole = "dv";
+    slider.style.left = "110px";
+    tLbl.classList.remove("active");
+    dLbl.classList.add("active");
+  }else{
+    currentRole = "teacher";
+    slider.style.left = "0";
+    dLbl.classList.remove("active");
+    tLbl.classList.add("active");
+  }
+}
+
+/* ✅ LOGIN */
 function login(){
-  const role = document.getElementById("role").value;
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
   const error = document.getElementById("error");
 
   error.innerText = "";
 
-  if(!role || !user || !pass){
-    error.innerText = "All fields required";
+  if(!user || !pass){
+    error.innerText = "All fields are required";
     return;
   }
 
-  /* 🔹 DV LOGIN (Fixed) */
-  if(role === "DV"){
+  /* 🔹 DV LOGIN */
+  if(currentRole === "dv"){
     if(user === "6002425951" && pass === "sai_drs"){
-      localStorage.setItem("erpRole","DV");
-      window.location.href = "index.html";
+      localStorage.setItem("isLoggedIn","yes");
+      localStorage.setItem("erpRole","dv");
+      window.location.href = "dv-dashboard.html";
     }else{
       error.innerText = "Invalid DV credentials";
     }
     return;
   }
 
-  /* 🔹 TEACHER LOGIN (Firebase) */
-  firebase.database().ref("staff").once("value", snap=>{
-    let found = false;
+  /* 🔹 TEACHER LOGIN */
+  db.ref("staff").once("value", snapshot=>{
+    let ok = false;
 
-    snap.forEach(child=>{
+    snapshot.forEach(child=>{
       const s = child.val();
       if(
         s.role === "Teacher" &&
         s.username === user &&
-        s.password === pass
+        s.password === pass &&
+        s.status === "Active"
       ){
-        found = true;
-        localStorage.setItem("erpRole","Teacher");
-        localStorage.setItem("staffId",child.key);
+        ok = true;
+        localStorage.setItem("isLoggedIn","yes");
+        localStorage.setItem("erpRole","teacher");
+        localStorage.setItem("teacherId", child.key);
+        localStorage.setItem("teacherName", s.name);
+        localStorage.setItem("assignedClass", s.assignedClass);
         window.location.href = "teacher-dashboard.html";
       }
     });
 
-    if(!found){
+    if(!ok){
       error.innerText = "Invalid teacher credentials";
     }
   });

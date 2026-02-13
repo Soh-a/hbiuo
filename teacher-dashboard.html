@@ -1,136 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Teacher Dashboard</title>
-  <style>
-    /* Reset and basic styling */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; }
+<meta charset="UTF-8">
+<title>Teacher Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    /* Header */
-    header {
-      background: #4CAF50;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+}
 
-    /* Sidebar */
-    nav {
-      width: 220px;
-      background: #ffffff;
-      height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      padding-top: 30px;
-      border-right: 1px solid #ddd;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-    }
+.header {
+    background: #2e7d32;
+    color: #fff;
+    padding: 15px;
+    font-size: 20px;
+    text-align: center;
+}
 
-    nav a {
-      display: block;
-      padding: 15px 20px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 500;
-      margin: 5px 10px;
-      border-radius: 8px;
-      transition: all 0.2s ease-in-out;
-    }
+.dashboard {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
 
-    nav a:hover {
-      background: #4CAF50;
-      color: white;
-      transform: translateX(5px);
-    }
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-    /* Main content */
-    main {
-      margin-left: 240px;
-      padding: 30px;
-      min-height: 100vh;
-    }
+.card:hover {
+    transform: translateY(-5px);
+}
 
-    main h2 {
-      color: #2c3e50;
-      margin-bottom: 20px;
-    }
+.card h3 {
+    margin: 0;
+    color: #333;
+}
 
-    main p {
-      font-size: 16px;
-      margin-bottom: 15px;
-      line-height: 1.6;
-      color: #555;
-    }
+.card p {
+    color: #777;
+    font-size: 14px;
+}
 
-    main ul {
-      list-style-type: disc;
-      margin-left: 20px;
-      margin-bottom: 20px;
-      color: #555;
-    }
+.notice {
+    margin: 30px;
+    padding: 20px;
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 10px;
+    text-align: center;
+}
 
-    main ul li {
-      margin-bottom: 10px;
-    }
-
-    /* Cards for info (optional) */
-    .info-card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
-      transition: transform 0.2s;
-    }
-
-    .info-card:hover {
-      transform: translateY(-5px);
-    }
-
-    /* Responsive for mobile */
-    @media (max-width: 768px) {
-      nav {
-        position: relative;
-        width: 100%;
-        height: auto;
-        border-right: none;
-      }
-      main { margin-left: 0; padding: 20px; }
-    }
-  </style>
+.btn {
+    margin-top: 15px;
+    padding: 10px 18px;
+    border: none;
+    background: #2e7d32;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+</style>
 </head>
+
 <body>
 
-<header>Teacher Dashboard</header>
+<div class="header">Teacher Dashboard</div>
 
-<nav>
-  <a href="index.html">Home</a>
-  <a href="attendance.html">Attendance Calculator</a>
-  <a href="exam.html">Exam Upload</a>
-  <a href="timetable.html">Teacher Timetable</a>
-</nav>
+<!-- Show this notice if no class uploaded -->
+<div class="notice">
+    <h3>No Classes Found</h3>
+    <p>Please first upload your classes to mark attendance.</p>
+    <button class="btn" onclick="location.href='add-class.html'">
+        ➕ Add Class
+    </button>
+</div>
 
-<main>
-  <h2>Welcome, Teacher!</h2>
+<div class="dashboard">
+    <div class="card" onclick="location.href='attendance.html'">
+        <h3>Attendance</h3>
+        <p>Mark student attendance</p>
+    </div>
 
-  <div class="info-card">
-    <p>Use this dashboard to manage all your classroom activities efficiently. Navigate using the sidebar to access different sections:</p>
-    <ul>
-      <li><b>Attendance Calculator:</b> Upload photos of the class register to calculate attendance automatically.</li>
-      <li><b>Exam Upload:</b> Upload scanned exam tables to keep track of student marks.</li>
-      <li><b>Teacher Timetable:</b> Add, view, and manage your class timetable.</li>
-    </ul>
-  </div>
+    <div class="card">
+        <h3>Homework</h3>
+        <p>Send homework to students</p>
+    </div>
 
-  <div class="info-card">
-    <p>All tools are designed to work in-browser and are mobile-friendly. Future versions will integrate with Firebase to save data online and allow real-time updates.</p>
-  </div>
-</main>
+    <div class="card">
+        <h3>Notifications</h3>
+        <p>Send notices & updates</p>
+    </div>
+</div>
 
 </body>
 </html>
