@@ -1,42 +1,64 @@
-const fileInput = document.getElementById("registerPhoto");
-const resultDiv = document.getElementById("result");
-const processingDiv = document.getElementById("processing");
+// --------------------------
+// Firebase Initialization
+// --------------------------
+const firebaseConfig = {
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271",
+    storageBucket: "students-6e271.appspot.com",
+    messagingSenderId: "336382170224",
+    appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+};
 
-fileInput.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  resultDiv.innerHTML = "";
-  processingDiv.textContent = "Processing image, please wait... ⏳";
+// --------------------------
+// Get Today Date (YYYY-MM-DD)
+// --------------------------
+function getTodayDate() {
+    return new Date().toISOString().split("T")[0];
+}
 
-  try {
-    // Run OCR
-    const { data: { text } } = await Tesseract.recognize(file, 'eng', { logger: m => console.log(m) });
+// --------------------------
+// Toggle Attendance + Save
+// --------------------------
+function toggleStatus(button) {
 
-    processingDiv.textContent = "Processing complete ✅";
+    const studentId = button.dataset.studentId;   // e.g. 6002425951
+    const studentClass = button.dataset.class;    // e.g. LKG-A
+    const date = getTodayDate();
 
-    // Parse text lines
-    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-    let total = 0, attended = 0;
-    let attendanceList = "<ul>";
+    let status = "Present";
 
-    lines.forEach(line => {
-      total++;
-      // Simple assumption: line ends with P (present) or A (absent)
-      const isPresent = /P$/i.test(line);
-      if (isPresent) attended++;
-      attendanceList += `<li><span>${line.replace(/P$/i,'').replace(/A$/i,'').trim()}</span><span>${isPresent ? "Present ✅" : "Absent ❌"}</span></li>`;
-    });
+    if (button.innerText === "P") {
+        button.innerText = "A";
+        button.classList.add("absent");
+        status = "Absent";
+    } else {
+        button.innerText = "P";
+        button.classList.remove("absent");
+        status = "Present";
+    }
 
-    attendanceList += "</ul>";
+    const attendanceData = {
+        status: status,
+        class: studentClass,
+        markedBy: "teacher",
+        timestamp: Date.now()
+    };
 
-    const percentage = total > 0 ? ((attended / total) * 100).toFixed(2) : 0;
-    attendanceList += `<p>Total Students: ${total} | Present: ${attended} | Attendance: ${percentage}%</p>`;
-
-    resultDiv.innerHTML = attendanceList;
-
-  } catch (err) {
-    processingDiv.textContent = "Error processing image ❌";
-    console.error(err);
-  }
-});
+    // --------------------------
+    // ROOT LEVEL SAVE
+    // --------------------------
+    db.ref(`${studentId}/attendance/${date}`)
+        .set(attendanceData)
+        .then(() => {
+            console.log(`Attendance saved for ${studentId} on ${date}`);
+        })
+        .catch(error => {
+            console.error("Attendance save failed", error);
+            alert("Failed to save attendance");
+        });
+}
