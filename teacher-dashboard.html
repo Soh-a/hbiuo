@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,6 +19,13 @@ body {
     padding: 15px;
     font-size: 20px;
     text-align: center;
+}
+
+.welcome {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 16px;
+    color: #333;
 }
 
 .dashboard {
@@ -75,6 +83,9 @@ body {
 <body>
 
 <div class="header">Teacher Dashboard</div>
+<div class="welcome">
+    Welcome, <b id="teacherName"></b> 👋
+</div>
 
 <!-- Show this notice if no class uploaded -->
 <div class="notice">
@@ -91,7 +102,6 @@ body {
         <p>Mark student attendance</p>
     </div>
 
-    <div class="dashboard">
     <div class="card" onclick="location.href='homework.html'">
         <h3>Homework</h3>
         <p>Send homework to students</p>
@@ -102,6 +112,19 @@ body {
         <p>Send notices & updates</p>
     </div>
 </div>
+
+<script>
+/* --------------------------
+   Auth Check
+-------------------------- */
+const teacher = JSON.parse(localStorage.getItem("teacherData"));
+
+if (!teacher) {
+    window.location.href = "login.html";
+}
+
+document.getElementById("teacherName").innerText = teacher.name || "Teacher";
+</script>
 
 </body>
 </html>
