@@ -15,7 +15,6 @@ body{
     font-family:Arial, sans-serif;
     background:#f4f6f9;
 }
-
 .header{
     background:#2e7d32;
     color:#fff;
@@ -23,24 +22,20 @@ body{
     font-size:20px;
     text-align:center;
 }
-
 .container{
     padding:20px;
 }
-
 .card{
     background:#fff;
     padding:20px;
     border-radius:12px;
     box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
-
 label{
     font-weight:bold;
     display:block;
     margin-top:15px;
 }
-
 select, input, textarea, button{
     width:100%;
     padding:12px;
@@ -49,12 +44,10 @@ select, input, textarea, button{
     border:1px solid #ccc;
     font-size:15px;
 }
-
 textarea{
     resize:none;
     height:120px;
 }
-
 button{
     margin-top:20px;
     background:#2e7d32;
@@ -63,17 +56,14 @@ button{
     cursor:pointer;
     font-size:16px;
 }
-
 button:hover{
     background:#256528;
 }
-
 .success{
     color:green;
     margin-top:15px;
     text-align:center;
 }
-
 .error{
     color:red;
     margin-top:15px;
@@ -97,6 +87,8 @@ button:hover{
             <option>IK-3</option>
             <option>Class 1</option>
             <option>Class 2</option>
+            <option>Class 3</option>
+            <option>Class 4</option>
         </select>
 
         <label>Notification Title</label>
@@ -123,7 +115,7 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-/* AUTH CHECK */
+/* AUTH CHECK (TEACHER ONLY) */
 if(localStorage.getItem("erpRole") !== "teacher"){
     window.location.href = "login.html";
 }
@@ -145,21 +137,23 @@ function sendNotification(){
     const now = new Date();
     const date = now.toISOString().split("T")[0];
     const time = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    const key = `${date}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+    const teacherId = localStorage.getItem("teacherId") || "unknown";
 
-    const teacherId = localStorage.getItem("teacherId");
-
-    db.ref(`notifications/${cls}/${key}`).set({
-        title,
-        message,
-        date,
-        time,
-        teacherId
-    }).then(()=>{
+    /* IMPORTANT FIX: push() */
+    db.ref(`notifications/${cls}`).push({
+        title: title,
+        message: message,
+        date: date,
+        time: time,
+        teacherId: teacherId,
+        timestamp: Date.now()
+    })
+    .then(()=>{
         status.innerHTML = "<p class='success'>Notification sent successfully ✅</p>";
         document.getElementById("title").value = "";
         document.getElementById("message").value = "";
-    }).catch(err=>{
+    })
+    .catch(err=>{
         status.innerHTML = "<p class='error'>Error sending notification ❌</p>";
         console.error(err);
     });
