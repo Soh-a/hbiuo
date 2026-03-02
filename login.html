@@ -146,16 +146,15 @@ function login(){
 
   /* DV LOGIN (STATIC) */
   if(role === "dv"){
-    if(user === "6002425951" && pass === "sai_drs"){
-      localStorage.setItem("isLoggedIn","true");
-      localStorage.setItem("erpRole","dv");
-      window.location.href = "index.html";
-    }else{
-      error.innerText = "Invalid DV credentials";
-    }
-    return;
+  if(user === "6002425951" && pass === "sai_drs"){
+    localStorage.setItem("isLoggedIn","yes");
+    localStorage.setItem("erpRole","dv");
+    window.location.href = "dv-dashboard.html";
+  }else{
+    error.innerText = "Invalid DV credentials";
   }
-
+  return;
+}
   /* TEACHER LOGIN (FIREBASE) */
   db.ref("staff").once("value").then(snapshot=>{
     let found = false;
