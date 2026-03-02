@@ -18,7 +18,6 @@ body{
   align-items:center;
   height:100vh;
 }
-
 .box{
   background:#fff;
   padding:30px;
@@ -26,11 +25,7 @@ body{
   border-radius:10px;
   box-shadow:0 10px 25px rgba(0,0,0,.15);
 }
-
-h2{
-  text-align:center;
-  color:#1e40af;
-}
+h2{text-align:center;color:#1e40af}
 
 /* Role Switch */
 .switch-box{text-align:center;margin:15px 0}
@@ -50,6 +45,7 @@ h2{
   background:#2563eb;
   border-radius:30px;
   transition:.3s;
+  left:0;
 }
 .switch span{
   position:absolute;
@@ -74,11 +70,7 @@ button{
   border:none;
   cursor:pointer;
 }
-#error{
-  text-align:center;
-  color:red;
-  margin-top:10px;
-}
+#error{text-align:center;color:red;margin-top:10px}
 </style>
 </head>
 
@@ -115,10 +107,28 @@ const db = firebase.database();
 let role = "teacher";
 
 /* Toggle Role */
+function toggleRole(){
+  const slider = document.getElementById("slider");
+  const t = document.getElementById("teacherLbl");
+  const d = document.getElementById("dvLbl");
+
+  if(role === "teacher"){
+    role = "dv";
+    slider.style.left = "110px";
+    t.style.color = "#111";
+    d.style.color = "#fff";
+  }else{
+    role = "teacher";
+    slider.style.left = "0";
+    t.style.color = "#fff";
+    d.style.color = "#111";
+  }
+}
+
+/* Login */
 function login(){
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
-  const error = document.getElementById("error");
+  const user = username.value.trim();
+  const pass = password.value.trim();
   error.innerText = "";
 
   if(!user || !pass){
@@ -126,7 +136,7 @@ function login(){
     return;
   }
 
-  /* ================= DV LOGIN ================= */
+  /* ===== DV LOGIN ===== */
   if(role === "dv"){
     if(user === "6002425951" && pass === "sai_drs"){
       localStorage.setItem("isLoggedIn","true");
@@ -138,22 +148,18 @@ function login(){
     return;
   }
 
-  /* ================= TEACHER LOGIN ================= */
+  /* ===== TEACHER LOGIN ===== */
   db.ref("staff").once("value").then(snapshot=>{
     let found = false;
 
     snapshot.forEach(child=>{
       const staff = child.val();
-
-      const dbUsername =
-        staff.username || staff.mobile || staff.phone || "";
-
-      const dbRole = (staff.role || "").toLowerCase();
+      const dbUser = staff.username || staff.mobile || "";
 
       if(
-        dbUsername === user &&
+        dbUser === user &&
         staff.password === pass &&
-        dbRole === "teacher"
+        (staff.role || "").toLowerCase() === "teacher"
       ){
         found = true;
         localStorage.setItem("isLoggedIn","true");
@@ -167,9 +173,6 @@ function login(){
     if(!found){
       error.innerText = "Invalid Teacher credentials";
     }
-  }).catch(err=>{
-    error.innerText = "Login error. Check internet.";
-    console.error(err);
   });
 }
 </script>
