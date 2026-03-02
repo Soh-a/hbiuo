@@ -15,82 +15,114 @@ const db = getDatabase(app);
    📄 DOM ELEMENTS
 ========================= */
 const tableBody = document.querySelector("#defaultersTable tbody");
+const monthFilter = document.getElementById("monthFilter");
+const statusFilter = document.getElementById("statusFilter");
 const downloadBtn = document.getElementById("downloadBtn");
 
 /* =========================
    📦 STATE
 ========================= */
-let defaulters = [];
+let allRecords = [];
+let filteredRecords = [];
 
 /* =========================
-   🚀 LOAD DEFAULTERS
+   📥 LOAD DATA
 ========================= */
-async function loadDefaulters() {
-  tableBody.innerHTML = "";
-  defaulters = [];
-
+async function loadData(){
+  allRecords = [];
   const snapshot = await get(ref(db, "/"));
-  if (!snapshot.exists()) return;
+  if(!snapshot.exists()) return;
 
   const students = snapshot.val();
 
   Object.entries(students).forEach(([studentId, student]) => {
-    if (!student.fees) return;
+    if(!student.fees) return;
 
     Object.entries(student.fees).forEach(([month, fee]) => {
-      if (fee.status === "paid") return;
-
-      const fine = fee.fine || 0;
-
-      defaulters.push({
+      allRecords.push({
         studentId,
         name: student.name,
         month,
-        fine
+        status: fee.status || "unpaid",
+        fine: fee.fine || 0
       });
-
-      tableBody.insertAdjacentHTML(
-        "beforeend",
-        `
-        <tr>
-          <td>${studentId}</td>
-          <td>${student.name}</td>
-          <td>${month}</td>
-          <td>₹${fine}</td>
-        </tr>
-        `
-      );
     });
+  });
+
+  applyFilters();
+}
+
+/* =========================
+   🔍 FILTER LOGIC
+========================= */
+function applyFilters(){
+  const m = monthFilter.value;
+  const s = statusFilter.value;
+
+  filteredRecords = allRecords.filter(r => {
+    if(m && r.month !== m) return false;
+    if(s && r.status !== s) return false;
+    return true;
+  });
+
+  renderTable();
+}
+
+/* =========================
+   🖥️ RENDER TABLE
+========================= */
+function renderTable(){
+  tableBody.innerHTML = "";
+
+  if(!filteredRecords.length){
+    tableBody.innerHTML = `<tr><td colspan="5">No records found</td></tr>`;
+    return;
+  }
+
+  filteredRecords.forEach(r => {
+    tableBody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${r.studentId}</td>
+        <td>${r.name}</td>
+        <td>${r.month}</td>
+        <td class="${r.status === "paid" ? "badge-paid" : "badge-unpaid"}">
+          ${r.status.toUpperCase()}
+        </td>
+        <td>₹${r.fine}</td>
+      </tr>
+    `);
   });
 }
 
 /* =========================
-   ⬇️ DOWNLOAD CSV
+   ⬇ DOWNLOAD CSV
 ========================= */
-function downloadCSV() {
-  if (!defaulters.length) {
-    alert("No defaulters found");
+function downloadCSV(){
+  if(!filteredRecords.length){
+    alert("No data to download");
     return;
   }
 
-  const header = "Student ID,Name,Month,Fine\n";
-  const rows = defaulters
-    .map(d => `${d.studentId},${d.name},${d.month},${d.fine}`)
-    .join("\n");
+  let csv = "Student ID,Name,Month,Status,Fine\n";
+  filteredRecords.forEach(r => {
+    csv += `${r.studentId},${r.name},${r.month},${r.status},${r.fine}\n`;
+  });
 
-  const blob = new Blob([header + rows], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-
+  const blob = new Blob([csv], {type:"text/csv"});
   const link = document.createElement("a");
-  link.href = url;
-  link.download = "defaulters.csv";
+  link.href = URL.createObjectURL(blob);
+  link.download = "fee-status-report.csv";
   link.click();
-
-  URL.revokeObjectURL(url);
 }
 
 /* =========================
    🎯 EVENTS
 ========================= */
+monthFilter.addEventListener("change", applyFilters);
+statusFilter.addEventListener("change", applyFilters);
 downloadBtn.addEventListener("click", downloadCSV);
-loadDefaulters();
+
+/* =========================
+   🚀 START
+========================= */
+loadData();
