@@ -29,7 +29,7 @@ body {
     color: #333;
 }
 
-/* Dashboard grid */
+/* Dashboard */
 .dashboard {
     padding: 20px;
     display: grid;
@@ -37,7 +37,6 @@ body {
     gap: 20px;
 }
 
-/* Cards */
 .card {
     background: #fff;
     border-radius: 12px;
@@ -47,27 +46,12 @@ body {
     cursor: pointer;
     transition: 0.3s;
 }
+.card:hover { transform: translateY(-5px); }
 
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.card h3 {
-    margin: 0;
-    color: #333;
-}
-
-.card p {
-    color: #777;
-    font-size: 14px;
-}
-
-/* Logout */
 .logout {
     text-align: center;
     margin: 20px;
 }
-
 .logout button {
     padding: 10px 20px;
     background: #c62828;
@@ -77,7 +61,7 @@ body {
     cursor: pointer;
 }
 
-/* ================= AI FLOATING BUTTON ================= */
+/* AI Floating Button */
 .ai-btn {
     position: fixed;
     bottom: 20px;
@@ -95,12 +79,12 @@ body {
     z-index: 1000;
 }
 
-/* ================= AI CHAT BOX ================= */
+/* AI Chat Box */
 .ai-box {
     position: fixed;
     bottom: 90px;
     right: 20px;
-    width: 300px;
+    width: 320px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
@@ -114,13 +98,12 @@ body {
     background: #2e7d32;
     color: #fff;
     padding: 10px;
-    font-size: 16px;
     text-align: center;
 }
 
 .ai-messages {
     padding: 10px;
-    height: 220px;
+    height: 240px;
     overflow-y: auto;
     font-size: 14px;
 }
@@ -129,16 +112,14 @@ body {
     display: flex;
     border-top: 1px solid #ddd;
 }
-
 .ai-input input {
     flex: 1;
     padding: 8px;
     border: none;
     outline: none;
 }
-
 .ai-input button {
-    padding: 8px 12px;
+    padding: 8px 14px;
     background: #2e7d32;
     color: #fff;
     border: none;
@@ -149,7 +130,6 @@ body {
 
 <body>
 
-<!-- 🔐 AUTH PROTECTION -->
 <script>
 if (
   localStorage.getItem("isLoggedIn") !== "true" ||
@@ -162,78 +142,99 @@ if (
 <div class="header">Teacher Dashboard</div>
 
 <div class="welcome">
-    Welcome, <strong><span id="teacherName">Teacher</span></strong>
+  Welcome, <strong><span id="teacherName">Teacher</span></strong>
 </div>
 
 <div class="dashboard">
-    <div class="card" onclick="location.href='attendance.html'">
-        <h3>Attendance</h3>
-        <p>Mark student attendance</p>
-    </div>
+  <div class="card" onclick="location.href='attendance.html'">
+    <h3>Attendance</h3>
+    <p>Mark student attendance</p>
+  </div>
 
-    <div class="card" onclick="location.href='logbook.html'">
-        <h3>Daily Class Record</h3>
-        <p>Maintain class logbook</p>
-    </div>
+  <div class="card" onclick="location.href='logbook.html'">
+    <h3>Daily Class Record</h3>
+    <p>Maintain class logbook</p>
+  </div>
 
-    <div class="card" onclick="location.href='Notification.html'">
-        <h3>Notifications</h3>
-        <p>Send notices & updates</p>
-    </div>
+  <div class="card" onclick="location.href='Notification.html'">
+    <h3>Notifications</h3>
+    <p>Send notices & updates</p>
+  </div>
 </div>
 
 <div class="logout">
-    <button onclick="logout()">Logout</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- ================= AI BUTTON ================= -->
+<!-- AI Button -->
 <button class="ai-btn" onclick="toggleAI()">AI</button>
 
-<!-- ================= AI CHAT ================= -->
+<!-- AI Chat -->
 <div class="ai-box" id="aiBox">
-    <div class="ai-header">AI Assistant</div>
-    <div class="ai-messages" id="aiMessages">
-        <div><b>AI:</b> Hello Teacher! How can I help you?</div>
-    </div>
-    <div class="ai-input">
-        <input type="text" id="aiInput" placeholder="Ask something...">
-        <button onclick="sendAI()">Send</button>
-    </div>
+  <div class="ai-header">AI Assistant</div>
+  <div class="ai-messages" id="aiMessages">
+    <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
+  </div>
+  <div class="ai-input">
+    <input type="text" id="aiInput" placeholder="Type your question...">
+    <button onclick="sendAI()">Send</button>
+  </div>
 </div>
 
 <script>
-/* Teacher name */
 document.getElementById("teacherName").innerText =
   localStorage.getItem("teacherName") || "Teacher";
 
-/* Logout */
 function logout() {
-    localStorage.clear();
-    window.location.href = "login.html";
+  localStorage.clear();
+  window.location.href = "login.html";
 }
 
-/* AI Toggle */
 function toggleAI() {
-    const box = document.getElementById("aiBox");
-    box.style.display = box.style.display === "flex" ? "none" : "flex";
+  const box = document.getElementById("aiBox");
+  box.style.display = box.style.display === "flex" ? "none" : "flex";
 }
 
-/* ================= AI CONFIG ================= */
-const AI_API_KEY = "AIzaSyDc2LT4VfCMj9g3tHtXLoOusToDpgUvhTo"; // ⚠️ Demo only
+/* ================= REAL AI CONFIG ================= */
+const AI_API_KEY = "AIzaSyDc2LT4VfCMj9g3tHtXLoOusToDpgUvhTo";
 
-function sendAI() {
-    const input = document.getElementById("aiInput");
-    const messages = document.getElementById("aiMessages");
+async function sendAI() {
+  const input = document.getElementById("aiInput");
+  const messages = document.getElementById("aiMessages");
+  const question = input.value.trim();
+  if (!question) return;
 
-    if (!input.value.trim()) return;
+  messages.innerHTML += `<div><b>You:</b> ${question}</div>`;
+  input.value = "";
+  messages.scrollTop = messages.scrollHeight;
 
-    messages.innerHTML += `<div><b>You:</b> ${input.value}</div>`;
+  messages.innerHTML += `<div><b>AI:</b> Thinking...</div>`;
+  messages.scrollTop = messages.scrollHeight;
 
-    // Demo response (replace with backend call)
-    messages.innerHTML += `<div><b>AI:</b> I received your message: "${input.value}"</div>`;
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${AI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: question }] }]
+        })
+      }
+    );
 
-    input.value = "";
+    const data = await res.json();
+    const answer =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I couldn't understand that.";
+
+    messages.lastElementChild.innerHTML = `<b>AI:</b> ${answer}`;
     messages.scrollTop = messages.scrollHeight;
+
+  } catch (err) {
+    messages.lastElementChild.innerHTML =
+      "<b>AI:</b> Error connecting to AI service.";
+  }
 }
 </script>
 
