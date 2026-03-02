@@ -115,28 +115,10 @@ const db = firebase.database();
 let role = "teacher";
 
 /* Toggle Role */
-function toggleRole(){
-  const slider = document.getElementById("slider");
-  const t = document.getElementById("teacherLbl");
-  const d = document.getElementById("dvLbl");
-
-  if(role === "teacher"){
-    role = "dv";
-    slider.style.left = "110px";
-    t.style.color = "#111";
-    d.style.color = "#fff";
-  }else{
-    role = "teacher";
-    slider.style.left = "0";
-    d.style.color = "#111";
-    t.style.color = "#fff";
-  }
-}
-
-/* Login */
 function login(){
-  const user = username.value.trim();
-  const pass = password.value.trim();
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
+  const error = document.getElementById("error");
   error.innerText = "";
 
   if(!user || !pass){
@@ -144,33 +126,40 @@ function login(){
     return;
   }
 
-  /* DV LOGIN (STATIC) */
+  /* ================= DV LOGIN ================= */
   if(role === "dv"){
-  if(user === "6002425951" && pass === "sai_drs"){
-    localStorage.setItem("isLoggedIn","yes");
-    localStorage.setItem("erpRole","dv");
-    window.location.href = "index.html";
-  }else{
-    error.innerText = "Invalid DV credentials";
+    if(user === "6002425951" && pass === "sai_drs"){
+      localStorage.setItem("isLoggedIn","true");
+      localStorage.setItem("erpRole","dv");
+      window.location.href = "index.html";
+    }else{
+      error.innerText = "Invalid DV credentials";
+    }
+    return;
   }
-  return;
-}
-  /* TEACHER LOGIN (FIREBASE) */
+
+  /* ================= TEACHER LOGIN ================= */
   db.ref("staff").once("value").then(snapshot=>{
     let found = false;
 
     snapshot.forEach(child=>{
       const staff = child.val();
+
+      const dbUsername =
+        staff.username || staff.mobile || staff.phone || "";
+
+      const dbRole = (staff.role || "").toLowerCase();
+
       if(
-        staff.username === user &&
+        dbUsername === user &&
         staff.password === pass &&
-        staff.role === "Teacher"
+        dbRole === "teacher"
       ){
         found = true;
         localStorage.setItem("isLoggedIn","true");
         localStorage.setItem("erpRole","teacher");
         localStorage.setItem("teacherId", child.key);
-        localStorage.setItem("teacherName", staff.name);
+        localStorage.setItem("teacherName", staff.name || "Teacher");
         window.location.href = "teacher-dashboard.html";
       }
     });
@@ -178,6 +167,9 @@ function login(){
     if(!found){
       error.innerText = "Invalid Teacher credentials";
     }
+  }).catch(err=>{
+    error.innerText = "Login error. Check internet.";
+    console.error(err);
   });
 }
 </script>
