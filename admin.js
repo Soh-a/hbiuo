@@ -4,7 +4,7 @@
 const isLoggedIn = localStorage.getItem("isLoggedIn");
 const role = localStorage.getItem("erpRole");
 
-if (isLoggedIn !== "yes" || role !== "dv") {
+if (isLoggedIn !== "yes" || role !== "DV") {
   alert("Unauthorized access");
   window.location.href = "login.html";
 }
