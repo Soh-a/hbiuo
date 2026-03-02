@@ -74,7 +74,7 @@ button{
 
 <div class="header">
   <div>📋 Attendance Marking</div>
-  <div id="teacherName">Hi</div>
+  <div id="teacherName"></div>
 </div>
 
 <div class="controls">
@@ -114,21 +114,21 @@ button{
 
 <script>
 /* ===============================
-   LOGIN CHECK (FIXED)
+   🔐 LOGIN CHECK (FIXED & SAFE)
 ================================ */
-const isLoggedIn = localStorage.getItem("isLoggedIn");
 const role = localStorage.getItem("erpRole");
 
-if (isLoggedIn !== "yes" || role !== "teacher") {
-  alert("Login required");
+if (role !== "teacher") {
+  alert("Teacher login required");
   window.location.href = "login.html";
 }
 
+/* Teacher name */
 document.getElementById("teacherName").innerText =
   "Hi, " + (localStorage.getItem("teacherName") || "Teacher");
 
 /* ===============================
-   FIREBASE CONFIG
+   🔥 FIREBASE CONFIG
 ================================ */
 firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
@@ -141,7 +141,7 @@ const db = firebase.database();
 let students = {};
 
 /* ===============================
-   LOAD STUDENTS (ROOT)
+   📥 LOAD STUDENTS
 ================================ */
 function loadStudents(){
   const cls = document.getElementById("classSelect").value;
@@ -189,7 +189,7 @@ function loadStudents(){
 }
 
 /* ===============================
-   MARK ATTENDANCE
+   ✅ MARK ATTENDANCE
 ================================ */
 function mark(id,status){
   students[id].status = status;
@@ -199,7 +199,7 @@ function mark(id,status){
 }
 
 /* ===============================
-   SAVE ATTENDANCE
+   💾 SAVE ATTENDANCE
 ================================ */
 function saveAttendance(){
   const cls = document.getElementById("classSelect").value;
@@ -219,12 +219,12 @@ function saveAttendance(){
   });
 
   db.ref().update(updates).then(()=>{
-    alert("✅ Attendance saved");
+    alert("✅ Attendance saved successfully");
   });
 }
 
 /* ===============================
-   INIT DATE
+   📅 INIT DATE
 ================================ */
 document.getElementById("attendanceDate").value =
   new Date().toISOString().split("T")[0];
