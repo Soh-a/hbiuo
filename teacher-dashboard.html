@@ -29,7 +29,7 @@ body {
     color: #333;
 }
 
-/* Dashboard */
+/* Dashboard grid */
 .dashboard {
     padding: 20px;
     display: grid;
@@ -37,6 +37,7 @@ body {
     gap: 20px;
 }
 
+/* Cards */
 .card {
     background: #fff;
     border-radius: 12px;
@@ -61,7 +62,7 @@ body {
     cursor: pointer;
 }
 
-/* AI Floating Button */
+/* AI Button */
 .ai-btn {
     position: fixed;
     bottom: 20px;
@@ -76,10 +77,9 @@ body {
     border: none;
     cursor: pointer;
     box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-    z-index: 1000;
 }
 
-/* AI Chat Box */
+/* AI Box */
 .ai-box {
     position: fixed;
     bottom: 90px;
@@ -90,8 +90,6 @@ body {
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     display: none;
     flex-direction: column;
-    overflow: hidden;
-    z-index: 1000;
 }
 
 .ai-header {
@@ -103,7 +101,7 @@ body {
 
 .ai-messages {
     padding: 10px;
-    height: 240px;
+    height: 230px;
     overflow-y: auto;
     font-size: 14px;
 }
@@ -119,7 +117,7 @@ body {
     outline: none;
 }
 .ai-input button {
-    padding: 8px 14px;
+    padding: 8px 12px;
     background: #2e7d32;
     color: #fff;
     border: none;
@@ -130,6 +128,7 @@ body {
 
 <body>
 
+<!-- AUTH CHECK -->
 <script>
 if (
   localStorage.getItem("isLoggedIn") !== "true" ||
@@ -142,7 +141,7 @@ if (
 <div class="header">Teacher Dashboard</div>
 
 <div class="welcome">
-  Welcome, <strong><span id="teacherName">Teacher</span></strong>
+  Welcome, <b><span id="teacherName">Teacher</span></b>
 </div>
 
 <div class="dashboard">
@@ -150,15 +149,13 @@ if (
     <h3>Attendance</h3>
     <p>Mark student attendance</p>
   </div>
-
   <div class="card" onclick="location.href='logbook.html'">
     <h3>Daily Class Record</h3>
-    <p>Maintain class logbook</p>
+    <p>Maintain logbook</p>
   </div>
-
   <div class="card" onclick="location.href='Notification.html'">
     <h3>Notifications</h3>
-    <p>Send notices & updates</p>
+    <p>Send notices</p>
   </div>
 </div>
 
@@ -166,17 +163,16 @@ if (
   <button onclick="logout()">Logout</button>
 </div>
 
-<!-- AI Button -->
+<!-- AI -->
 <button class="ai-btn" onclick="toggleAI()">AI</button>
 
-<!-- AI Chat -->
 <div class="ai-box" id="aiBox">
   <div class="ai-header">AI Assistant</div>
   <div class="ai-messages" id="aiMessages">
-    <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
+    <div><b>AI:</b> Hello Teacher! Ask me anything 😊</div>
   </div>
   <div class="ai-input">
-    <input type="text" id="aiInput" placeholder="Type your question...">
+    <input type="text" id="aiInput" placeholder="Type here...">
     <button onclick="sendAI()">Send</button>
   </div>
 </div>
@@ -185,56 +181,55 @@ if (
 document.getElementById("teacherName").innerText =
   localStorage.getItem("teacherName") || "Teacher";
 
-function logout() {
+function logout(){
   localStorage.clear();
   window.location.href = "login.html";
 }
 
-function toggleAI() {
+function toggleAI(){
   const box = document.getElementById("aiBox");
   box.style.display = box.style.display === "flex" ? "none" : "flex";
 }
 
-/* ================= REAL AI CONFIG ================= */
-const AI_API_KEY = "AIzaSyDc2LT4VfCMj9g3tHtXLoOusToDpgUvhTo";
+/* ================= AI LOGIC ================= */
 
-async function sendAI() {
+function sendAI(){
   const input = document.getElementById("aiInput");
-  const messages = document.getElementById("aiMessages");
+  const msgBox = document.getElementById("aiMessages");
   const question = input.value.trim();
-  if (!question) return;
+  if(!question) return;
 
-  messages.innerHTML += `<div><b>You:</b> ${question}</div>`;
+  msgBox.innerHTML += `<div><b>You:</b> ${question}</div>`;
+
+  let answer = getAIAnswer(question);
+
+  msgBox.innerHTML += `<div><b>AI:</b> ${answer}</div>`;
   input.value = "";
-  messages.scrollTop = messages.scrollHeight;
+  msgBox.scrollTop = msgBox.scrollHeight;
+}
 
-  messages.innerHTML += `<div><b>AI:</b> Thinking...</div>`;
-  messages.scrollTop = messages.scrollHeight;
+/* SMART AI FUNCTION */
+function getAIAnswer(q){
+  q = q.toLowerCase();
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${AI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: question }] }]
-        })
-      }
-    );
-
-    const data = await res.json();
-    const answer =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I couldn't understand that.";
-
-    messages.lastElementChild.innerHTML = `<b>AI:</b> ${answer}`;
-    messages.scrollTop = messages.scrollHeight;
-
-  } catch (err) {
-    messages.lastElementChild.innerHTML =
-      "<b>AI:</b> Error connecting to AI service.";
+  /* MATH DETECTION */
+  if (/^[0-9+\-*/ ().]+$/.test(q)) {
+    try {
+      let result = Function("return " + q)();
+      return `The answer is <b>${result}</b>`;
+    } catch {
+      return "I could not understand the calculation.";
+    }
   }
+
+  /* COMMON QUESTIONS */
+  if(q.includes("hello")) return "Hello 😊";
+  if(q.includes("1+1")) return "1 + 1 = 2";
+  if(q.includes("principal")) return "The principal of Sai DRS Kids is Mousumi Sarmah.";
+  if(q.includes("attendance")) return "You can mark attendance from the Attendance section.";
+  if(q.includes("fee")) return "Fees are handled by the office staff.";
+
+  return "I am here to help with school-related questions and basic maths.";
 }
 </script>
 
