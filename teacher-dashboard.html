@@ -111,7 +111,7 @@ async function sendAI(){
   messages.scrollTop=messages.scrollHeight;
 
   try{
-    const res=await fetch("https://cyt-wdru.onrender.com/ai",{
+    const res=await fetch("https://cyt-wdru.onrender.com/api/ai",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({ prompt:text })
