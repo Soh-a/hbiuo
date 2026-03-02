@@ -2,11 +2,11 @@
    🔐 AUTH GUARD (DV ONLY)
 ========================= */
 const isLoggedIn = localStorage.getItem("isLoggedIn");
-const role = localStorage.getItem("erpRole");
+const role = (localStorage.getItem("erpRole") || "").toLowerCase();
 
-if (isLoggedIn !== "yes" || role !== "DV") {
+if (isLoggedIn !== "yes" || role !== "dv") {
   alert("Unauthorized access");
-  window.location.href = "login.html";
+  window.location.replace("login.html");
 }
 
 /* =========================
