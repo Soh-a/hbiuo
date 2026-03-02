@@ -95,7 +95,6 @@ button{
 </div>
 
 <script>
-/* Firebase Init */
 firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
@@ -120,15 +119,16 @@ function toggleRole(){
   }else{
     role = "teacher";
     slider.style.left = "0";
-    t.style.color = "#fff";
     d.style.color = "#111";
+    t.style.color = "#fff";
   }
 }
 
-/* Login */
+/* LOGIN */
 function login(){
-  const user = username.value.trim();
-  const pass = password.value.trim();
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
+  const error = document.getElementById("error");
   error.innerText = "";
 
   if(!user || !pass){
@@ -150,27 +150,27 @@ function login(){
 
   /* ===== TEACHER LOGIN ===== */
   db.ref("staff").once("value").then(snapshot=>{
-    let found = false;
+    let success = false;
 
     snapshot.forEach(child=>{
-      const staff = child.val();
-      const dbUser = staff.username || staff.mobile || "";
+      const s = child.val();
 
       if(
-        dbUser === user &&
-        staff.password === pass &&
-        (staff.role || "").toLowerCase() === "teacher"
+        s.phone === user &&
+        s.password === pass &&           // CASE SENSITIVE
+        (s.role || "").toLowerCase() === "teacher" &&
+        (s.status || "").toLowerCase() === "active"
       ){
-        found = true;
+        success = true;
         localStorage.setItem("isLoggedIn","true");
         localStorage.setItem("erpRole","teacher");
         localStorage.setItem("teacherId", child.key);
-        localStorage.setItem("teacherName", staff.name || "Teacher");
+        localStorage.setItem("teacherName", s.name || "Teacher");
         window.location.href = "teacher-dashboard.html";
       }
     });
 
-    if(!found){
+    if(!success){
       error.innerText = "Invalid Teacher credentials";
     }
   });
