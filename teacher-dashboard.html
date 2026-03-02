@@ -76,6 +76,74 @@ body {
     border-radius: 6px;
     cursor: pointer;
 }
+
+/* ================= AI FLOATING BUTTON ================= */
+.ai-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: #2e7d32;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 22px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    z-index: 1000;
+}
+
+/* ================= AI CHAT BOX ================= */
+.ai-box {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 300px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.ai-header {
+    background: #2e7d32;
+    color: #fff;
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.ai-messages {
+    padding: 10px;
+    height: 220px;
+    overflow-y: auto;
+    font-size: 14px;
+}
+
+.ai-input {
+    display: flex;
+    border-top: 1px solid #ddd;
+}
+
+.ai-input input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    outline: none;
+}
+
+.ai-input button {
+    padding: 8px 12px;
+    background: #2e7d32;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
 </style>
 </head>
 
@@ -104,8 +172,8 @@ if (
     </div>
 
     <div class="card" onclick="location.href='logbook.html'">
-        <h3>daily class record</h3>
-        <p>Send homework to students</p>
+        <h3>Daily Class Record</h3>
+        <p>Maintain class logbook</p>
     </div>
 
     <div class="card" onclick="location.href='Notification.html'">
@@ -118,8 +186,23 @@ if (
     <button onclick="logout()">Logout</button>
 </div>
 
+<!-- ================= AI BUTTON ================= -->
+<button class="ai-btn" onclick="toggleAI()">AI</button>
+
+<!-- ================= AI CHAT ================= -->
+<div class="ai-box" id="aiBox">
+    <div class="ai-header">AI Assistant</div>
+    <div class="ai-messages" id="aiMessages">
+        <div><b>AI:</b> Hello Teacher! How can I help you?</div>
+    </div>
+    <div class="ai-input">
+        <input type="text" id="aiInput" placeholder="Ask something...">
+        <button onclick="sendAI()">Send</button>
+    </div>
+</div>
+
 <script>
-/* Show teacher name */
+/* Teacher name */
 document.getElementById("teacherName").innerText =
   localStorage.getItem("teacherName") || "Teacher";
 
@@ -127,6 +210,30 @@ document.getElementById("teacherName").innerText =
 function logout() {
     localStorage.clear();
     window.location.href = "login.html";
+}
+
+/* AI Toggle */
+function toggleAI() {
+    const box = document.getElementById("aiBox");
+    box.style.display = box.style.display === "flex" ? "none" : "flex";
+}
+
+/* ================= AI CONFIG ================= */
+const AI_API_KEY = "AIzaSyChhYIclJgSbR3bQXCaDdAZEm01ZjhTV3s"; // ⚠️ Demo only
+
+function sendAI() {
+    const input = document.getElementById("aiInput");
+    const messages = document.getElementById("aiMessages");
+
+    if (!input.value.trim()) return;
+
+    messages.innerHTML += `<div><b>You:</b> ${input.value}</div>`;
+
+    // Demo response (replace with backend call)
+    messages.innerHTML += `<div><b>AI:</b> I received your message: "${input.value}"</div>`;
+
+    input.value = "";
+    messages.scrollTop = messages.scrollHeight;
 }
 </script>
 
