@@ -1,61 +1,96 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// 🔹 Change your Firebase URL here
+/* =========================
+   🔥 FIREBASE INIT
+========================= */
 const firebaseConfig = {
   databaseURL: "https://students-6e271-default-rtdb.firebaseio.com/"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+/* =========================
+   📄 DOM ELEMENTS
+========================= */
 const tableBody = document.querySelector("#defaultersTable tbody");
 const downloadBtn = document.getElementById("downloadBtn");
 
+/* =========================
+   📦 STATE
+========================= */
 let defaulters = [];
 
+/* =========================
+   🚀 LOAD DEFAULTERS
+========================= */
 async function loadDefaulters() {
-  const snapshot = await get(ref(db, "/"));
   tableBody.innerHTML = "";
   defaulters = [];
 
-  if(snapshot.exists()){
-    const students = snapshot.val();
-    for(const studentID in students){
-      const s = students[studentID];
-      if(s.fees){
-        for(const month in s.fees){
-          const fee = s.fees[month];
-          if(fee.status !== "paid"){
-            defaulters.push({
-              id: studentID,
-              name: s.name,
-              month: month,
-              fine: fee.fine || 0
-            });
-            tableBody.innerHTML += `<tr>
-              <td>${studentID}</td>
-              <td>${s.name}</td>
-              <td>${month}</td>
-              <td>₹${fee.fine || 0}</td>
-            </tr>`;
-          }
-        }
-      }
-    }
-  }
+  const snapshot = await get(ref(db, "/"));
+  if (!snapshot.exists()) return;
+
+  const students = snapshot.val();
+
+  Object.entries(students).forEach(([studentId, student]) => {
+    if (!student.fees) return;
+
+    Object.entries(student.fees).forEach(([month, fee]) => {
+      if (fee.status === "paid") return;
+
+      const fine = fee.fine || 0;
+
+      defaulters.push({
+        studentId,
+        name: student.name,
+        month,
+        fine
+      });
+
+      tableBody.insertAdjacentHTML(
+        "beforeend",
+        `
+        <tr>
+          <td>${studentId}</td>
+          <td>${student.name}</td>
+          <td>${month}</td>
+          <td>₹${fine}</td>
+        </tr>
+        `
+      );
+    });
+  });
 }
 
+/* =========================
+   ⬇️ DOWNLOAD CSV
+========================= */
 function downloadCSV() {
-  if(defaulters.length === 0) { alert("No defaulters"); return; }
-  let csv = "StudentID,Name,Month,Fine\n";
-  defaulters.forEach(d => { csv += `${d.id},${d.name},${d.month},${d.fine}\n`; });
-  const blob = new Blob([csv], {type: "text/csv"});
+  if (!defaulters.length) {
+    alert("No defaulters found");
+    return;
+  }
+
+  const header = "Student ID,Name,Month,Fine\n";
+  const rows = defaulters
+    .map(d => `${d.studentId},${d.name},${d.month},${d.fine}`)
+    .join("\n");
+
+  const blob = new Blob([header + rows], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
+  link.href = url;
   link.download = "defaulters.csv";
   link.click();
+
+  URL.revokeObjectURL(url);
 }
 
-// Event listener
+/* =========================
+   🎯 EVENTS
+========================= */
 downloadBtn.addEventListener("click", downloadCSV);
 loadDefaulters();
