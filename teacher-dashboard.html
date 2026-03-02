@@ -6,224 +6,96 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-}
-
-/* Header */
-.header {
-    background: #2e7d32;
-    color: #fff;
-    padding: 15px;
-    font-size: 20px;
-    text-align: center;
-}
-
-.welcome {
-    padding: 15px;
-    text-align: center;
-    font-size: 18px;
-}
-
-/* Dashboard */
-.dashboard {
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-}
-
-.card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    cursor: pointer;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-/* Logout */
-.logout {
-    text-align: center;
-    margin: 20px;
-}
-
-.logout button {
-    padding: 10px 20px;
-    background: #c62828;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-/* AI Button */
-.ai-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background: #2e7d32;
-    color: #fff;
-    border-radius: 50%;
-    font-size: 20px;
-    border: none;
-    cursor: pointer;
-}
-
-/* AI Box */
-.ai-box {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 320px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-    display: none;
-    flex-direction: column;
-}
-
-.ai-header {
-    background: #2e7d32;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-}
-
-.ai-messages {
-    padding: 10px;
-    height: 240px;
-    overflow-y: auto;
-    font-size: 14px;
-}
-
-.ai-input {
-    display: flex;
-    border-top: 1px solid #ddd;
-}
-
-.ai-input input {
-    flex: 1;
-    padding: 8px;
-    border: none;
-    outline: none;
-}
-
-.ai-input button {
-    padding: 8px 12px;
-    background: #2e7d32;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9}
+.header{background:#2e7d32;color:#fff;padding:15px;font-size:20px;text-align:center}
+.welcome{text-align:center;padding:15px;font-size:18px}
+.dashboard{padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.card{background:#fff;border-radius:12px;padding:25px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.1);cursor:pointer}
+.logout{text-align:center;margin:20px}
+.logout button{background:#c62828;color:#fff;border:none;padding:10px 20px;border-radius:6px}
+.ai-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#2e7d32;color:#fff;font-size:20px;border:none;cursor:pointer}
+.ai-box{position:fixed;bottom:90px;right:20px;width:320px;background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);display:none;flex-direction:column}
+.ai-header{background:#2e7d32;color:#fff;padding:10px;text-align:center}
+.ai-messages{padding:10px;height:220px;overflow-y:auto;font-size:14px}
+.ai-input{display:flex;border-top:1px solid #ddd}
+.ai-input input{flex:1;padding:8px;border:none;outline:none}
+.ai-input button{background:#2e7d32;color:#fff;border:none;padding:8px 12px}
 </style>
 </head>
 
 <body>
 
-<!-- AUTH CHECK -->
 <script>
-if (
-  localStorage.getItem("isLoggedIn") !== "true" ||
-  localStorage.getItem("erpRole") !== "teacher"
-) {
-  window.location.href = "login.html";
+if(localStorage.getItem("isLoggedIn")!=="true"||localStorage.getItem("erpRole")!=="teacher"){
+  window.location.href="login.html";
 }
 </script>
 
 <div class="header">Teacher Dashboard</div>
-
-<div class="welcome">
-Welcome, <strong><span id="teacherName">Teacher</span></strong>
-</div>
+<div class="welcome">Welcome, <b><span id="teacherName">Teacher</span></b></div>
 
 <div class="dashboard">
-    <div class="card">Attendance</div>
-    <div class="card">Daily Class Record</div>
-    <div class="card">Notifications</div>
+  <div class="card" onclick="location.href='attendance.html'">Attendance</div>
+  <div class="card" onclick="location.href='logbook.html'">Daily Record</div>
+  <div class="card" onclick="location.href='Notification.html'">Notifications</div>
 </div>
 
 <div class="logout">
-    <button onclick="logout()">Logout</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- AI -->
 <button class="ai-btn" onclick="toggleAI()">AI</button>
 
 <div class="ai-box" id="aiBox">
-    <div class="ai-header">Gemini AI Assistant</div>
-    <div class="ai-messages" id="aiMessages">
-        <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
-    </div>
-    <div class="ai-input">
-        <input type="text" id="aiInput" placeholder="Type your question...">
-        <button onclick="sendAI()">Send</button>
-    </div>
+  <div class="ai-header">AI Assistant</div>
+  <div class="ai-messages" id="aiMessages">
+    <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
+  </div>
+  <div class="ai-input">
+    <input id="aiInput" placeholder="Type here..." />
+    <button onclick="sendAI()">Send</button>
+  </div>
 </div>
 
 <script>
 document.getElementById("teacherName").innerText =
   localStorage.getItem("teacherName") || "Teacher";
 
-function logout() {
-    localStorage.clear();
-    window.location.href = "login.html";
+function logout(){
+  localStorage.clear();
+  window.location.href="login.html";
 }
 
-function toggleAI() {
-    const box = document.getElementById("aiBox");
-    box.style.display = box.style.display === "flex" ? "none" : "flex";
+function toggleAI(){
+  const box=document.getElementById("aiBox");
+  box.style.display=box.style.display==="flex"?"none":"flex";
 }
 
-/* ================= GEMINI CONFIG ================= */
-const GEMINI_API_KEY = "AIzaSyDc2LT4VfCMj9g3tHtXLoOusToDpgUvhTo";
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
-  GEMINI_API_KEY;
+/* 🔥 REAL GEMINI BACKEND CALL */
+async function sendAI(){
+  const input=document.getElementById("aiInput");
+  const messages=document.getElementById("aiMessages");
+  const text=input.value.trim();
+  if(!text)return;
 
-async function sendAI() {
-    const input = document.getElementById("aiInput");
-    const messages = document.getElementById("aiMessages");
-    const question = input.value.trim();
+  messages.innerHTML+=`<div><b>You:</b> ${text}</div>`;
+  input.value="";
+  messages.scrollTop=messages.scrollHeight;
 
-    if (!question) return;
+  try{
+    const res=await fetch("https://cyt-wdru.onrender.com/ai",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ prompt:text })
+    });
 
-    messages.innerHTML += `<div><b>You:</b> ${question}</div>`;
-    input.value = "";
-    messages.scrollTop = messages.scrollHeight;
+    const data=await res.json();
+    messages.innerHTML+=`<div><b>AI:</b> ${data.reply}</div>`;
+    messages.scrollTop=messages.scrollHeight;
 
-    try {
-        const response = await fetch(GEMINI_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [{ text: question }]
-                    }
-                ]
-            })
-        });
-
-        const data = await response.json();
-        const answer =
-            data.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "Sorry, I couldn't understand that.";
-
-        messages.innerHTML += `<div><b>AI:</b> ${answer}</div>`;
-    } catch (error) {
-        messages.innerHTML += `<div><b>AI:</b> Error connecting to Gemini.</div>`;
-    }
-
-    messages.scrollTop = messages.scrollHeight;
+  }catch(err){
+    messages.innerHTML+=`<div><b>AI:</b> Server error</div>`;
+  }
 }
 </script>
 
