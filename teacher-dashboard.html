@@ -21,15 +21,13 @@ body {
     text-align: center;
 }
 
-/* Welcome */
 .welcome {
     padding: 15px;
     text-align: center;
     font-size: 18px;
-    color: #333;
 }
 
-/* Dashboard grid */
+/* Dashboard */
 .dashboard {
     padding: 20px;
     display: grid;
@@ -37,7 +35,6 @@ body {
     gap: 20px;
 }
 
-/* Cards */
 .card {
     background: #fff;
     border-radius: 12px;
@@ -45,14 +42,18 @@ body {
     text-align: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     cursor: pointer;
-    transition: 0.3s;
 }
-.card:hover { transform: translateY(-5px); }
 
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Logout */
 .logout {
     text-align: center;
     margin: 20px;
 }
+
 .logout button {
     padding: 10px 20px;
     background: #c62828;
@@ -72,11 +73,9 @@ body {
     background: #2e7d32;
     color: #fff;
     border-radius: 50%;
-    font-size: 22px;
-    font-weight: bold;
+    font-size: 20px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
 
 /* AI Box */
@@ -101,7 +100,7 @@ body {
 
 .ai-messages {
     padding: 10px;
-    height: 230px;
+    height: 240px;
     overflow-y: auto;
     font-size: 14px;
 }
@@ -110,12 +109,14 @@ body {
     display: flex;
     border-top: 1px solid #ddd;
 }
+
 .ai-input input {
     flex: 1;
     padding: 8px;
     border: none;
     outline: none;
 }
+
 .ai-input button {
     padding: 8px 12px;
     background: #2e7d32;
@@ -141,95 +142,88 @@ if (
 <div class="header">Teacher Dashboard</div>
 
 <div class="welcome">
-  Welcome, <b><span id="teacherName">Teacher</span></b>
+Welcome, <strong><span id="teacherName">Teacher</span></strong>
 </div>
 
 <div class="dashboard">
-  <div class="card" onclick="location.href='attendance.html'">
-    <h3>Attendance</h3>
-    <p>Mark student attendance</p>
-  </div>
-  <div class="card" onclick="location.href='logbook.html'">
-    <h3>Daily Class Record</h3>
-    <p>Maintain logbook</p>
-  </div>
-  <div class="card" onclick="location.href='Notification.html'">
-    <h3>Notifications</h3>
-    <p>Send notices</p>
-  </div>
+    <div class="card">Attendance</div>
+    <div class="card">Daily Class Record</div>
+    <div class="card">Notifications</div>
 </div>
 
 <div class="logout">
-  <button onclick="logout()">Logout</button>
+    <button onclick="logout()">Logout</button>
 </div>
 
 <!-- AI -->
 <button class="ai-btn" onclick="toggleAI()">AI</button>
 
 <div class="ai-box" id="aiBox">
-  <div class="ai-header">AI Assistant</div>
-  <div class="ai-messages" id="aiMessages">
-    <div><b>AI:</b> Hello Teacher! Ask me anything 😊</div>
-  </div>
-  <div class="ai-input">
-    <input type="text" id="aiInput" placeholder="Type here...">
-    <button onclick="sendAI()">Send</button>
-  </div>
+    <div class="ai-header">Gemini AI Assistant</div>
+    <div class="ai-messages" id="aiMessages">
+        <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
+    </div>
+    <div class="ai-input">
+        <input type="text" id="aiInput" placeholder="Type your question...">
+        <button onclick="sendAI()">Send</button>
+    </div>
 </div>
 
 <script>
 document.getElementById("teacherName").innerText =
   localStorage.getItem("teacherName") || "Teacher";
 
-function logout(){
-  localStorage.clear();
-  window.location.href = "login.html";
+function logout() {
+    localStorage.clear();
+    window.location.href = "login.html";
 }
 
-function toggleAI(){
-  const box = document.getElementById("aiBox");
-  box.style.display = box.style.display === "flex" ? "none" : "flex";
+function toggleAI() {
+    const box = document.getElementById("aiBox");
+    box.style.display = box.style.display === "flex" ? "none" : "flex";
 }
 
-/* ================= AI LOGIC ================= */
+/* ================= GEMINI CONFIG ================= */
+const GEMINI_API_KEY = "AIzaSyDc2LT4VfCMj9g3tHtXLoOusToDpgUvhTo";
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+  GEMINI_API_KEY;
 
-function sendAI(){
-  const input = document.getElementById("aiInput");
-  const msgBox = document.getElementById("aiMessages");
-  const question = input.value.trim();
-  if(!question) return;
+async function sendAI() {
+    const input = document.getElementById("aiInput");
+    const messages = document.getElementById("aiMessages");
+    const question = input.value.trim();
 
-  msgBox.innerHTML += `<div><b>You:</b> ${question}</div>`;
+    if (!question) return;
 
-  let answer = getAIAnswer(question);
+    messages.innerHTML += `<div><b>You:</b> ${question}</div>`;
+    input.value = "";
+    messages.scrollTop = messages.scrollHeight;
 
-  msgBox.innerHTML += `<div><b>AI:</b> ${answer}</div>`;
-  input.value = "";
-  msgBox.scrollTop = msgBox.scrollHeight;
-}
-
-/* SMART AI FUNCTION */
-function getAIAnswer(q){
-  q = q.toLowerCase();
-
-  /* MATH DETECTION */
-  if (/^[0-9+\-*/ ().]+$/.test(q)) {
     try {
-      let result = Function("return " + q)();
-      return `The answer is <b>${result}</b>`;
-    } catch {
-      return "I could not understand the calculation.";
+        const response = await fetch(GEMINI_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        parts: [{ text: question }]
+                    }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        const answer =
+            data.candidates?.[0]?.content?.parts?.[0]?.text ||
+            "Sorry, I couldn't understand that.";
+
+        messages.innerHTML += `<div><b>AI:</b> ${answer}</div>`;
+    } catch (error) {
+        messages.innerHTML += `<div><b>AI:</b> Error connecting to Gemini.</div>`;
     }
-  }
 
-  /* COMMON QUESTIONS */
-  if(q.includes("hello")) return "Hello 😊";
-  if(q.includes("1+1")) return "1 + 1 = 2";
-  if(q.includes("principal")) return "The principal of Sai DRS Kids is Mousumi Sarmah.";
-  if(q.includes("attendance")) return "You can mark attendance from the Attendance section.";
-  if(q.includes("fee")) return "Fees are handled by the office staff.";
-
-  return "I am here to help with school-related questions and basic maths.";
+    messages.scrollTop = messages.scrollHeight;
 }
 </script>
 
