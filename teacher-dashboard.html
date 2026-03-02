@@ -14,28 +14,6 @@ body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9}
 .card:hover{transform:translateY(-4px)}
 .logout{text-align:center;margin:20px}
 .logout button{background:#c62828;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer}
-
-/* AI BUTTON */
-.ai-btn{
-  position:fixed;bottom:20px;right:20px;
-  width:60px;height:60px;border-radius:50%;
-  background:#2e7d32;color:#fff;
-  font-size:20px;border:none;cursor:pointer;
-  box-shadow:0 6px 15px rgba(0,0,0,.3)
-}
-
-/* AI CHAT */
-.ai-box{
-  position:fixed;bottom:90px;right:20px;
-  width:320px;background:#fff;border-radius:12px;
-  box-shadow:0 6px 20px rgba(0,0,0,.25);
-  display:none;flex-direction:column;overflow:hidden
-}
-.ai-header{background:#2e7d32;color:#fff;padding:10px;text-align:center}
-.ai-messages{padding:10px;height:220px;overflow-y:auto;font-size:14px}
-.ai-input{display:flex;border-top:1px solid #ddd}
-.ai-input input{flex:1;padding:8px;border:none;outline:none}
-.ai-input button{background:#2e7d32;color:#fff;border:none;padding:8px 12px;cursor:pointer}
 </style>
 </head>
 
@@ -58,28 +36,13 @@ if(
 </div>
 
 <div class="dashboard">
-  <div class="card" onclick="location.href='Ai.html'">Attendance</div>
+  <div class="card" onclick="location.href='attendance.html'">Attendance</div>
   <div class="card" onclick="location.href='logbook.html'">Daily Class Record</div>
   <div class="card" onclick="location.href='Notification.html'">Notifications</div>
 </div>
 
 <div class="logout">
   <button onclick="logout()">Logout</button>
-</div>
-
-<!-- AI FLOAT BUTTON -->
-<button class="ai-btn" onclick="toggleAI()">AI</button>
-
-<!-- AI CHAT BOX -->
-<div class="ai-box" id="aiBox">
-  <div class="ai-header">AI Assistant</div>
-  <div class="ai-messages" id="aiMessages">
-    <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
-  </div>
-  <div class="ai-input">
-    <input id="aiInput" placeholder="Type your question..." />
-    <button onclick="sendAI()">Send</button>
-  </div>
 </div>
 
 <script>
@@ -91,39 +54,6 @@ document.getElementById("teacherName").innerText =
 function logout(){
   localStorage.clear();
   window.location.href="login.html";
-}
-
-/* Toggle AI */
-function toggleAI(){
-  const box=document.getElementById("aiBox");
-  box.style.display=box.style.display==="flex"?"none":"flex";
-}
-
-/* 🔥 AI CALL → YOUR BACKEND ONLY */
-async function sendAI(){
-  const input=document.getElementById("aiInput");
-  const messages=document.getElementById("aiMessages");
-  const text=input.value.trim();
-  if(!text)return;
-
-  messages.innerHTML+=`<div><b>You:</b> ${text}</div>`;
-  input.value="";
-  messages.scrollTop=messages.scrollHeight;
-
-  try{
-    const res=await fetch("https://cyt-wdru.onrender.com/api/ai",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ message: text })
-    });
-
-    const data=await res.json();
-    messages.innerHTML+=`<div><b>AI:</b> ${data.reply}</div>`;
-  }catch{
-    messages.innerHTML+=`<div><b>AI:</b> Server not responding</div>`;
-  }
-
-  messages.scrollTop=messages.scrollHeight;
 }
 </script>
 
