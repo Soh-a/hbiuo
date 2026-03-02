@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sai DRS Kids AI Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      background: #1e40af;
+      color: white;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    .container {
+      margin-top: 30px;
+      width: 90%;
+      max-width: 600px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      resize: none;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #1e40af;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #374eb8;
+    }
+    .response {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      min-height: 120px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<header>Sai DRS Kids AI Assistant</header>
+
+<div class="container">
+  <textarea id="prompt" placeholder="Ask your question here..."></textarea>
+  <button id="sendBtn">Ask AI</button>
+  <div class="response" id="response">AI response will appear here...</div>
+</div>
+
+<script>
+  const sendBtn = document.getElementById('sendBtn');
+  const promptInput = document.getElementById('prompt');
+  const responseDiv = document.getElementById('response');
+
+  const BACKEND_URL = "https://cyt-wdru.onrender.com/api/ai";
+
+  sendBtn.addEventListener('click', async () => {
+    const message = promptInput.value.trim();
+    if (!message) return alert('Please enter a question.');
+
+    responseDiv.textContent = 'Thinking...';
+
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+
+      const data = await res.json();
+      responseDiv.textContent = data.reply || "No response generated.";
+    } catch (err) {
+      console.error(err);
+      responseDiv.textContent = 'Error connecting to AI. Please try again later.';
+    }
+  });
+</script>
+
+</body>
+</html>
