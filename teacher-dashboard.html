@@ -114,7 +114,7 @@ async function sendAI(){
     const res=await fetch("https://cyt-wdru.onrender.com/api/ai",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ prompt:text })
+      body: JSON.stringify({ message: text })
     });
 
     const data=await res.json();
