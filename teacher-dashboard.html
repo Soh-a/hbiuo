@@ -8,35 +8,58 @@
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9}
 .header{background:#2e7d32;color:#fff;padding:15px;font-size:20px;text-align:center}
-.welcome{text-align:center;padding:15px;font-size:18px}
+.welcome{text-align:center;padding:15px;font-size:18px;color:#333}
 .dashboard{padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
 .card{background:#fff;border-radius:12px;padding:25px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.1);cursor:pointer}
+.card:hover{transform:translateY(-4px)}
 .logout{text-align:center;margin:20px}
-.logout button{background:#c62828;color:#fff;border:none;padding:10px 20px;border-radius:6px}
-.ai-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#2e7d32;color:#fff;font-size:20px;border:none;cursor:pointer}
-.ai-box{position:fixed;bottom:90px;right:20px;width:320px;background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);display:none;flex-direction:column}
+.logout button{background:#c62828;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer}
+
+/* AI BUTTON */
+.ai-btn{
+  position:fixed;bottom:20px;right:20px;
+  width:60px;height:60px;border-radius:50%;
+  background:#2e7d32;color:#fff;
+  font-size:20px;border:none;cursor:pointer;
+  box-shadow:0 6px 15px rgba(0,0,0,.3)
+}
+
+/* AI CHAT */
+.ai-box{
+  position:fixed;bottom:90px;right:20px;
+  width:320px;background:#fff;border-radius:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,.25);
+  display:none;flex-direction:column;overflow:hidden
+}
 .ai-header{background:#2e7d32;color:#fff;padding:10px;text-align:center}
 .ai-messages{padding:10px;height:220px;overflow-y:auto;font-size:14px}
 .ai-input{display:flex;border-top:1px solid #ddd}
 .ai-input input{flex:1;padding:8px;border:none;outline:none}
-.ai-input button{background:#2e7d32;color:#fff;border:none;padding:8px 12px}
+.ai-input button{background:#2e7d32;color:#fff;border:none;padding:8px 12px;cursor:pointer}
 </style>
 </head>
 
 <body>
 
+<!-- 🔐 AUTH GUARD -->
 <script>
-if(localStorage.getItem("isLoggedIn")!=="true"||localStorage.getItem("erpRole")!=="teacher"){
+if(
+  localStorage.getItem("isLoggedIn")!=="true" ||
+  localStorage.getItem("erpRole")!=="teacher"
+){
   window.location.href="login.html";
 }
 </script>
 
 <div class="header">Teacher Dashboard</div>
-<div class="welcome">Welcome, <b><span id="teacherName">Teacher</span></b></div>
+
+<div class="welcome">
+  Welcome, <b><span id="teacherName">Teacher</span></b>
+</div>
 
 <div class="dashboard">
   <div class="card" onclick="location.href='attendance.html'">Attendance</div>
-  <div class="card" onclick="location.href='logbook.html'">Daily Record</div>
+  <div class="card" onclick="location.href='logbook.html'">Daily Class Record</div>
   <div class="card" onclick="location.href='Notification.html'">Notifications</div>
 </div>
 
@@ -44,34 +67,39 @@ if(localStorage.getItem("isLoggedIn")!=="true"||localStorage.getItem("erpRole")!
   <button onclick="logout()">Logout</button>
 </div>
 
+<!-- AI FLOAT BUTTON -->
 <button class="ai-btn" onclick="toggleAI()">AI</button>
 
+<!-- AI CHAT BOX -->
 <div class="ai-box" id="aiBox">
   <div class="ai-header">AI Assistant</div>
   <div class="ai-messages" id="aiMessages">
     <div><b>AI:</b> Hello Teacher! Ask me anything.</div>
   </div>
   <div class="ai-input">
-    <input id="aiInput" placeholder="Type here..." />
+    <input id="aiInput" placeholder="Type your question..." />
     <button onclick="sendAI()">Send</button>
   </div>
 </div>
 
 <script>
+/* Show teacher name */
 document.getElementById("teacherName").innerText =
   localStorage.getItem("teacherName") || "Teacher";
 
+/* Logout */
 function logout(){
   localStorage.clear();
   window.location.href="login.html";
 }
 
+/* Toggle AI */
 function toggleAI(){
   const box=document.getElementById("aiBox");
   box.style.display=box.style.display==="flex"?"none":"flex";
 }
 
-/* 🔥 REAL GEMINI BACKEND CALL */
+/* 🔥 AI CALL → YOUR BACKEND ONLY */
 async function sendAI(){
   const input=document.getElementById("aiInput");
   const messages=document.getElementById("aiMessages");
@@ -91,11 +119,11 @@ async function sendAI(){
 
     const data=await res.json();
     messages.innerHTML+=`<div><b>AI:</b> ${data.reply}</div>`;
-    messages.scrollTop=messages.scrollHeight;
-
-  }catch(err){
-    messages.innerHTML+=`<div><b>AI:</b> Server error</div>`;
+  }catch{
+    messages.innerHTML+=`<div><b>AI:</b> Server not responding</div>`;
   }
+
+  messages.scrollTop=messages.scrollHeight;
 }
 </script>
 
