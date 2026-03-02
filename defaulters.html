@@ -1,92 +1,123 @@
-<!DOCTYPE html>  
-<html>  
-<head>  
-  <title>Defaulters List</title>  
-  <style>
-    /* General body styles */
-    body { 
-      font-family: Arial, sans-serif; 
-      margin: 40px; 
-      background: #f5f5f5; 
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Defaulters List</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    /* Heading */
-    h2 { 
-      text-align: center; 
-      margin-bottom: 20px; 
-      color: #333;
-    }
+<style>
+:root{
+  --primary:#16a34a;
+  --primary-dark:#15803d;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#1f2937;
+}
 
-    /* Button styling */
-    #downloadBtn { 
-      display: block;
-      margin: 10px auto; 
-      padding: 10px 20px; 
-      cursor: pointer; 
-      background: #4CAF50; 
-      color: white; 
-      border: none; 
-      border-radius: 5px; 
-      font-size: 16px;
-    }
+/* Page */
+body{
+  margin:0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    #downloadBtn:hover {
-      background: #45a049;
-    }
+/* Container */
+.container{
+  max-width:1100px;
+  margin:40px auto;
+  background:var(--card);
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
 
-    /* Table styling */
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin-top: 20px; 
-      background: #fff; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+/* Heading */
+h2{
+  text-align:center;
+  margin-bottom:25px;
+  font-weight:600;
+}
 
-    th, td { 
-      border: 1px solid #ccc; 
-      padding: 12px; 
-      text-align: center; 
-    }
+/* Actions */
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:15px;
+}
 
-    th { 
-      background: #4CAF50; 
-      color: white; 
-      font-size: 16px;
-    }
+#downloadBtn{
+  padding:10px 18px;
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  cursor:pointer;
+}
+#downloadBtn:hover{
+  background:var(--primary-dark);
+}
 
-    td { 
-      font-size: 14px; 
-      color: #333;
-    }
+/* Table */
+.table-wrap{
+  overflow-x:auto;
+}
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
 
-    tr:hover {
-      background-color: #e6f7e6;
-    }
-  </style>
-</head>  
-<body>  
-  
-<h2>Defaulters List</h2>  
-<button id="downloadBtn">Download Defaulters CSV</button>  
-  
-<table id="defaultersTable">  
-  <thead>  
-    <tr>  
-      <th>Student ID</th>  
-      <th>Name</th>  
-      <th>Month</th>  
-      <th>Fine</th>  
-    </tr>  
-  </thead>  
-  <tbody></tbody>  
-</table>  
-  
-<!-- Link to separate JS file -->  
-<script type="module" src="defaulters.js"></script>  
-</body>  
+th,td{
+  padding:12px 14px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+}
+
+th{
+  background:var(--primary);
+  color:#fff;
+  font-weight:500;
+}
+
+tr:nth-child(even){
+  background:#f9fafb;
+}
+
+tr:hover{
+  background:#ecfdf5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Defaulters List</h2>
+
+  <div class="actions">
+    <button id="downloadBtn">⬇ Download CSV</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="defaultersTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Month</th>
+          <th>Fine</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- JS -->
+<script type="module" src="defaulters.js"></script>
+</body>
 </html>
