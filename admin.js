@@ -1,15 +1,12 @@
 /* =========================
    🔐 AUTH GUARD (DV ONLY)
 ========================= */
-if(role === "dv"){
-  if(user === "6002425951" && pass === "sai_drs"){
-    localStorage.setItem("isLoggedIn","yes");   // ✅ MUST be "yes"
-    localStorage.setItem("erpRole","dv");       // ✅ lowercase
-    window.location.href = "dv-dashboard.html"; // ✅ correct page
-  }else{
-    error.innerText = "Invalid DV credentials";
-  }
-  return;
+const isLoggedIn = localStorage.getItem("isLoggedIn");
+const role = (localStorage.getItem("erpRole") || "").toLowerCase();
+
+if (isLoggedIn !== "yes" || role !== "dv") {
+  alert("Unauthorized access");
+  window.location.replace("login.html");
 }
 
 /* =========================
