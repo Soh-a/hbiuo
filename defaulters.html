@@ -2,28 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Defaulters List</title>
+<title>Fee Status Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 :root{
   --primary:#16a34a;
-  --primary-dark:#15803d;
   --bg:#f1f5f9;
   --card:#ffffff;
   --border:#e5e7eb;
-  --text:#1f2937;
 }
 
-/* Page */
 body{
   margin:0;
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family:Segoe UI, Arial, sans-serif;
   background:var(--bg);
-  color:var(--text);
 }
 
-/* Container */
 .container{
   max-width:1100px;
   margin:40px auto;
@@ -33,34 +28,37 @@ body{
   box-shadow:0 10px 30px rgba(0,0,0,.08);
 }
 
-/* Heading */
 h2{
   text-align:center;
-  margin-bottom:25px;
-  font-weight:600;
+  margin-bottom:20px;
 }
 
-/* Actions */
 .actions{
   display:flex;
-  justify-content:flex-end;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
   margin-bottom:15px;
 }
 
-#downloadBtn{
-  padding:10px 18px;
+select, button{
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  font-size:14px;
+}
+
+button{
   background:var(--primary);
   color:#fff;
   border:none;
-  border-radius:10px;
-  font-size:15px;
   cursor:pointer;
 }
-#downloadBtn:hover{
-  background:var(--primary-dark);
+
+button:hover{
+  opacity:.9;
 }
 
-/* Table */
 .table-wrap{
   overflow-x:auto;
 }
@@ -68,11 +66,10 @@ h2{
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:10px;
 }
 
 th,td{
-  padding:12px 14px;
+  padding:12px;
   text-align:center;
   border-bottom:1px solid var(--border);
 }
@@ -80,15 +77,20 @@ th,td{
 th{
   background:var(--primary);
   color:#fff;
-  font-weight:500;
 }
 
 tr:nth-child(even){
   background:#f9fafb;
 }
 
-tr:hover{
-  background:#ecfdf5;
+.badge-paid{
+  color:#15803d;
+  font-weight:600;
+}
+
+.badge-unpaid{
+  color:#dc2626;
+  font-weight:600;
 }
 </style>
 </head>
@@ -96,9 +98,33 @@ tr:hover{
 <body>
 
 <div class="container">
-  <h2>Defaulters List</h2>
+  <h2>Fee Status Report</h2>
 
   <div class="actions">
+    <div>
+      <select id="monthFilter">
+        <option value="">All Months</option>
+        <option value="april">April</option>
+        <option value="may">May</option>
+        <option value="june">June</option>
+        <option value="july">July</option>
+        <option value="august">August</option>
+        <option value="september">September</option>
+        <option value="october">October</option>
+        <option value="november">November</option>
+        <option value="december">December</option>
+        <option value="january">January</option>
+        <option value="february">February</option>
+        <option value="march">March</option>
+      </select>
+
+      <select id="statusFilter">
+        <option value="">All</option>
+        <option value="paid">Paid</option>
+        <option value="unpaid">Unpaid</option>
+      </select>
+    </div>
+
     <button id="downloadBtn">⬇ Download CSV</button>
   </div>
 
@@ -109,6 +135,7 @@ tr:hover{
           <th>Student ID</th>
           <th>Name</th>
           <th>Month</th>
+          <th>Status</th>
           <th>Fine</th>
         </tr>
       </thead>
@@ -117,7 +144,6 @@ tr:hover{
   </div>
 </div>
 
-<!-- JS -->
 <script type="module" src="defaulters.js"></script>
 </body>
 </html>
