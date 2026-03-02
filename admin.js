@@ -6,7 +6,7 @@ const role = localStorage.getItem("erpRole");
 
 if (isLoggedIn !== "yes" || role !== "dv") {
   alert("Unauthorized access");
-  window.location.href = "erp-login.html";
+  window.location.href = "login.html";
 }
 
 /* =========================
