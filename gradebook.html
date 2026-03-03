@@ -1,71 +1,203 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Gradebook Management</title>
-
+  <meta charset="UTF-8">
+  <title>📘 Gradebook Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <style>
+    /* Google Fonts for modern look */
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #e0f7fa, #fff9c4);
+      animation: gradientBG 15s ease infinite;
     }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
     h2 {
-      color: #1e40af;
+      text-align: center;
+      color: #ffd700; /* golden */
+      margin-bottom: 30px;
+      font-size: 2em;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+      animation: fadeInDown 1s ease forwards;
+      opacity: 0;
     }
+
+    @keyframes fadeInDown {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     .card {
-      background: #fff;
-      padding: 20px;
-      max-width: 450px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    input, select {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      padding: 30px;
       width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border: 1px solid #cbd5e1;
-      border-radius: 5px;
+      max-width: 500px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.3);
+      color: #000;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #ffd700;
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 8px #ffd700;
+    }
+
     button {
       width: 100%;
-      background: #2563eb;
-      color: #fff;
+      padding: 12px;
+      margin-top: 12px;
       border: none;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00bfff, #ffd700);
+      color: #fff;
+      font-size: 1em;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
+
     button:hover {
-      background: #1e40af;
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
+
     #result {
-      margin-top: 10px;
+      margin-top: 15px;
       font-weight: bold;
-      color: green;
+      text-align: center;
+      color: #ffd700;
+      text-shadow: 0 0 4px rgba(0,0,0,0.3);
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
     }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
   </style>
 </head>
-
 <body>
 
-<h2>📘 Gradebook Management</h2>
+  <div>
+    <h2>📘 Gradebook Management</h2>
+    <div class="card">
+      <input type="text" id="studentName" placeholder="Student Name">
+      <input type="text" id="studentClass" placeholder="Class">
+      <input type="text" id="studentId" placeholder="Student ID">
+      <input type="text" id="subject" placeholder="Subject">
 
-<div class="card">
-  <input type="text" id="studentId" placeholder="Student ID">
-  <input type="text" id="subject" placeholder="Subject">
+      <input type="number" id="assignment" placeholder="Assignment Marks">
+      <input type="number" id="test" placeholder="Class Test Marks">
+      <input type="number" id="exam" placeholder="Exam Marks">
 
-  <input type="number" id="assignment" placeholder="Assignment Marks">
-  <input type="number" id="test" placeholder="Class Test Marks">
-  <input type="number" id="exam" placeholder="Exam Marks">
+      <button onclick="saveMarks()">Save Marks</button>
+      <p id="result"></p>
+    </div>
+  </div>
 
-  <button onclick="saveMarks()">Save Marks</button>
-  <p id="result"></p>
-</div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="gradebook.js"></script>
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function saveMarks() {
+      const name = document.getElementById('studentName').value.trim();
+      const studentClass = document.getElementById('studentClass').value.trim();
+      const studentId = document.getElementById('studentId').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const assignment = document.getElementById('assignment').value;
+      const test = document.getElementById('test').value;
+      const exam = document.getElementById('exam').value;
+
+      if (!name || !studentClass || !studentId || !subject) {
+        document.getElementById('result').innerText = "Please fill all required fields!";
+        document.getElementById('result').style.opacity = 1;
+        return;
+      }
+
+      const newLogRef = database.ref('logbook/' + studentId + '/' + subject).push();
+
+      newLogRef.set({
+        studentName: name,
+        class: studentClass,
+        assignmentMarks: Number(assignment),
+        testMarks: Number(test),
+        examMarks: Number(exam),
+        timestamp: new Date().toISOString()
+      })
+      .then(() => {
+        const res = document.getElementById('result');
+        res.innerText = "Marks saved successfully!";
+        res.style.opacity = 1;
+
+        // Clear inputs
+        ['studentName','studentClass','studentId','subject','assignment','test','exam'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+      })
+      .catch(error => {
+        const res = document.getElementById('result');
+        res.innerText = "Error: " + error.message;
+        res.style.opacity = 1;
+      });
+    }
+  </script>
 
 </body>
 </html>
