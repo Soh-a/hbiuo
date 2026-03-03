@@ -6,66 +6,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+*{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:Arial;
-  background:#f1f5f9;
+  font-family:'Poppins',sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#e0f7ff,#fff8dc);
+  animation:bgMove 15s ease infinite;
 }
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* HEADER */
 .header{
-  background:#1e40af;
-  color:#fff;
-  padding:15px 20px;
+  margin:20px;
+  padding:18px 25px;
+  border-radius:18px;
+  background:rgba(255,255,255,.25);
+  backdrop-filter:blur(15px);
   display:flex;
   justify-content:space-between;
   align-items:center;
+  box-shadow:0 8px 25px rgba(0,0,0,.12);
+  animation:fadeDown .8s ease forwards;
 }
+.header div:first-child{
+  font-size:20px;
+  font-weight:600;
+  color:#0f3c78;
+}
+#teacherName{
+  color:#b8860b;
+  font-weight:600;
+}
+
+@keyframes fadeDown{
+  from{opacity:0;transform:translateY(-20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* CONTROLS */
 .controls{
-  background:#fff;
-  padding:15px 20px;
+  margin:20px;
+  padding:20px;
+  border-radius:18px;
+  background:rgba(255,255,255,.25);
+  backdrop-filter:blur(15px);
   display:flex;
   gap:15px;
-  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  box-shadow:0 8px 25px rgba(0,0,0,.1);
 }
+
 select,input{
-  padding:10px;
-  border-radius:6px;
-  border:1px solid #cbd5e1;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.4);
+  font-size:14px;
 }
+select:focus,input:focus{
+  outline:none;
+  border-color:#d4af37;
+  box-shadow:0 0 6px #d4af37;
+}
+
+/* TABLE */
 table{
   width:calc(100% - 40px);
   margin:20px;
-  background:#fff;
   border-collapse:collapse;
-  box-shadow:0 6px 15px rgba(0,0,0,.08);
+  background:rgba(255,255,255,.3);
+  backdrop-filter:blur(16px);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
+  animation:fadeUp .8s ease forwards;
 }
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
 th,td{
-  padding:12px;
-  border-bottom:1px solid #e5e7eb;
+  padding:14px;
   text-align:center;
 }
 th{
-  background:#e0e7ff;
-  color:#1e3a8a;
+  background:linear-gradient(135deg,#ccefff,#ffeaa7);
+  color:#0f3c78;
 }
-.present{ color:green; font-weight:bold; }
-.absent{ color:red; font-weight:bold; }
+tr{
+  transition:.3s;
+}
+tr:hover{
+  background:rgba(255,255,255,.35);
+}
+
+.present{color:#16a34a;font-weight:600}
+.absent{color:#dc2626;font-weight:600}
+
+/* BUTTONS */
 button{
   padding:6px 14px;
   border:none;
-  border-radius:6px;
+  border-radius:10px;
   cursor:pointer;
+  transition:.3s;
 }
-.btn-present{ background:#16a34a; color:#fff; }
-.btn-absent{ background:#dc2626; color:#fff; }
+.btn-present{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;
+}
+.btn-absent{
+  background:linear-gradient(135deg,#ef4444,#b91c1c);
+  color:#fff;
+}
+button:hover{
+  transform:scale(1.1);
+}
+
+/* FOOTER */
 .footer{
-  padding:20px;
+  margin:20px;
   text-align:right;
 }
 .save-btn{
-  background:#1e40af;
+  padding:12px 22px;
+  font-size:15px;
+  font-weight:600;
+  border-radius:14px;
+  background:linear-gradient(135deg,#38bdf8,#d4af37);
   color:#fff;
-  padding:10px 18px;
-  border-radius:6px;
+  box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
+.save-btn:hover{
+  transform:translateY(-3px);
 }
 </style>
 </head>
@@ -108,126 +190,88 @@ button{
   <button class="save-btn" onclick="saveAttendance()">💾 Save Attendance</button>
 </div>
 
-<!-- Firebase v8 -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-/* ===============================
-   🔐 LOGIN CHECK (FIXED & SAFE)
-================================ */
+/* LOGIN CHECK */
 const role = localStorage.getItem("erpRole");
-
-if (role !== "teacher") {
+if(role !== "teacher"){
   alert("Teacher login required");
-  window.location.href = "login.html";
+  location.href="login.html";
 }
+teacherName.innerText="Hi, "+(localStorage.getItem("teacherName")||"Teacher");
 
-/* Teacher name */
-document.getElementById("teacherName").innerText =
-  "Hi, " + (localStorage.getItem("teacherName") || "Teacher");
-
-/* ===============================
-   🔥 FIREBASE CONFIG
-================================ */
+/* FIREBASE */
 firebase.initializeApp({
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271"
+  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain:"students-6e271.firebaseapp.com",
+  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
+  projectId:"students-6e271"
 });
+const db=firebase.database();
+let students={};
 
-const db = firebase.database();
-let students = {};
-
-/* ===============================
-   📥 LOAD STUDENTS
-================================ */
+/* LOAD STUDENTS */
 function loadStudents(){
-  const cls = document.getElementById("classSelect").value;
-  const tbody = document.getElementById("studentRows");
-  tbody.innerHTML = "";
-  students = {};
-
+  const cls=classSelect.value;
+  studentRows.innerHTML="";
+  students={};
   if(!cls) return;
 
-  db.ref("/").once("value", snap=>{
-    let roll = 1;
-
-    snap.forEach(child=>{
-      const s = child.val();
-      if(s && s.name && s.class === cls){
-        students[child.key] = {
-          roll: roll++,
-          name: s.name,
-          status: "Present"
-        };
+  db.ref("/").once("value",snap=>{
+    let roll=1;
+    snap.forEach(c=>{
+      const s=c.val();
+      if(s && s.name && s.class===cls){
+        students[c.key]={roll:roll++,name:s.name,status:"Present"};
       }
     });
 
-    if(Object.keys(students).length === 0){
-      tbody.innerHTML =
-        `<tr><td colspan="4">❌ No students found</td></tr>`;
+    if(!Object.keys(students).length){
+      studentRows.innerHTML=`<tr><td colspan="4">❌ No students found</td></tr>`;
       return;
     }
 
     Object.keys(students).forEach(id=>{
-      const s = students[id];
-      tbody.innerHTML += `
-        <tr>
-          <td>${s.roll}</td>
-          <td>${s.name}</td>
-          <td id="status-${id}" class="present">Present</td>
-          <td>
-            <button class="btn-present" onclick="mark('${id}','Present')">P</button>
-            <button class="btn-absent" onclick="mark('${id}','Absent')">A</button>
-          </td>
-        </tr>
-      `;
+      const s=students[id];
+      studentRows.innerHTML+=`
+      <tr>
+        <td>${s.roll}</td>
+        <td>${s.name}</td>
+        <td id="status-${id}" class="present">Present</td>
+        <td>
+          <button class="btn-present" onclick="mark('${id}','Present')">P</button>
+          <button class="btn-absent" onclick="mark('${id}','Absent')">A</button>
+        </td>
+      </tr>`;
     });
   });
 }
 
-/* ===============================
-   ✅ MARK ATTENDANCE
-================================ */
+/* MARK */
 function mark(id,status){
-  students[id].status = status;
-  const cell = document.getElementById("status-"+id);
-  cell.innerText = status;
-  cell.className = status === "Present" ? "present" : "absent";
+  students[id].status=status;
+  const c=document.getElementById("status-"+id);
+  c.innerText=status;
+  c.className=status==="Present"?"present":"absent";
 }
 
-/* ===============================
-   💾 SAVE ATTENDANCE
-================================ */
+/* SAVE */
 function saveAttendance(){
-  const cls = document.getElementById("classSelect").value;
-  const date = document.getElementById("attendanceDate").value;
-
-  if(!cls || !date){
-    alert("Select class and date");
-    return;
+  if(!classSelect.value||!attendanceDate.value){
+    alert("Select class and date");return;
   }
-
-  let updates = {};
+  let up={};
   Object.keys(students).forEach(id=>{
-    updates[`attendance/${cls}/${date}/${id}`] = {
-      name: students[id].name,
-      status: students[id].status
-    };
+    up[`attendance/${classSelect.value}/${attendanceDate.value}/${id}`]=students[id];
   });
-
-  db.ref().update(updates).then(()=>{
-    alert("✅ Attendance saved successfully");
-  });
+  db.ref().update(up).then(()=>alert("✅ Attendance saved"));
 }
 
-/* ===============================
-   📅 INIT DATE
-================================ */
-document.getElementById("attendanceDate").value =
-  new Date().toISOString().split("T")[0];
+/* INIT DATE */
+attendanceDate.value=new Date().toISOString().split("T")[0];
 </script>
 
 </body>
