@@ -6,14 +6,83 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9}
-.header{background:#2e7d32;color:#fff;padding:15px;font-size:20px;text-align:center}
-.welcome{text-align:center;padding:15px;font-size:18px;color:#333}
-.dashboard{padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
-.card{background:#fff;border-radius:12px;padding:25px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.1);cursor:pointer}
-.card:hover{transform:translateY(-4px)}
-.logout{text-align:center;margin:20px}
-.logout button{background:#c62828;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer}
+/* Base styling */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #e0f0ff; /* Light blue background */
+}
+
+/* Header */
+.header {
+    background: linear-gradient(90deg, #0077b6, #90e0ef); /* Blue gradient */
+    color: #ffd60a; /* Golden text */
+    padding: 18px;
+    font-size: 22px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Welcome text */
+.welcome {
+    text-align: center;
+    padding: 18px;
+    font-size: 18px;
+    color: #023e8a; /* Dark blue text */
+}
+
+/* Dashboard grid */
+.dashboard {
+    padding: 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+}
+
+/* Card styling */
+.card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 17px;
+    color: #023e8a;
+    transition: all 0.3s ease;
+    border-top: 4px solid #ffd60a; /* golden accent */
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+    background: #caf0f8; /* light blue hover */
+}
+
+/* Logout button */
+.logout {
+    text-align: center;
+    margin: 25px;
+}
+
+.logout button {
+    background: #0077b6;
+    color: #ffd60a;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.logout button:hover {
+    background: #023e8a;
+    color: #ffe066;
+}
 </style>
 </head>
 
@@ -39,6 +108,7 @@ if(
   <div class="card" onclick="location.href='attendance.html'">Attendance</div>
   <div class="card" onclick="location.href='logbook.html'">Daily Class Record</div>
   <div class="card" onclick="location.href='Notification.html'">Notifications</div>
+  <div class="card" onclick="location.href='gradebook.html'">Grade Book</div> <!-- New Card -->
 </div>
 
 <div class="logout">
