@@ -1,14 +1,13 @@
 /* =========================
    🔐 AUTH GUARD (DV ONLY)
 ========================= */
-const isLoggedIn = localStorage.getItem("isLoggedIn");
+ const isLoggedIn = localStorage.getItem("isLoggedIn");
 const role = (localStorage.getItem("erpRole") || "").toLowerCase();
 
-if (isLoggedIn !== "yes" || role !== "dv") {
+if (isLoggedIn !== "true" || role !== "dv") {
   alert("Unauthorized access");
   window.location.replace("login.html");
 }
-
 /* =========================
    🔥 FIREBASE INIT
 ========================= */
