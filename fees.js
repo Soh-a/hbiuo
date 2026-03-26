@@ -3,7 +3,13 @@ import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1
 
 // 🔹 Change your Firebase URL here
 const firebaseConfig = {
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com/"
+   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271",
+  storageBucket: "students-6e271.firebasestorage.app",
+  messagingSenderId: "336382170224",
+  appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
