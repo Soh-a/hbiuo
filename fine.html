@@ -17,6 +17,7 @@ button{background:#dc2626;color:#fff;font-weight:bold;border:none;cursor:pointer
 .error{color:red;margin-top:10px}
 .month-box{margin-top:15px;background:#f8fafc;padding:15px;border-radius:10px}
 .month{display:flex;justify-content:space-between;padding:6px 0}
+.paid{color:gray;text-decoration:line-through}
 .select-all{margin-bottom:10px}
 </style>
 </head>
@@ -80,14 +81,23 @@ function showMonths(){
 
   html += `
   <div class="select-all">
-    <label><input type="checkbox" onclick="toggleAll(this)"> Select All Months</label>
+    <label><input type="checkbox" onclick="toggleAll(this)"> Select All (Unpaid Only)</label>
   </div>`;
 
   for(let m in studentData.fees){
-    html += `
-    <div class="month">
-      <label><input type="checkbox" class="monthCheck" value="${m}"> ${m.toUpperCase()}</label>
-    </div>`;
+    const fee = studentData.fees[m];
+
+    if(fee.status === "paid"){
+      html += `
+      <div class="month paid">
+        <span>${m.toUpperCase()} (PAID)</span>
+      </div>`;
+    } else {
+      html += `
+      <div class="month">
+        <label><input type="checkbox" class="monthCheck" value="${m}"> ${m.toUpperCase()}</label>
+      </div>`;
+    }
   }
 
   html += `</div>`;
@@ -111,7 +121,7 @@ function applyFine(){
   let selected = document.querySelectorAll(".monthCheck:checked");
 
   if(selected.length === 0){
-    msg.innerHTML = "<p class='error'>⚠️ Select at least one month</p>";
+    msg.innerHTML = "<p class='error'>⚠️ Select at least one unpaid month</p>";
     return;
   }
 
@@ -120,7 +130,7 @@ function applyFine(){
     db.ref(path).set(Number(fine));
   });
 
-  msg.innerHTML = "<p class='success'>✅ Fine Applied to Selected Months</p>";
+  msg.innerHTML = "<p class='success'>✅ Fine Applied to Unpaid Months Only</p>";
 }
 
 </script>
