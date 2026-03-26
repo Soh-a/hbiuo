@@ -3,51 +3,122 @@
 <head>
   <title>Monthly Fee Summary</title>
   <style>
-    /* General body styling */
-    body { 
-      font-family: Arial, sans-serif; 
-      margin: 40px; 
-      background: #f5f5f5; 
+    body{
+      font-family:Segoe UI;
+      margin:0;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    /* Heading */
-    h2 { 
-      text-align: center; 
-      margin-bottom: 30px; 
-      color: #333;
+    .card{
+      background:rgba(255,255,255,0.15);
+      backdrop-filter:blur(15px);
+      padding:30px;
+      border-radius:16px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.2);
+      width:350px;
+      color:#fff;
+      text-align:center;
     }
 
-    /* Summary box */
-    .summary { 
-      text-align: center; 
-      font-size: 20px; 
-      background: #fff; 
-      padding: 20px; 
-      border-radius: 8px; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      max-width: 400px; 
-      margin: 0 auto; 
+    h2{
+      margin-bottom:20px;
     }
 
-    .summary p { 
-      margin: 15px 0; 
+    .box{
+      background:rgba(255,255,255,0.1);
+      padding:15px;
+      margin:10px 0;
+      border-radius:10px;
     }
 
-    .summary b { 
-      color: #4CAF50; 
-      font-size: 22px;
+    .amount{
+      font-size:24px;
+      font-weight:bold;
+      margin-top:5px;
     }
+
+    .collected{color:#4ade80}
+    .pending{color:#facc15}
+
+    button{
+      margin-top:15px;
+      padding:10px;
+      width:100%;
+      border:none;
+      border-radius:10px;
+      background:#2563eb;
+      color:#fff;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
   </style>
 </head>
 <body>
 
-<h2>Monthly Fee Summary</h2>
-<div class="summary">
-  <p>Total Fee Collected: <b id="collected">₹0</b></p>
-  <p>Total Fee To Be Collected: <b id="toCollect">₹0</b></p>
+<div class="card">
+  <h2>📊 Monthly Fee Summary</h2>
+
+  <div class="box">
+    Total Collected
+    <div class="amount collected" id="collected">₹0</div>
+  </div>
+
+  <div class="box">
+    Pending Collection
+    <div class="amount pending" id="toCollect">₹0</div>
+  </div>
+
+  <button onclick="refreshData()">Refresh</button>
 </div>
 
-<!-- Link to separate JS file -->
-<script type="module" src="fees.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain:"students-6e271.firebaseapp.com",
+  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
+  projectId:"students-6e271"
+});
+
+const db = firebase.database();
+
+function refreshData(){
+  let totalCollected = 0;
+  let totalPending = 0;
+
+  db.ref().once("value",snap=>{
+    const data = snap.val();
+
+    for(let mobile in data){
+      let s = data[mobile];
+
+      for(let m in s.fees){
+        let fee = Number(s.monthlyfee);
+        let fine = Number(s.fees[m].fine || 0);
+
+        if(s.fees[m].status === "paid"){
+          totalCollected += (fee + fine);
+        }else{
+          totalPending += (fee + fine);
+        }
+      }
+    }
+
+    document.getElementById("collected").innerText = "₹" + totalCollected;
+    document.getElementById("toCollect").innerText = "₹" + totalPending;
+  });
+}
+
+// auto load
+refreshData();
+</script>
+
 </body>
 </html>
