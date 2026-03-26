@@ -8,16 +8,46 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-body{font-family:Segoe UI;background:#eef2ff}
-.container{max-width:700px;margin:40px auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
-h2{text-align:center;color:#1e3a8a}
-input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
-button{background:#dc2626;color:#fff;font-weight:bold;border:none;cursor:pointer}
-.success{color:green;margin-top:10px}
-.error{color:red;margin-top:10px}
-.month-box{margin-top:15px;background:#f8fafc;padding:15px;border-radius:10px}
-.month{display:flex;justify-content:space-between;padding:6px 0}
-.paid{color:gray;text-decoration:line-through}
+body{
+  font-family:Segoe UI;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  min-height:100vh;
+}
+.container{
+  max-width:750px;
+  margin:40px auto;
+  padding:25px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(15px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.2);
+  color:#fff;
+}
+h2{text-align:center}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+}
+input{background:rgba(255,255,255,0.2);color:#fff}
+input::placeholder{color:#eee}
+button{background:#ff4d4d;color:#fff;font-weight:bold;cursor:pointer}
+.month-box{
+  margin-top:15px;
+  padding:15px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.1);
+}
+.month{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+}
+.paid{color:#ccc;text-decoration:line-through}
+.success{color:#4ade80;margin-top:10px}
+.error{color:#f87171;margin-top:10px}
 .select-all{margin-bottom:10px}
 </style>
 </head>
@@ -25,13 +55,12 @@ button{background:#dc2626;color:#fff;font-weight:bold;border:none;cursor:pointer
 <body>
 
 <div class="container">
-  <h2>Apply Fine to Student</h2>
+  <h2>Apply Fine (Modern Panel)</h2>
 
-  <input id="mobile" placeholder="Enter Student Mobile Number">
-  <button onclick="fetchStudent()">Fetch Student</button>
+  <input id="mobile" placeholder="Enter Student Mobile (leave empty for ALL students)">
+  <button onclick="fetchStudent()">Fetch / Load Students</button>
 
   <div id="studentInfo"></div>
-
   <div id="monthsBox"></div>
 
   <input id="fineAmount" type="number" placeholder="Enter Fine Amount (₹)">
@@ -42,95 +71,119 @@ button{background:#dc2626;color:#fff;font-weight:bold;border:none;cursor:pointer
 </div>
 
 <script>
-
 firebase.initializeApp({
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271"
+  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain:"students-6e271.firebaseapp.com",
+  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
+  projectId:"students-6e271"
 });
 
 const db = firebase.database();
-let studentData = {};
+let students = {};
 let mobileNo = "";
 
 function fetchStudent(){
   mobileNo = document.getElementById("mobile").value.trim();
-  msg.innerHTML = "";
-  monthsBox.innerHTML = "";
+  msg.innerHTML="";
 
-  db.ref(mobileNo).once("value", snap=>{
-    if(!snap.exists()){
-      studentInfo.innerHTML = "<p class='error'>❌ Student not found</p>";
-      return;
-    }
-
-    studentData = snap.val();
-
-    studentInfo.innerHTML = `
-      <p><b>Name:</b> ${studentData.name}</p>
-      <p><b>Class:</b> ${studentData.class}</p>
-    `;
-
-    showMonths();
-  });
+  if(mobileNo){
+    db.ref(mobileNo).once("value",snap=>{
+      if(!snap.exists()){
+        studentInfo.innerHTML="<p class='error'>❌ Student not found</p>";
+        return;
+      }
+      students = {[mobileNo]: snap.val()};
+      render();
+    });
+  }else{
+    db.ref().once("value",snap=>{
+      students = snap.val() || {};
+      render();
+    });
+  }
 }
 
-function showMonths(){
-  let html = `<div class="month-box">`;
+function render(){
+  let html="";
 
-  html += `
-  <div class="select-all">
-    <label><input type="checkbox" onclick="toggleAll(this)"> Select All (Unpaid Only)</label>
+  html += `<div class='select-all'>
+    <label><input type='checkbox' onclick='toggleAllStudents(this)'> Select All Students</label>
   </div>`;
 
-  for(let m in studentData.fees){
-    const fee = studentData.fees[m];
+  html += `<div class='select-all'>
+    <label><input type='checkbox' onclick='toggleAllMonths(this)'> Select All Months (Unpaid)</label>
+  </div>`;
 
-    if(fee.status === "paid"){
-      html += `
-      <div class="month paid">
-        <span>${m.toUpperCase()} (PAID)</span>
-      </div>`;
-    } else {
-      html += `
-      <div class="month">
-        <label><input type="checkbox" class="monthCheck" value="${m}"> ${m.toUpperCase()}</label>
-      </div>`;
+  html += `<div class='month-box'>`;
+
+  for(let mob in students){
+    let s = students[mob];
+
+    html += `<div style='margin-bottom:10px'>
+      <label>
+        <input type='checkbox' class='studentCheck' value='${mob}'>
+        <b>${s.name} (${s.class})</b>
+      </label>`;
+
+    for(let m in s.fees){
+      let f = s.fees[m];
+
+      if(f.status === "paid"){
+        html += `<div class='month paid'>${m.toUpperCase()} (PAID)</div>`;
+      }else{
+        html += `
+        <div class='month'>
+          <label>
+            <input type='checkbox' class='monthCheck' data-student='${mob}' value='${m}'> ${m.toUpperCase()}
+          </label>
+        </div>`;
+      }
     }
+
+    html += `</div>`;
   }
 
   html += `</div>`;
+
   monthsBox.innerHTML = html;
 }
 
-function toggleAll(source){
-  document.querySelectorAll('.monthCheck').forEach(cb=>{
-    cb.checked = source.checked;
-  });
+function toggleAllStudents(source){
+  document.querySelectorAll('.studentCheck').forEach(cb=>cb.checked = source.checked);
+}
+
+function toggleAllMonths(source){
+  document.querySelectorAll('.monthCheck').forEach(cb=>cb.checked = source.checked);
 }
 
 function applyFine(){
   const fine = document.getElementById("fineAmount").value;
 
-  if(!mobileNo || !fine){
-    msg.innerHTML = "<p class='error'>⚠️ Fill all fields</p>";
+  if(!fine){
+    msg.innerHTML="<p class='error'>⚠️ Enter fine</p>";
     return;
   }
 
-  let selected = document.querySelectorAll(".monthCheck:checked");
+  let months = document.querySelectorAll('.monthCheck:checked');
+  let studentsSelected = document.querySelectorAll('.studentCheck:checked');
 
-  if(selected.length === 0){
-    msg.innerHTML = "<p class='error'>⚠️ Select at least one unpaid month</p>";
+  if(months.length===0 || studentsSelected.length===0){
+    msg.innerHTML="<p class='error'>⚠️ Select students & months</p>";
     return;
   }
 
-  selected.forEach(cb=>{
-    const path = `${mobileNo}/fees/${cb.value}/fine`;
-    db.ref(path).set(Number(fine));
+  studentsSelected.forEach(st=>{
+    let mob = st.value;
+
+    months.forEach(m=>{
+      if(m.dataset.student === mob){
+        let path = `${mob}/fees/${m.value}/fine`;
+        db.ref(path).set(Number(fine));
+      }
+    });
   });
 
-  msg.innerHTML = "<p class='success'>✅ Fine Applied to Unpaid Months Only</p>";
+  msg.innerHTML="<p class='success'>✅ Fine Applied Successfully</p>";
 }
 
 </script>
