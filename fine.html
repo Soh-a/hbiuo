@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Apply Fine - Sai DRS Kids</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+body{font-family:Segoe UI;background:#eef2ff}
+.container{max-width:700px;margin:40px auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
+h2{text-align:center;color:#1e3a8a}
+input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+button{background:#dc2626;color:#fff;font-weight:bold;border:none;cursor:pointer}
+.success{color:green;margin-top:10px}
+.error{color:red;margin-top:10px}
+.month-box{margin-top:15px;background:#f8fafc;padding:15px;border-radius:10px}
+.month{display:flex;justify-content:space-between;padding:6px 0}
+.select-all{margin-bottom:10px}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Apply Fine to Student</h2>
+
+  <input id="mobile" placeholder="Enter Student Mobile Number">
+  <button onclick="fetchStudent()">Fetch Student</button>
+
+  <div id="studentInfo"></div>
+
+  <div id="monthsBox"></div>
+
+  <input id="fineAmount" type="number" placeholder="Enter Fine Amount (₹)">
+
+  <button onclick="applyFine()">Apply Fine</button>
+
+  <div id="msg"></div>
+</div>
+
+<script>
+
+firebase.initializeApp({
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271"
+});
+
+const db = firebase.database();
+let studentData = {};
+let mobileNo = "";
+
+function fetchStudent(){
+  mobileNo = document.getElementById("mobile").value.trim();
+  msg.innerHTML = "";
+  monthsBox.innerHTML = "";
+
+  db.ref(mobileNo).once("value", snap=>{
+    if(!snap.exists()){
+      studentInfo.innerHTML = "<p class='error'>❌ Student not found</p>";
+      return;
+    }
+
+    studentData = snap.val();
+
+    studentInfo.innerHTML = `
+      <p><b>Name:</b> ${studentData.name}</p>
+      <p><b>Class:</b> ${studentData.class}</p>
+    `;
+
+    showMonths();
+  });
+}
+
+function showMonths(){
+  let html = `<div class="month-box">`;
+
+  html += `
+  <div class="select-all">
+    <label><input type="checkbox" onclick="toggleAll(this)"> Select All Months</label>
+  </div>`;
+
+  for(let m in studentData.fees){
+    html += `
+    <div class="month">
+      <label><input type="checkbox" class="monthCheck" value="${m}"> ${m.toUpperCase()}</label>
+    </div>`;
+  }
+
+  html += `</div>`;
+  monthsBox.innerHTML = html;
+}
+
+function toggleAll(source){
+  document.querySelectorAll('.monthCheck').forEach(cb=>{
+    cb.checked = source.checked;
+  });
+}
+
+function applyFine(){
+  const fine = document.getElementById("fineAmount").value;
+
+  if(!mobileNo || !fine){
+    msg.innerHTML = "<p class='error'>⚠️ Fill all fields</p>";
+    return;
+  }
+
+  let selected = document.querySelectorAll(".monthCheck:checked");
+
+  if(selected.length === 0){
+    msg.innerHTML = "<p class='error'>⚠️ Select at least one month</p>";
+    return;
+  }
+
+  selected.forEach(cb=>{
+    const path = `${mobileNo}/fees/${cb.value}/fine`;
+    db.ref(path).set(Number(fine));
+  });
+
+  msg.innerHTML = "<p class='success'>✅ Fine Applied to Selected Months</p>";
+}
+
+</script>
+
+</body>
+</html>
