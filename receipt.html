@@ -2,182 +2,159 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Fee Receipt – Sai DRS Kids</title>
+<title>Modern Fee Receipt</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{
-  font-family:Segoe UI, sans-serif;
-  background:#f1f5f9;
-}
-.container{
-  max-width:800px;
-  margin:30px auto;
-  background:#fff;
-  padding:25px;
-  border-radius:10px;
-}
-h2{text-align:center;color:#1e40af}
-input,button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-}
-button{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-  border-radius:6px;
-}
-.month-box{
-  margin-top:15px;
-  border:1px solid #ddd;
-  padding:15px;
-  border-radius:6px;
-}
-.month{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-.generate{background:#16a34a}
+body{font-family:Segoe UI;background:#eef2ff}
+.container{max-width:800px;margin:30px auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
+h2{text-align:center;color:#1e3a8a}
+input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+button{background:#2563eb;color:#fff;font-weight:bold;border:none}
+.month-box{margin-top:20px;padding:15px;border-radius:10px;background:#f8fafc}
+.month{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ccc}
+.generate{background:#16a34a;margin-top:15px}
 </style>
 </head>
 
 <body>
-
 <div class="container">
-  <h2>Fee Receipt Generator</h2>
+<h2>Modern Fee Receipt Generator</h2>
 
-  <input id="mobile" placeholder="Enter Student Mobile Number">
-  <button onclick="fetchStudent()">Check Paid Months</button>
+<input id="mobile" placeholder="Enter Mobile Number">
+<button onclick="fetchStudent()">Fetch Student</button>
 
-  <div id="studentInfo"></div>
-  <div id="monthsBox"></div>
+<div id="studentInfo"></div>
+<div id="monthsBox"></div>
 </div>
 
 <script>
-/* 🔥 FIREBASE CONFIG */
 firebase.initializeApp({
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271"
+  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain:"students-6e271.firebaseapp.com",
+  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
+  projectId:"students-6e271"
 });
 
 const db = firebase.database();
-let studentData = {};
-let mobileNo = "";
+let studentData = {}, mobileNo="";
 
-/* 🔍 FETCH STUDENT FROM ROOT */
 function fetchStudent(){
   mobileNo = mobile.value.trim();
-  studentInfo.innerHTML = "Loading...";
-  monthsBox.innerHTML = "";
+  studentInfo.innerHTML="Loading...";
+  monthsBox.innerHTML="";
 
-  db.ref(mobileNo).once("value", snap=>{
+  db.ref(mobileNo).once("value",snap=>{
     if(!snap.exists()){
-      studentInfo.innerHTML = "❌ Student not found";
+      studentInfo.innerHTML="❌ Not found";
       return;
     }
 
     studentData = snap.val();
 
     studentInfo.innerHTML = `
-      <b>Name:</b> ${studentData.name}<br>
-      <b>Class:</b> ${studentData.class}<br>
-      <b>Mobile:</b> ${mobileNo}
-    `;
+    <b>Name:</b> ${studentData.name}<br>
+    <b>Class:</b> ${studentData.class}<br>`;
 
-    showPaidMonths();
+    showMonths();
   });
 }
 
-/* 📆 SHOW PAID MONTHS */
-function showPaidMonths(){
-  let html = `<div class="month-box"><b>Select Paid Months</b><br><br>`;
-  let found = false;
+function showMonths(){
+  let html = `<div class="month-box"><b>Select Months</b>`;
 
   for(let m in studentData.fees){
-    if(studentData.fees[m].status === "paid"){
-      found = true;
-      const amt = Number(studentData.monthlyfee) + Number(studentData.fees[m].fine || 0);
+    if(studentData.fees[m].status==="paid"){
+      const amt = Number(studentData.monthlyfee);
       html += `
-        <div class="month">
-          <label><input type="checkbox" value="${m}"> ${m.toUpperCase()}</label>
-          ₹${amt}
-        </div>`;
+      <div class="month">
+      <label><input type="checkbox" value="${m}"> ${m.toUpperCase()}</label>
+      ₹${amt}
+      </div>`;
     }
   }
 
-  if(!found){
-    html += "No paid months available";
-  }else{
-    html += `<button class="generate" onclick="generatePDF()">Generate PDF Receipt</button>`;
-  }
-
-  html += `</div>`;
+  html += `<button class="generate" onclick="generatePDF()">Generate Receipt</button></div>`;
   monthsBox.innerHTML = html;
 }
 
-/* 🧾 GENERATE PDF RECEIPT */
 function generatePDF(){
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p","mm","a4");
+  const doc = new jsPDF();
 
-  // Border
-  doc.rect(10,10,190,277);
+  let y = 20;
 
-  // Header
-  doc.setFontSize(16);
-  doc.text("TUITION FEES RECEIPT",105,25,{align:"center"});
-  doc.setFontSize(11);
-  doc.text("SAI DRS KIDS SCHOOL",105,32,{align:"center"});
-  doc.text("Street, Place, Town – Pincode",105,38,{align:"center"});
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(18);
+  doc.text("SAI DRS KIDS SCHOOL",105,y,{align:"center"});
 
+  y+=6;
   doc.setFontSize(10);
-  doc.text("Date: " + new Date().toLocaleDateString(),150,35);
+  doc.setFont("helvetica","normal");
+  doc.text("(Managed by SAAI Scholars Society)",105,y,{align:"center"});
 
-  let y = 60;
-  const line = (label,value)=>{
-    doc.text(label,15,y);
-    doc.text(value,55,y);
-    doc.line(55,y+1,185,y+1);
-    y+=15;
-  };
+  y+=5;
+  doc.text("Guwahati, Assam",105,y,{align:"center"});
 
-  line("Received from", studentData.name);
-  line("Class", studentData.class);
-  line("Mobile", mobileNo);
+  y+=10;
+  doc.setDrawColor(0);
+  doc.line(20,y,190,y);
 
-  let months = [];
-  let total = 0;
+  y+=10;
+  doc.setFontSize(14);
+  doc.setFont("helvetica","bold");
+  doc.text("TUITION FEE RECEIPT",105,y,{align:"center"});
 
-  document.querySelectorAll("input[type=checkbox]:checked").forEach(cb=>{
-    const f = studentData.fees[cb.value];
-    const amt = Number(studentData.monthlyfee) + Number(f.fine || 0);
-    months.push(cb.value.toUpperCase());
-    total += amt;
+  y+=10;
+  doc.setFontSize(11);
+  doc.setFont("helvetica","normal");
+
+  doc.text(`Date: ${new Date().toLocaleDateString()}`,150,y);
+
+  y+=10;
+  doc.text(`Student Name: ${studentData.name}`,20,y);
+  y+=8;
+  doc.text(`Class: ${studentData.class}`,20,y);
+
+  y+=12;
+  doc.text("Fee Details:",20,y);
+
+  y+=8;
+  doc.setFont("helvetica","bold");
+  doc.text("Month",20,y);
+  doc.text("Amount (₹)",150,y);
+
+  doc.setFont("helvetica","normal");
+
+  let total=0;
+  document.querySelectorAll("input:checked").forEach(cb=>{
+    const amt = Number(studentData.monthlyfee);
+    y+=8;
+    doc.text(cb.value.toUpperCase(),20,y);
+    doc.text(String(amt),150,y);
+    total+=amt;
   });
 
-  line("Being payment of", months.join(", "));
-  line("The sum of", "₹ " + total);
+  y+=12;
+  doc.setFont("helvetica","bold");
+  doc.text(`Total: ₹ ${total}`,150,y);
 
-  doc.line(20,230,90,230);
-  doc.line(120,230,185,230);
-  doc.text("Received By",35,238);
-  doc.text("Signature",145,238);
+  y+=20;
+  doc.setFont("helvetica","normal");
+  doc.text("Payment Mode: Cash / UPI / Bank",20,y);
 
-  doc.save(`Fee_Receipt_${studentData.name}.pdf`);
+  y+=20;
+  doc.line(20,y,80,y);
+  doc.line(120,y,180,y);
+
+  doc.text("Received By",30,y+5);
+  doc.text("Signature",135,y+5);
+
+  doc.save(`Receipt_${studentData.name}.pdf`);
 }
 </script>
-
 </body>
 </html>
