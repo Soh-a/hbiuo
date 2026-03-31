@@ -92,95 +92,137 @@ function numberToWords(num){
 function generatePDF(){
 
   const selected = document.querySelectorAll("input:checked");
-  if(selected.length===0){
-    alert("Select months");
+  if(selected.length === 0){
+    alert("Select at least one month");
     return;
   }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  let y = 15;
-
-  // HEADER
-  doc.setFontSize(14);
-  doc.setFont("helvetica","bold");
-  doc.text("SAI DRS KIDS SCHOOL",105,y,{align:"center"});
-
-  y+=6;
-  doc.setFontSize(10);
-  doc.setFont("helvetica","normal");
-  doc.text("Guwahati, Assam",105,y,{align:"center"});
-
-  y+=10;
-
-  doc.setFontSize(12);
-  doc.text("FEE RECEIPT (2025-26)",105,y,{align:"center"});
-
-  y+=10;
-
   const receiptNo = "FR/" + Math.floor(Math.random()*100000);
-
-  doc.text(`Receipt No: ${receiptNo}`,15,y);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`,140,y);
-
-  y+=10;
-
-  // STUDENT DETAILS
-  doc.text(`Student Name: ${studentData.name}`,15,y);
-  y+=8;
-  doc.text(`Class: ${studentData.class}`,15,y);
-  doc.text(`Mobile: ${mobile.value}`,120,y);
-
-  y+=10;
-
-  // TABLE HEADER
-  doc.setFont("helvetica","bold");
-  doc.text("S.No",15,y);
-  doc.text("Particulars",35,y);
-  doc.text("Month",100,y);
-  doc.text("Amount",150,y);
-
-  y+=5;
-  doc.line(10,y,200,y);
-
-  doc.setFont("helvetica","normal");
+  const today = new Date().toLocaleDateString();
 
   let total = 0;
-  let i=1;
 
   selected.forEach(cb=>{
     const m = cb.value;
-    const amt = Number(studentData.fees[m].amount || studentData.monthlyfee);
+    total += Number(studentData.fees[m].amount || studentData.monthlyfee);
+  });
+
+  const monthsText = Array.from(selected).map(cb=>cb.value.toUpperCase()).join(", ");
+
+  // ========= FUNCTION TO DRAW ONE COPY =========
+  function drawCopy(startY, title){
+
+    let y = startY;
+
+    // SCHOOL HEADER
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(12);
+    doc.text("SAI DRS KIDS SCHOOL",105,y,{align:"center"});
+
+    y+=5;
+    doc.setFontSize(9);
+    doc.setFont("helvetica","normal");
+    doc.text("R.G.B Road, Guwahati, Assam",105,y,{align:"center"});
+
+    y+=6;
+
+    // COPY TITLE
+    doc.setFont("helvetica","bold");
+    doc.text(title,15,y);
+
+    doc.text("FEE RECEIPT (2025-26)",105,y,{align:"center"});
+
+    y+=8;
+
+    // RECEIPT INFO
+    doc.setFont("helvetica","normal");
+    doc.text(`Receipt No: ${receiptNo}`,15,y);
+    doc.text(`Receipt Date: ${today}`,140,y);
+
+    y+=8;
+
+    // STUDENT DETAILS
+    doc.text(`Student Name: ${studentData.name}`,15,y);
+    doc.text(`Class: ${studentData.class}`,140,y);
+
+    y+=7;
+    doc.text(`Mobile: ${mobile.value}`,15,y);
+    doc.text(`Roll No: ______`,140,y);
 
     y+=10;
 
-    doc.text(String(i++),15,y);
-    doc.text("Tuition Fee",35,y);
-    doc.text(m.toUpperCase(),100,y);
-    doc.text(String(amt),150,y);
+    // TABLE HEADER
+    doc.setFont("helvetica","bold");
+    doc.text("S.No",15,y);
+    doc.text("Particulars",30,y);
+    doc.text("Month",100,y);
+    doc.text("Amount",150,y);
 
-    total+=amt;
-  });
+    y+=3;
+    doc.line(10,y,200,y);
 
-  y+=10;
-  doc.line(10,y,200,y);
+    doc.setFont("helvetica","normal");
 
-  y+=10;
-  doc.setFont("helvetica","bold");
-  doc.text(`Total Paid Amount: ₹ ${total}`,120,y);
+    let i = 1;
 
-  y+=10;
-  doc.setFont("helvetica","normal");
-  doc.text(`Amount in Words: INR ${numberToWords(total)} Only`,15,y);
+    selected.forEach(cb=>{
+      const m = cb.value;
+      const amt = Number(studentData.fees[m].amount || studentData.monthlyfee);
 
-  y+=10;
-  doc.text("Payment Mode: Cash / UPI / Online",15,y);
+      y+=8;
+      doc.text(String(i++),15,y);
+      doc.text("Tuition Fee",30,y);
+      doc.text(m.toUpperCase(),100,y);
+      doc.text(String(amt),150,y);
+    });
 
-  y+=20;
-  doc.text("Cashier / Manager",150,y);
+    y+=8;
+    doc.line(10,y,200,y);
 
-  doc.save(`Receipt_${studentData.name}.pdf`);
+    y+=8;
+
+    // TOTAL
+    doc.setFont("helvetica","bold");
+    doc.text(`Total Paid Amount: ₹ ${total}`,120,y);
+
+    y+=8;
+
+    // WORDS
+    doc.setFont("helvetica","normal");
+    doc.text(`Amount In Words: INR ${numberToWords(total)} Only`,15,y);
+
+    y+=8;
+
+    // PAYMENT DETAILS
+    doc.text("Payment Mode: Cash / UPI / Online",15,y);
+    doc.text("Transaction ID: ________",120,y);
+
+    y+=12;
+
+    // NOTE
+    doc.setFontSize(8);
+    doc.text("Note: Fees once paid will not be refunded.",15,y);
+
+    y+=10;
+
+    // SIGN
+    doc.setFontSize(10);
+    doc.text("Cashier/Manager",150,y);
+  }
+
+  // ===== DRAW BOTH COPIES =====
+  drawCopy(15,"Office Copy");
+
+  // Divider line
+  doc.line(10,145,200,145);
+
+  drawCopy(155,"Parent Copy");
+
+  // SAVE
+  doc.save(`Receipt_${studentData.name}_${receiptNo}.pdf`);
 }
 </script>
 
