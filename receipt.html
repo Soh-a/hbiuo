@@ -147,7 +147,7 @@ function generatePDF() {
 
     y += 8;
     doc.setFont("helvetica", "bold");
-    doc.text("FEE RECEIPT (2025-2026)", 105, y, { align: "center" });
+    doc.text("FEE RECEIPT (2026-2027)", 105, y, { align: "center" });
 
     y += 8;
 
@@ -166,7 +166,7 @@ function generatePDF() {
 
     y += 6;
     doc.text(`Contact No: ${mobile.value}`, 15, y);
-    doc.text(`Roll No: ${studentData.rollNo || "____"}`, 140, y);
+    
 
     y += 5;
     doc.setFont("helvetica", "bold");
