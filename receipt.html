@@ -39,12 +39,13 @@ firebase.initializeApp({
 const db = firebase.database();
 let studentData = {};
 
+// FETCH STUDENT
 function fetchStudent(){
   const mobile = document.getElementById("mobile").value;
 
   db.ref(mobile).once("value",snap=>{
     if(!snap.exists()){
-      alert("Not found");
+      alert("Student not found");
       return;
     }
 
@@ -58,6 +59,7 @@ function fetchStudent(){
   });
 }
 
+// SHOW MONTHS
 function showMonths(){
   let html = "";
 
@@ -88,7 +90,7 @@ function numberToWords(num){
   return num;
 }
 
-// PDF
+// GENERATE PDF
 function generatePDF() {
 
   const selected = document.querySelectorAll("input:checked");
@@ -100,8 +102,8 @@ function generatePDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // ===== DATA =====
   const receiptNo = "FR/" + Date.now().toString().slice(-6);
+
   const today = new Date().toLocaleDateString('en-GB', {
     day: '2-digit', month: 'short', year: 'numeric'
   });
@@ -115,9 +117,18 @@ function generatePDF() {
 
     const amt = Number(studentData.fees[cb.value]?.amount || studentData.monthlyfee);
     total += amt;
- const year = new Date().getFullYear().toString().slice(-2);
-const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + year;
-    
+
+    // ✅ FIXED MONTH + ACADEMIC YEAR LOGIC
+    const monthIndex = new Date(cb.value + " 1").getMonth();
+    const year = (monthIndex >= 3) ? "26" : "27"; // Apr–Dec = 26, Jan–Mar = 27
+
+    const monthShort = cb.value.substring(0,3);
+
+    const formattedMonth =
+      monthShort.charAt(0).toUpperCase() +
+      monthShort.slice(1) +
+      "-" + year;
+
     return {
       sno: index + 1,
       particulars: "Tuition Fee",
@@ -126,7 +137,6 @@ const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) 
     };
   });
 
-  // ===== DRAW FUNCTION =====
   function drawCopy(startY, title) {
 
     let y = startY;
@@ -150,7 +160,7 @@ const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) 
 
     y += 8;
 
-    // RECEIPT INFO
+    // INFO
     doc.setFont("helvetica", "normal");
     doc.text(`Receipt No: ${receiptNo}`, 15, y);
     doc.text(`Receipt Date: ${today}`, 140, y);
@@ -160,20 +170,17 @@ const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) 
     doc.text(`Admission No: ${admissionNo}`, 140, y);
 
     y += 6;
-  
     doc.text(`Class: ${studentData.class}`, 140, y);
 
     y += 6;
     doc.text(`Contact No: ${mobile.value}`, 15, y);
-    
 
     y += 5;
     doc.setFont("helvetica", "bold");
     doc.text(title, 195, y, { align: "right" });
 
-    // ===== TABLE =====
+    // TABLE
     y += 5;
-    doc.setLineWidth(0.2);
     doc.line(15, y, 195, y);
 
     y += 5;
@@ -202,7 +209,7 @@ const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) 
     y += 4;
     doc.line(15, y, 195, y);
 
-    // ===== TOTAL =====
+    // TOTAL
     y += 8;
     doc.setFont("helvetica", "bold");
     doc.text(
@@ -210,43 +217,42 @@ const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) 
       195, y, { align: "right" }
     );
 
-    // ===== WORDS =====
+    // WORDS
     y += 6;
-    doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
     doc.text(`Amount In Words: INR ${numberToWords(total)} Only`, 15, y);
 
-    // ===== PAYMENT =====
+    // PAYMENT
     y += 6;
     doc.text(`Payment Mode: ${studentData.paymentMode || "Online"}`, 15, y);
     doc.text(`Transaction No: ${transactionId}`, 110, y);
 
-    // ===== NOTE =====
+    // NOTE
     y += 8;
     doc.setFontSize(8);
     doc.setFont("helvetica", "italic");
     doc.text("Note: Fees once paid will not be refunded or transferred.", 15, y);
 
-    // ===== SIGN =====
+    // SIGN
     y += 10;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Cashier/Manager", 195, y, { align: "right" });
   }
 
-  // ===== DRAW BOTH COPIES =====
+  // TWO COPIES
   drawCopy(20, "Office Copy");
 
-  // Divider (perforation)
-  doc.setLineDashPattern([3, 3], 0);
-  doc.line(10, 148, 200, 148);
-  doc.setLineDashPattern([], 0);
+  doc.setLineDashPattern([3,3],0);
+  doc.line(10,148,200,148);
+  doc.setLineDashPattern([],0);
 
   drawCopy(160, "Parent Copy");
 
-  // SAVE
   doc.save(`Fee_Receipt_${studentData.name}.pdf`);
 }
+
 </script>
 
 </body>
