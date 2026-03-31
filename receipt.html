@@ -115,10 +115,9 @@ function generatePDF() {
 
     const amt = Number(studentData.fees[cb.value]?.amount || studentData.monthlyfee);
     total += amt;
-
-    const monthShort = cb.value.substring(0,3);
-    const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-25";
-
+ const year = new Date().getFullYear().toString().slice(-2);
+const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + year;
+    
     return {
       sno: index + 1,
       particulars: "Tuition Fee",
@@ -161,7 +160,7 @@ function generatePDF() {
     doc.text(`Admission No: ${admissionNo}`, 140, y);
 
     y += 6;
-    doc.text(`Contact Name: ${studentData.parentName || "N/A"}`, 15, y);
+  
     doc.text(`Class: ${studentData.class}`, 140, y);
 
     y += 6;
