@@ -2,36 +2,80 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Modern Fee Receipt</title>
+<title>Fee Book Receipt</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{font-family:Segoe UI;background:#eef2ff}
-.container{max-width:800px;margin:30px auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
-h2{text-align:center;color:#1e3a8a}
-input,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
-button{background:#2563eb;color:#fff;font-weight:bold;border:none}
-.month-box{margin-top:20px;padding:15px;border-radius:10px;background:#f8fafc}
-.month{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ccc}
-.generate{background:#16a34a;margin-top:15px}
+body{
+  font-family:Segoe UI;
+  background:#eef2ff;
+}
+.container{
+  max-width:800px;
+  margin:30px auto;
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+h2{
+  text-align:center;
+  color:#1e3a8a;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+button{
+  background:linear-gradient(135deg,#2563eb,#1e40af);
+  color:#fff;
+  font-weight:bold;
+  border:none;
+  transition:0.3s;
+}
+button:hover{
+  transform:scale(1.05);
+}
+.month-box{
+  margin-top:20px;
+  padding:15px;
+  border-radius:10px;
+  background:#f8fafc;
+}
+.month{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px dashed #ccc;
+}
+.generate{
+  background:linear-gradient(135deg,#16a34a,#15803d);
+}
 </style>
 </head>
 
 <body>
+
 <div class="container">
-<h2>Modern Fee Receipt Generator</h2>
+<h2>Fee Book Receipt Generator</h2>
 
 <input id="mobile" placeholder="Enter Mobile Number">
 <button onclick="fetchStudent()">Fetch Student</button>
 
 <div id="studentInfo"></div>
 <div id="monthsBox"></div>
+
 </div>
 
 <script>
+
+// ================= FIREBASE =================
 firebase.initializeApp({
   apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain:"students-6e271.firebaseapp.com",
@@ -40,121 +84,197 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
-let studentData = {}, mobileNo="";
 
+let studentData = {};
+let mobileNo = "";
+
+// ================= FETCH =================
 function fetchStudent(){
+
   mobileNo = mobile.value.trim();
-  studentInfo.innerHTML="Loading...";
-  monthsBox.innerHTML="";
+
+  if(!mobileNo){
+    alert("Enter mobile number");
+    return;
+  }
+
+  studentInfo.innerHTML = "Loading...";
+  monthsBox.innerHTML = "";
 
   db.ref(mobileNo).once("value",snap=>{
+
     if(!snap.exists()){
-      studentInfo.innerHTML="❌ Not found";
+      studentInfo.innerHTML = "❌ Student not found";
       return;
     }
 
     studentData = snap.val();
 
     studentInfo.innerHTML = `
-    <b>Name:</b> ${studentData.name}<br>
-    <b>Class:</b> ${studentData.class}<br>`;
+      <b>Name:</b> ${studentData.name}<br>
+      <b>Class:</b> ${studentData.class}
+    `;
 
     showMonths();
+
   });
 }
 
+// ================= SHOW MONTHS =================
 function showMonths(){
-  let html = `<div class="month-box"><b>Select Months</b>`;
+
+  let html = `<div class="month-box"><b>Select Paid Months</b>`;
+  let found = false;
 
   for(let m in studentData.fees){
-    if(studentData.fees[m].status==="paid"){
-      const amt = Number(studentData.monthlyfee);
+
+    if(studentData.fees[m].status === "paid"){
+
+      const amt = Number(studentData.fees[m].amount || studentData.monthlyfee);
+      found = true;
+
       html += `
       <div class="month">
-      <label><input type="checkbox" value="${m}"> ${m.toUpperCase()}</label>
-      ₹${amt}
+        <label>
+          <input type="checkbox" value="${m}">
+          ${m.toUpperCase()}
+        </label>
+        ₹${amt}
       </div>`;
     }
   }
 
-  html += `<button class="generate" onclick="generatePDF()">Generate Receipt</button></div>`;
+  if(!found){
+    html += `<p style="color:red">No paid months found</p>`;
+  } else {
+    html += `<button class="generate" onclick="generatePDF()">Generate Receipt</button>`;
+  }
+
+  html += `</div>`;
   monthsBox.innerHTML = html;
 }
 
+// ================= NUMBER TO WORDS =================
+function numberToWords(num){
+
+  const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
+  "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+
+  const b = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+
+  if(num < 20) return a[num];
+  if(num < 100) return b[Math.floor(num/10)] + " " + a[num%10];
+  if(num < 1000) return a[Math.floor(num/100)] + " Hundred " + numberToWords(num%100);
+
+  return num;
+}
+
+// ================= PDF GENERATION =================
 function generatePDF(){
+
+  const selected = document.querySelectorAll("input:checked");
+
+  if(selected.length === 0){
+    alert("Select at least one month");
+    return;
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
   let y = 20;
 
+  const receiptNo = "R-" + Date.now();
+
+  // ===== BORDER =====
+  doc.rect(10,10,190,277);
+
+  // ===== HEADER =====
   doc.setFont("helvetica","bold");
+  doc.setFontSize(14);
+  doc.text("FEE BOOK",105,y,{align:"center"});
+
+  y+=8;
   doc.setFontSize(18);
-  doc.text("SAI DRS KIDS SCHOOL",105,y,{align:"center"});
+  doc.text("SAI DRS KIDS",105,y,{align:"center"});
 
   y+=6;
   doc.setFontSize(10);
   doc.setFont("helvetica","normal");
-  doc.text("(Managed by SAAI Scholars Society)",105,y,{align:"center"});
+  doc.text("(A Unit of Saai Scholar's Society)",105,y,{align:"center"});
 
   y+=5;
-  doc.text("Guwahati, Assam",105,y,{align:"center"});
+  doc.text("R.G.B Road, Junali, Guwahati - 781024",105,y,{align:"center"});
 
+  y+=5;
+  doc.text("Ph: 7980981949",105,y,{align:"center"});
+
+  // Date
+  doc.text(`Date: ${new Date().toLocaleDateString()}`,150,20);
+
+  y+=15;
+
+  // ===== STUDENT INFO =====
+  doc.text(`Student Name: ${studentData.name}`,15,y);
   y+=10;
-  doc.setDrawColor(0);
-  doc.line(20,y,190,y);
 
-  y+=10;
-  doc.setFontSize(14);
-  doc.setFont("helvetica","bold");
-  doc.text("TUITION FEE RECEIPT",105,y,{align:"center"});
-
-  y+=10;
-  doc.setFontSize(11);
-  doc.setFont("helvetica","normal");
-
-  doc.text(`Date: ${new Date().toLocaleDateString()}`,150,y);
-
-  y+=10;
-  doc.text(`Student Name: ${studentData.name}`,20,y);
-  y+=8;
-  doc.text(`Class: ${studentData.class}`,20,y);
+  doc.text(`Class: ${studentData.class}`,15,y);
+  doc.text(`Roll No: ______`,110,y);
 
   y+=12;
-  doc.text("Fee Details:",20,y);
 
-  y+=8;
+  // ===== FEES =====
+  doc.text("Admission Fees: ____________",15,y); y+=10;
+  doc.text("Creche Fees: ____________",15,y); y+=10;
+  doc.text("Others: Tuition Fee",15,y);
+
+  // ===== RIGHT AMOUNT BOX =====
+  doc.rect(140,80,50,90);
+
   doc.setFont("helvetica","bold");
-  doc.text("Month",20,y);
-  doc.text("Amount (₹)",150,y);
+  doc.text("Rs.",150,85);
+  doc.text("P.",180,85);
 
-  doc.setFont("helvetica","normal");
+  let total = 0;
 
-  let total=0;
-  document.querySelectorAll("input:checked").forEach(cb=>{
-    const amt = Number(studentData.monthlyfee);
-    y+=8;
-    doc.text(cb.value.toUpperCase(),20,y);
-    doc.text(String(amt),150,y);
-    total+=amt;
+  selected.forEach(cb=>{
+    const m = cb.value;
+    total += Number(studentData.fees[m].amount || studentData.monthlyfee);
   });
 
-  y+=12;
-  doc.setFont("helvetica","bold");
-  doc.text(`Total: ₹ ${total}`,150,y);
+  doc.text(String(total),150,110);
 
-  y+=20;
   doc.setFont("helvetica","normal");
-  doc.text("Payment Mode: Cash / UPI / Bank",20,y);
 
   y+=20;
-  doc.line(20,y,80,y);
-  doc.line(120,y,180,y);
 
-  doc.text("Received By",30,y+5);
-  doc.text("Signature",135,y+5);
+  // ===== MONTH =====
+  let monthsText = Array.from(selected).map(cb=>cb.value.toUpperCase()).join(", ");
+  doc.text(`For the month of: ${monthsText}`,15,y);
 
-  doc.save(`Receipt_${studentData.name}.pdf`);
+  y+=15;
+
+  // ===== TOTAL =====
+  doc.text("Total:",140,y);
+  doc.text(String(total),170,y);
+
+  y+=15;
+
+  // ===== AMOUNT IN WORDS =====
+  doc.text("Amount in words:",15,y);
+  y+=8;
+
+  doc.text(numberToWords(total) + " only",15,y);
+
+  // ===== SIGNATURE =====
+  doc.line(130,260,190,260);
+  doc.text("Signature",150,268);
+
+  // ===== SAVE =====
+  doc.save(`FeeBook_${studentData.name}_${receiptNo}.pdf`);
 }
+
 </script>
+
 </body>
 </html>
