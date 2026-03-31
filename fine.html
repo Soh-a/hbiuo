@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Apply Fine - Sai DRS Kids</title>
+<title>Fine Manager</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -11,217 +11,160 @@
 body{
   font-family:Segoe UI;
   background:linear-gradient(135deg,#667eea,#764ba2);
-  min-height:100vh;
+  color:#fff;
 }
 .container{
-  max-width:750px;
-  margin:40px auto;
-  padding:25px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.15);
-  backdrop-filter:blur(15px);
-  box-shadow:0 8px 32px rgba(0,0,0,0.2);
-  color:#fff;
-}
-h2{text-align:center}
-
-input,button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:10px;
-  border:none;
-}
-
-input{
-  background:rgba(255,255,255,0.2);
-  color:#fff;
-}
-
-input::placeholder{color:#eee}
-
-button{
-  background:#ff4d4d;
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button:hover{
-  opacity:0.9;
-}
-
-.month-box{
-  margin-top:15px;
-  padding:15px;
-  border-radius:12px;
+  max-width:800px;
+  margin:30px auto;
+  padding:20px;
+  border-radius:15px;
   background:rgba(255,255,255,0.1);
 }
-
-.month{
-  display:flex;
-  justify-content:space-between;
-  padding:6px 0;
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
 }
-
-.paid{
-  color:#ccc;
-  text-decoration:line-through;
+button{background:#ff4d4d;color:#fff;cursor:pointer}
+.success{color:#4ade80}
+.error{color:#f87171}
+.box{
+  margin-top:15px;
+  padding:10px;
+  background:rgba(255,255,255,0.08);
+  border-radius:10px;
 }
-
-.success{color:#4ade80;margin-top:10px}
-.error{color:#f87171;margin-top:10px}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Apply Fine (Smart Panel)</h2>
+<h2>Fine Manager (Simple)</h2>
 
-  <input id="mobile" placeholder="Enter Student Mobile (leave empty for ALL)">
-  <button onclick="fetchStudent()">Fetch Students</button>
+<input id="mobile" placeholder="Enter Mobile (empty = all)">
+<button onclick="loadStudents()">Load Students</button>
 
-  <div id="monthsBox"></div>
+<div id="list"></div>
 
-  <input id="fineAmount" type="number" placeholder="Enter Fine Amount (₹)">
-  <button onclick="applyFine()">Apply Fine</button>
+<input id="fine" type="number" placeholder="Fine Amount ₹">
 
-  <div id="msg"></div>
+<button onclick="autoFine()">⚡ Auto Apply Fine</button>
+<button onclick="removeFine()">❌ Remove Fine</button>
+<button onclick="downloadReport()">📥 Download Report</button>
+
+<div id="msg"></div>
 </div>
 
 <script>
-// 🔥 Firebase Config
 firebase.initializeApp({
   apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain:"students-6e271.firebaseapp.com",
-  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
-  projectId:"students-6e271"
+  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
-let students = {};
+let students={};
 
-// 📥 Fetch Students
-function fetchStudent(){
-  const mobile = document.getElementById("mobile").value.trim();
-  msg.innerHTML="";
-
+// LOAD
+function loadStudents(){
+  let mobile=document.getElementById("mobile").value.trim();
   if(mobile){
-    db.ref(mobile).once("value",snap=>{
-      if(!snap.exists()){
-        monthsBox.innerHTML="<p class='error'>❌ Student not found</p>";
-        return;
-      }
-      students = {[mobile]: snap.val()};
+    db.ref(mobile).once("value",s=>{
+      students={[mobile]:s.val()};
       render();
     });
   }else{
-    db.ref().once("value",snap=>{
-      students = snap.val() || {};
+    db.ref().once("value",s=>{
+      students=s.val()||{};
       render();
     });
   }
 }
 
-// 🎨 Render UI
+// UI
 function render(){
   let html="";
+  for(let m in students){
+    let s=students[m];
+    html+=`
+    <div class="box">
+      <label>
+        <input type="checkbox" class="student" value="${m}">
+        <b>${s.name}</b>
+      </label>
+    </div>`;
+  }
+  list.innerHTML=html;
+}
 
-  html += `
-  <button onclick="selectEverything()">✅ Select All Students + Months</button>
-  `;
+// AUTO FINE (MAIN FEATURE)
+function autoFine(){
+  let fine=document.getElementById("fine").value;
+  if(!fine){msg.innerHTML="<p class='error'>Enter fine</p>";return;}
 
-  html += `<div class='month-box'>`;
+  document.querySelectorAll(".student:checked").forEach(st=>{
+    let mob=st.value;
+    let s=students[mob];
 
-  for(let mob in students){
-    let s = students[mob];
+    for(let month in s.fees){
+      if(s.fees[month].status!="paid"){
 
-    html += `
-    <div style='margin-bottom:20px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.08)'>
+        let path=`${mob}/fees/${month}`;
 
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <label>
-          <input type='checkbox' class='studentCheck' value='${mob}' onchange='autoSelectMonths("${mob}", this.checked)'>
-          <b>${s.name} (${s.class})</b>
-        </label>
+        db.ref(path+"/fine").set(Number(fine));
 
-        <button onclick="selectAllMonthsForStudent('${mob}')">Select All Months</button>
-      </div>
-    `;
-
-    for(let m in s.fees){
-      let f = s.fees[m];
-
-      if(f.status === "paid"){
-        html += `<div class='month paid'>${m.toUpperCase()} (PAID)</div>`;
-      }else{
-        html += `
-        <div class='month'>
-          <label>
-            <input type='checkbox' class='monthCheck' data-student='${mob}' value='${m}'>
-            ${m.toUpperCase()}
-          </label>
-        </div>`;
+        // HISTORY
+        db.ref(path+"/fineHistory").push({
+          amount:Number(fine),
+          date:new Date().toLocaleString()
+        });
       }
     }
-
-    html += `</div>`;
-  }
-
-  html += `</div>`;
-  monthsBox.innerHTML = html;
-}
-
-// ⚡ Auto select months when student checked
-function autoSelectMonths(student, checked){
-  document.querySelectorAll(`.monthCheck[data-student='${student}']`)
-    .forEach(cb => cb.checked = checked);
-}
-
-// ⚡ Select all months for one student
-function selectAllMonthsForStudent(student){
-  document.querySelectorAll(`.monthCheck[data-student='${student}']`)
-    .forEach(cb => cb.checked = true);
-
-  document.querySelector(`.studentCheck[value='${student}']`).checked = true;
-}
-
-// ⚡ Select everything
-function selectEverything(){
-  document.querySelectorAll('.studentCheck').forEach(cb => cb.checked = true);
-  document.querySelectorAll('.monthCheck').forEach(cb => cb.checked = true);
-}
-
-// 💰 Apply Fine
-function applyFine(){
-  const fine = document.getElementById("fineAmount").value;
-
-  if(!fine){
-    msg.innerHTML="<p class='error'>⚠️ Enter fine amount</p>";
-    return;
-  }
-
-  let months = document.querySelectorAll('.monthCheck:checked');
-  let studentsSelected = document.querySelectorAll('.studentCheck:checked');
-
-  if(months.length===0 || studentsSelected.length===0){
-    msg.innerHTML="<p class='error'>⚠️ Select students & months</p>";
-    return;
-  }
-
-  studentsSelected.forEach(st=>{
-    let mob = st.value;
-
-    months.forEach(m=>{
-      if(m.dataset.student === mob){
-        let path = `${mob}/fees/${m.value}/fine`;
-        db.ref(path).set(Number(fine));
-      }
-    });
   });
 
-  msg.innerHTML="<p class='success'>✅ Fine Applied Successfully</p>";
+  msg.innerHTML="<p class='success'>✅ Auto Fine Applied</p>";
+}
+
+// REMOVE FINE
+function removeFine(){
+  document.querySelectorAll(".student:checked").forEach(st=>{
+    let mob=st.value;
+    let s=students[mob];
+
+    for(let month in s.fees){
+      db.ref(`${mob}/fees/${month}/fine`).remove();
+    }
+  });
+
+  msg.innerHTML="<p class='success'>❌ Fine Removed</p>";
+}
+
+// DOWNLOAD REPORT
+function downloadReport(){
+  let csv="Name,Month,Fine,Date\n";
+
+  for(let mob in students){
+    let s=students[mob];
+
+    for(let m in s.fees){
+      let f=s.fees[m];
+
+      if(f.fineHistory){
+        for(let id in f.fineHistory){
+          let h=f.fineHistory[id];
+          csv+=`${s.name},${m},${h.amount},${h.date}\n`;
+        }
+      }
+    }
+  }
+
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="fine_report.csv";
+  a.click();
 }
 </script>
 
