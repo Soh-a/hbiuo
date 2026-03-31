@@ -89,10 +89,10 @@ function numberToWords(num){
 }
 
 // PDF
-function generatePDF(){
+function generatePDF() {
 
   const selected = document.querySelectorAll("input:checked");
-  if(selected.length === 0){
+  if (selected.length === 0) {
     alert("Select at least one month");
     return;
   }
@@ -100,129 +100,153 @@ function generatePDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const receiptNo = "FR/" + Math.floor(Math.random()*100000);
-  const today = new Date().toLocaleDateString();
+  // ===== DATA =====
+  const receiptNo = "FR/" + Date.now().toString().slice(-6);
+  const today = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  const admissionNo = studentData.admissionNo || "10767";
+  const transactionId = "pay_" + Math.random().toString(36).substring(2, 14);
 
   let total = 0;
 
-  selected.forEach(cb=>{
-    const m = cb.value;
-    total += Number(studentData.fees[m].amount || studentData.monthlyfee);
+  const feeItems = Array.from(selected).map((cb, index) => {
+
+    const amt = Number(studentData.fees[cb.value]?.amount || studentData.monthlyfee);
+    total += amt;
+
+    const monthShort = cb.value.substring(0,3);
+    const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-25";
+
+    return {
+      sno: index + 1,
+      particulars: "Tuition Fee",
+      month: formattedMonth,
+      amount: amt.toLocaleString('en-IN', { minimumFractionDigits: 2 })
+    };
   });
 
-  const monthsText = Array.from(selected).map(cb=>cb.value.toUpperCase()).join(", ");
-
-  // ========= FUNCTION TO DRAW ONE COPY =========
-  function drawCopy(startY, title){
+  // ===== DRAW FUNCTION =====
+  function drawCopy(startY, title) {
 
     let y = startY;
 
-    // SCHOOL HEADER
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(12);
-    doc.text("SAI DRS KIDS SCHOOL",105,y,{align:"center"});
+    // HEADER
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("SAI DRS KIDS SCHOOL", 105, y, { align: "center" });
 
-    y+=5;
+    y += 5;
     doc.setFontSize(9);
-    doc.setFont("helvetica","normal");
-    doc.text("R.G.B Road, Guwahati, Assam",105,y,{align:"center"});
+    doc.setFont("helvetica", "normal");
+    doc.text("R.G.B Road, Junali, Guwahati - 781024", 105, y, { align: "center" });
 
-    y+=6;
+    y += 4;
+    doc.text("Email: sai.drs.kids.school@gmail.com", 105, y, { align: "center" });
 
-    // COPY TITLE
-    doc.setFont("helvetica","bold");
-    doc.text(title,15,y);
+    y += 8;
+    doc.setFont("helvetica", "bold");
+    doc.text("FEE RECEIPT (2025-2026)", 105, y, { align: "center" });
 
-    doc.text("FEE RECEIPT (2025-26)",105,y,{align:"center"});
-
-    y+=8;
+    y += 8;
 
     // RECEIPT INFO
-    doc.setFont("helvetica","normal");
-    doc.text(`Receipt No: ${receiptNo}`,15,y);
-    doc.text(`Receipt Date: ${today}`,140,y);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Receipt No: ${receiptNo}`, 15, y);
+    doc.text(`Receipt Date: ${today}`, 140, y);
 
-    y+=8;
+    y += 6;
+    doc.text(`Student Name: ${studentData.name.toUpperCase()}`, 15, y);
+    doc.text(`Admission No: ${admissionNo}`, 140, y);
 
-    // STUDENT DETAILS
-    doc.text(`Student Name: ${studentData.name}`,15,y);
-    doc.text(`Class: ${studentData.class}`,140,y);
+    y += 6;
+    doc.text(`Contact Name: ${studentData.parentName || "N/A"}`, 15, y);
+    doc.text(`Class: ${studentData.class}`, 140, y);
 
-    y+=7;
-    doc.text(`Mobile: ${mobile.value}`,15,y);
-    doc.text(`Roll No: ______`,140,y);
+    y += 6;
+    doc.text(`Contact No: ${mobile.value}`, 15, y);
+    doc.text(`Roll No: ${studentData.rollNo || "____"}`, 140, y);
 
-    y+=10;
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.text(title, 195, y, { align: "right" });
 
-    // TABLE HEADER
-    doc.setFont("helvetica","bold");
-    doc.text("S.No",15,y);
-    doc.text("Particulars",30,y);
-    doc.text("Month",100,y);
-    doc.text("Amount",150,y);
+    // ===== TABLE =====
+    y += 5;
+    doc.setLineWidth(0.2);
+    doc.line(15, y, 195, y);
 
-    y+=3;
-    doc.line(10,y,200,y);
+    y += 5;
+    doc.setFont("helvetica", "bold");
 
-    doc.setFont("helvetica","normal");
+    doc.text("S.No", 17, y);
+    doc.text("Particulars", 35, y);
+    doc.text("Due Month", 95, y);
+    doc.text("Due Amt.", 140, y);
+    doc.text("Paid Amt.", 195, y, { align: "right" });
 
-    let i = 1;
+    y += 2;
+    doc.line(15, y, 195, y);
 
-    selected.forEach(cb=>{
-      const m = cb.value;
-      const amt = Number(studentData.fees[m].amount || studentData.monthlyfee);
+    doc.setFont("helvetica", "normal");
 
-      y+=8;
-      doc.text(String(i++),15,y);
-      doc.text("Tuition Fee",30,y);
-      doc.text(m.toUpperCase(),100,y);
-      doc.text(String(amt),150,y);
+    feeItems.forEach(item => {
+      y += 7;
+      doc.text(String(item.sno), 17, y);
+      doc.text(item.particulars, 35, y);
+      doc.text(item.month, 95, y);
+      doc.text(item.amount, 140, y);
+      doc.text(item.amount, 195, y, { align: "right" });
     });
 
-    y+=8;
-    doc.line(10,y,200,y);
+    y += 4;
+    doc.line(15, y, 195, y);
 
-    y+=8;
+    // ===== TOTAL =====
+    y += 8;
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      `Total Paid Amount: ₹ ${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+      195, y, { align: "right" }
+    );
 
-    // TOTAL
-    doc.setFont("helvetica","bold");
-    doc.text(`Total Paid Amount: ₹ ${total}`,120,y);
+    // ===== WORDS =====
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Amount In Words: INR ${numberToWords(total)} Only`, 15, y);
 
-    y+=8;
+    // ===== PAYMENT =====
+    y += 6;
+    doc.text(`Payment Mode: ${studentData.paymentMode || "Online"}`, 15, y);
+    doc.text(`Transaction No: ${transactionId}`, 110, y);
 
-    // WORDS
-    doc.setFont("helvetica","normal");
-    doc.text(`Amount In Words: INR ${numberToWords(total)} Only`,15,y);
-
-    y+=8;
-
-    // PAYMENT DETAILS
-    doc.text("Payment Mode: Cash / UPI / Online",15,y);
-    doc.text("Transaction ID: ________",120,y);
-
-    y+=12;
-
-    // NOTE
+    // ===== NOTE =====
+    y += 8;
     doc.setFontSize(8);
-    doc.text("Note: Fees once paid will not be refunded.",15,y);
+    doc.setFont("helvetica", "italic");
+    doc.text("Note: Fees once paid will not be refunded or transferred.", 15, y);
 
-    y+=10;
-
-    // SIGN
+    // ===== SIGN =====
+    y += 10;
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("Cashier/Manager",150,y);
+    doc.text("Cashier/Manager", 195, y, { align: "right" });
   }
 
   // ===== DRAW BOTH COPIES =====
-  drawCopy(15,"Office Copy");
+  drawCopy(20, "Office Copy");
 
-  // Divider line
-  doc.line(10,145,200,145);
+  // Divider (perforation)
+  doc.setLineDashPattern([3, 3], 0);
+  doc.line(10, 148, 200, 148);
+  doc.setLineDashPattern([], 0);
 
-  drawCopy(155,"Parent Copy");
+  drawCopy(160, "Parent Copy");
 
   // SAVE
-  doc.save(`Receipt_${studentData.name}_${receiptNo}.pdf`);
+  doc.save(`Fee_Receipt_${studentData.name}.pdf`);
 }
 </script>
 
