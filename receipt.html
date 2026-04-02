@@ -9,10 +9,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{font-family:Segoe UI;background:#eef2ff}
-.container{max-width:800px;margin:30px auto;background:#fff;padding:25px;border-radius:12px}
-input,button{width:100%;padding:12px;margin-top:10px}
-button{background:#2563eb;color:#fff;border:none}
+body{
+  font-family:Segoe UI;
+  background:#eef2ff;
+}
+.container{
+  max-width:800px;
+  margin:30px auto;
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+}
+button{
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+.month-item{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin:5px 0;
+}
 </style>
 </head>
 
@@ -30,7 +54,7 @@ button{background:#2563eb;color:#fff;border:none}
 
 <script>
 
-// FIREBASE
+// 🔥 FIREBASE CONFIG
 firebase.initializeApp({
   apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   databaseURL:"https://students-6e271-default-rtdb.firebaseio.com"
@@ -39,13 +63,15 @@ firebase.initializeApp({
 const db = firebase.database();
 let studentData = {};
 
-// FETCH STUDENT
+// ✅ FETCH STUDENT
 function fetchStudent(){
   const mobile = document.getElementById("mobile").value;
+  studentInfo.innerHTML = "Loading...";
 
   db.ref(mobile).once("value",snap=>{
     if(!snap.exists()){
       alert("Student not found");
+      studentInfo.innerHTML = "";
       return;
     }
 
@@ -59,40 +85,47 @@ function fetchStudent(){
   });
 }
 
-// SHOW MONTHS
+// ✅ SHOW MONTHS
 function showMonths(){
   let html = "";
 
   for(let m in studentData.fees){
     if(studentData.fees[m].status==="paid"){
       html += `
-      <label>
+      <div class="month-item">
         <input type="checkbox" value="${m}">
-        ${m.toUpperCase()}
-      </label><br>`;
+        <span>${m.toUpperCase()}</span>
+      </div>`;
     }
+  }
+
+  if(html === ""){
+    html = "<p>No paid months found</p>";
   }
 
   html += `<button onclick="generatePDF()">Generate Receipt</button>`;
   monthsBox.innerHTML = html;
 }
 
-// NUMBER TO WORDS
+// ✅ NUMBER TO WORDS (Indian Format)
 function numberToWords(num){
   const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
   "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
   const b = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
 
-  if(num<20) return a[num];
-  if(num<100) return b[Math.floor(num/10)]+" "+a[num%10];
-  if(num<1000) return a[Math.floor(num/100)]+" Hundred "+numberToWords(num%100);
+  if(num < 20) return a[num];
+  if(num < 100) return b[Math.floor(num/10)] + " " + a[num%10];
+  if(num < 1000) return a[Math.floor(num/100)] + " Hundred " + numberToWords(num%100);
+  if(num < 100000) return numberToWords(Math.floor(num/1000)) + " Thousand " + numberToWords(num%1000);
+  if(num < 10000000) return numberToWords(Math.floor(num/100000)) + " Lakh " + numberToWords(num%100000);
 
   return num;
 }
 
-// PDF FUNCTION
+// ✅ PDF GENERATION
 function generatePDF(){
-  const selected = document.querySelectorAll("input:checked");
+  const selected = document.querySelectorAll("#monthsBox input:checked");
+
   if(selected.length === 0){
     alert("Select at least one month");
     return;
@@ -101,130 +134,117 @@ function generatePDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const receiptNo = "FR/" + Math.floor(Math.random() * 100000);
+  const receiptNo = "FR/" + Date.now();
   const today = new Date().toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric'
+    day:'2-digit', month:'short', year:'numeric'
   });
 
   const transactionNo = studentData.fees[selected[0].value]?.paymentId || "N/A";
 
   let total = 0;
 
+  const monthsOrder = [
+    "april","may","june","july","august","september",
+    "october","november","december","january","february","march"
+  ];
+
   const feeItems = Array.from(selected).map((cb, index) => {
-    const amt = Number(studentData.fees[cb.value]?.amount || studentData.monthlyfee);
+
+    const feeData = studentData.fees[cb.value] || {};
+    const amt = Number(feeData.amount || studentData.monthlyfee || 0);
     total += amt;
 
-    const monthName = cb.value;
-    const monthShort = monthName.substring(0, 3);
+    const monthName = cb.value.toLowerCase();
+    const monthIndex = monthsOrder.indexOf(monthName);
+    const yearSuffix = (monthIndex <= 8) ? "26" : "27";
 
-    // ✅ SESSION LOGIC (April 2026 to March 2027)
-    const monthIndex = new Date(monthName + " 1, 2026").getMonth();
-    const yearSuffix = (monthIndex >= 3) ? "26" : "27"; 
-
-    const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + yearSuffix;
+    const formattedMonth =
+      monthName.substring(0,3).toUpperCase() + "-" + yearSuffix;
 
     return {
       sno: index + 1,
-      particulars: "Tuition Fee",
       month: formattedMonth,
-      amount: amt.toLocaleString('en-IN', { minimumFractionDigits: 2 })
+      amount: amt.toLocaleString('en-IN',{minimumFractionDigits:2})
     };
   });
 
-  function drawCopy(startY, title){
+  function drawCopy(startY){
     let y = startY;
 
-    // Header
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica","bold");
     doc.setFontSize(14);
-    doc.text("SAI DRS KIDS SCHOOL", 105, y, { align: "center" });
+    doc.text("SAI DRS KIDS SCHOOL",105,y,{align:"center"});
 
-    y += 5;
+    y+=5;
     doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("R.G.B Road, Junali, Guwahati - 781024", 105, y, { align: "center" });
-    doc.text("Email: sai.drs.kids.school@gmail.com", 105, y + 4, { align: "center" });
+    doc.setFont("helvetica","normal");
+    doc.text("R.G.B Road, Junali, Guwahati - 781024",105,y,{align:"center"});
+    doc.text("Email: sai.drs.kids.school@gmail.com",105,y+4,{align:"center"});
 
-    y += 12;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text("FEE RECEIPT (2026-2027)", 105, y, { align: "center" });
+    y+=12;
+    doc.setFont("helvetica","bold");
+    doc.text("FEE RECEIPT (2026-2027)",105,y,{align:"center"});
 
-    y += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Receipt No: ${receiptNo}`, 15, y);
-    doc.text(`Receipt Date: ${today}`, 195, y, { align: "right" });
+    y+=8;
+    doc.setFont("helvetica","normal");
+    doc.text(`Receipt No: ${receiptNo}`,15,y);
+    doc.text(`Date: ${today}`,195,y,{align:"right"});
 
-    y += 6;
-    doc.text(`Student Name: ${studentData.name.toUpperCase()}`, 15, y);
-    doc.text(`Class: ${studentData.class}`, 195, y, { align: "right" });
+    y+=6;
+    doc.text(`Student: ${studentData.name.toUpperCase()}`,15,y);
+    doc.text(`Class: ${studentData.class}`,195,y,{align:"right"});
 
+    y+=4;
+    doc.line(15,y,195,y);
 
+    y+=6;
+    doc.text("S.No",17,y);
+    doc.text("Month",80,y);
+    doc.text("Amount",195,y,{align:"right"});
 
-    // Table
-    y += 4;
-    doc.line(15, y, 195, y);
+    y+=2;
+    doc.line(15,y,195,y);
 
-    y += 5;
-    doc.text("S.No", 17, y);
-    doc.text("Particulars", 35, y);
-    doc.text("Due Month", 90, y);
-    doc.text("Due Amt.", 140, y);
-    doc.text("Paid Amt.", 195, y, { align: "right" });
-
-    y += 2;
-    doc.line(15, y, 195, y);
-
-    doc.setFont("helvetica", "normal");
-    feeItems.forEach(item => {
-      y += 7;
-      doc.text(String(item.sno), 17, y);
-      doc.text(item.particulars, 35, y);
-      doc.text(item.month, 90, y);
-      doc.text(item.amount, 140, y);
-      doc.text(item.amount, 195, y, { align: "right" });
+    feeItems.forEach(item=>{
+      y+=7;
+      doc.text(String(item.sno),17,y);
+      doc.text(item.month,80,y);
+      doc.text(item.amount,195,y,{align:"right"});
     });
 
-    y += 4;
-    doc.line(15, y, 195, y);
+    y+=4;
+    doc.line(15,y,195,y);
 
-    // Summary - STRIPED STRAY '1' FIX
-    y += 8;
-    doc.setFont("helvetica", "bold");
-    const totalStr = total.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-    doc.text("Total Paid Amount:", 15, y);
-    doc.text(`Rs. ${totalStr}`, 195, y, { align: "right" });
+    y+=8;
+    doc.setFont("helvetica","bold");
+    doc.text("Total:",15,y);
+    doc.text(`Rs. ${total.toLocaleString('en-IN',{minimumFractionDigits:2})}`,195,y,{align:"right"});
 
-    y += 6;
+    y+=6;
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Amount In Words: INR ${numberToWords(total)} Only`, 15, y);
+    doc.setFont("helvetica","normal");
+    doc.text(`In Words: INR ${numberToWords(total)} Only`,15,y);
 
-    y += 5;
-    doc.text(`Payment Mode: Payment-Gateway`, 15, y);
-    doc.text(`Transaction No: ${transactionNo}`, 80, y);
+    y+=5;
+    doc.text(`Transaction: ${transactionNo}`,15,y);
 
-    y += 8;
-    doc.setFontSize(7);
-    doc.text("Note: Parents are requested to preserve this receipt.", 15, y);
-    y += 3.5;
-    doc.text("Fees once paid will not be refunded.", 15, y);
-
-    y += 10;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("Cashier/Manager Signature", 195, y, { align: "right" });
+    y+=10;
+    doc.setFont("helvetica","bold");
+    doc.text("Authorized Signature",195,y,{align:"right"});
   }
 
-  // Generate Copies
-  drawCopy(20, "Office Copy");
-  doc.setLineDashPattern([2, 2], 0);
-  doc.line(10, 148, 200, 148);
-  doc.setLineDashPattern([], 0);
-  drawCopy(160, "Parent Copy");
+  // Office Copy
+  drawCopy(20);
 
-  doc.save(`Receipt_${studentData.name.replace(/\s+/g, '_')}.pdf`);
+  // Divider
+  doc.setLineDashPattern([2,2],0);
+  doc.line(10,148,200,148);
+  doc.setLineDashPattern([],0);
+
+  // Parent Copy
+  drawCopy(160);
+
+  doc.save(`Receipt_${studentData.name.replace(/\s+/g,'_')}.pdf`);
 }
 
 </script>
