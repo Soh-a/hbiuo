@@ -90,11 +90,10 @@ function numberToWords(num){
   return num;
 }
 
-// GENERATE PDF
-function generatePDF() {
-
+// PDF FUNCTION
+function generatePDF(){
   const selected = document.querySelectorAll("input:checked");
-  if (selected.length === 0) {
+  if(selected.length === 0){
     alert("Select at least one month");
     return;
   }
@@ -102,32 +101,27 @@ function generatePDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const receiptNo = "FR/" + Date.now().toString().slice(-6);
-
+  const receiptNo = "FR/" + Math.floor(Math.random() * 100000);
   const today = new Date().toLocaleDateString('en-GB', {
     day: '2-digit', month: 'short', year: 'numeric'
   });
 
-  const admissionNo = studentData.admissionNo || "10767";
-  const transactionId = "pay_" + Math.random().toString(36).substring(2, 14);
+  const transactionNo = studentData.fees[selected[0].value]?.paymentId || "N/A";
 
   let total = 0;
 
   const feeItems = Array.from(selected).map((cb, index) => {
-
     const amt = Number(studentData.fees[cb.value]?.amount || studentData.monthlyfee);
     total += amt;
 
-    // ✅ FIXED MONTH + ACADEMIC YEAR LOGIC
-    const monthIndex = new Date(cb.value + " 1").getMonth();
-    const year = (monthIndex >= 3) ? "26" : "27"; // Apr–Dec = 26, Jan–Mar = 27
+    const monthName = cb.value;
+    const monthShort = monthName.substring(0, 3);
 
-    const monthShort = cb.value.substring(0,3);
+    // ✅ SESSION LOGIC (April 2026 to March 2027)
+    const monthIndex = new Date(monthName + " 1, 2026").getMonth();
+    const yearSuffix = (monthIndex >= 3) ? "26" : "27"; 
 
-    const formattedMonth =
-      monthShort.charAt(0).toUpperCase() +
-      monthShort.slice(1) +
-      "-" + year;
+    const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + yearSuffix;
 
     return {
       sno: index + 1,
@@ -137,58 +131,45 @@ function generatePDF() {
     };
   });
 
-  function drawCopy(startY, title) {
-
+  function drawCopy(startY, title){
     let y = startY;
 
-    // HEADER
+    // Header
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(14);
     doc.text("SAI DRS KIDS SCHOOL", 105, y, { align: "center" });
 
     y += 5;
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.text("R.G.B Road, Junali, Guwahati - 781024", 105, y, { align: "center" });
+    doc.text("Email: sai.drs.kids.school@gmail.com", 105, y + 4, { align: "center" });
 
-    y += 4;
-    doc.text("Email: sai.drs.kids.school@gmail.com", 105, y, { align: "center" });
-
-    y += 8;
+    y += 12;
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
     doc.text("FEE RECEIPT (2026-2027)", 105, y, { align: "center" });
 
     y += 8;
-
-    // INFO
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
     doc.text(`Receipt No: ${receiptNo}`, 15, y);
-    doc.text(`Receipt Date: ${today}`, 140, y);
+    doc.text(`Receipt Date: ${today}`, 195, y, { align: "right" });
 
     y += 6;
     doc.text(`Student Name: ${studentData.name.toUpperCase()}`, 15, y);
-    doc.text(`Admission No: ${admissionNo}`, 140, y);
+    doc.text(`Class: ${studentData.class}`, 195, y, { align: "right" });
 
-    y += 6;
-    doc.text(`Class: ${studentData.class}`, 140, y);
 
-    y += 6;
-    doc.text(`Contact No: ${mobile.value}`, 15, y);
 
-    y += 5;
-    doc.setFont("helvetica", "bold");
-    doc.text(title, 195, y, { align: "right" });
-
-    // TABLE
-    y += 5;
+    // Table
+    y += 4;
     doc.line(15, y, 195, y);
 
     y += 5;
-    doc.setFont("helvetica", "bold");
-
     doc.text("S.No", 17, y);
     doc.text("Particulars", 35, y);
-    doc.text("Due Month", 95, y);
+    doc.text("Due Month", 90, y);
     doc.text("Due Amt.", 140, y);
     doc.text("Paid Amt.", 195, y, { align: "right" });
 
@@ -196,12 +177,11 @@ function generatePDF() {
     doc.line(15, y, 195, y);
 
     doc.setFont("helvetica", "normal");
-
     feeItems.forEach(item => {
       y += 7;
       doc.text(String(item.sno), 17, y);
       doc.text(item.particulars, 35, y);
-      doc.text(item.month, 95, y);
+      doc.text(item.month, 90, y);
       doc.text(item.amount, 140, y);
       doc.text(item.amount, 195, y, { align: "right" });
     });
@@ -209,48 +189,42 @@ function generatePDF() {
     y += 4;
     doc.line(15, y, 195, y);
 
-    // TOTAL
+    // Summary - STRIPED STRAY '1' FIX
     y += 8;
     doc.setFont("helvetica", "bold");
-    doc.text(
-      `Total Paid Amount: ₹ ${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-      195, y, { align: "right" }
-    );
+    const totalStr = total.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    doc.text("Total Paid Amount:", 15, y);
+    doc.text(`Rs. ${totalStr}`, 195, y, { align: "right" });
 
-    // WORDS
     y += 6;
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.text(`Amount In Words: INR ${numberToWords(total)} Only`, 15, y);
 
-    // PAYMENT
-    y += 6;
-    doc.text(`Payment Mode: ${studentData.paymentMode || "Online"}`, 15, y);
-    doc.text(`Transaction No: ${transactionId}`, 110, y);
+    y += 5;
+    doc.text(`Payment Mode: Payment-Gateway`, 15, y);
+    doc.text(`Transaction No: ${transactionNo}`, 80, y);
 
-    // NOTE
     y += 8;
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "italic");
-    doc.text("Note: Fees once paid will not be refunded or transferred.", 15, y);
+    doc.setFontSize(7);
+    doc.text("Note: Parents are requested to preserve this receipt.", 15, y);
+    y += 3.5;
+    doc.text("Fees once paid will not be refunded.", 15, y);
 
-    // SIGN
     y += 10;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text("Cashier/Manager", 195, y, { align: "right" });
+    doc.setFontSize(9);
+    doc.text("Cashier/Manager Signature", 195, y, { align: "right" });
   }
 
-  // TWO COPIES
+  // Generate Copies
   drawCopy(20, "Office Copy");
-
-  doc.setLineDashPattern([3,3],0);
-  doc.line(10,148,200,148);
-  doc.setLineDashPattern([],0);
-
+  doc.setLineDashPattern([2, 2], 0);
+  doc.line(10, 148, 200, 148);
+  doc.setLineDashPattern([], 0);
   drawCopy(160, "Parent Copy");
 
-  doc.save(`Fee_Receipt_${studentData.name}.pdf`);
+  doc.save(`Receipt_${studentData.name.replace(/\s+/g, '_')}.pdf`);
 }
 
 </script>
