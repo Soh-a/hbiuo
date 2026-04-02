@@ -20,7 +20,7 @@ body{
   border-radius:15px;
   background:rgba(255,255,255,0.1);
 }
-input,button{
+input,button,select{
   width:100%;
   padding:10px;
   margin-top:10px;
@@ -47,6 +47,23 @@ button{background:#ff4d4d;color:#fff;cursor:pointer}
 <input id="mobile" placeholder="Enter Mobile (empty = all)">
 <button onclick="loadStudents()">Load Students</button>
 
+<!-- Month Dropdown -->
+<select id="monthSelect">
+  <option value="">-- Select Month (All if empty) --</option>
+  <option>April</option>
+  <option>May</option>
+  <option>June</option>
+  <option>July</option>
+  <option>August</option>
+  <option>September</option>
+  <option>October</option>
+  <option>November</option>
+  <option>December</option>
+  <option>January</option>
+  <option>February</option>
+  <option>March</option>
+</select>
+
 <div id="list"></div>
 
 <input id="fine" type="number" placeholder="Fine Amount ₹">
@@ -67,9 +84,10 @@ firebase.initializeApp({
 const db = firebase.database();
 let students={};
 
-// LOAD
+// LOAD STUDENTS
 function loadStudents(){
   let mobile=document.getElementById("mobile").value.trim();
+
   if(mobile){
     db.ref(mobile).once("value",s=>{
       students={[mobile]:s.val()};
@@ -83,11 +101,13 @@ function loadStudents(){
   }
 }
 
-// UI
+// RENDER UI
 function render(){
   let html="";
   for(let m in students){
     let s=students[m];
+    if(!s || !s.name) continue;
+
     html+=`
     <div class="box">
       <label>
@@ -99,23 +119,32 @@ function render(){
   list.innerHTML=html;
 }
 
-// AUTO FINE (MAIN FEATURE)
+// AUTO FINE
 function autoFine(){
   let fine=document.getElementById("fine").value;
-  if(!fine){msg.innerHTML="<p class='error'>Enter fine</p>";return;}
+  let selectedMonth=document.getElementById("monthSelect").value;
+
+  if(!fine){
+    msg.innerHTML="<p class='error'>Enter fine</p>";
+    return;
+  }
 
   document.querySelectorAll(".student:checked").forEach(st=>{
     let mob=st.value;
     let s=students[mob];
 
+    if(!s.fees) return;
+
     for(let month in s.fees){
+
+      if(selectedMonth && month !== selectedMonth) continue;
+
       if(s.fees[month].status!="paid"){
 
         let path=`${mob}/fees/${month}`;
 
         db.ref(path+"/fine").set(Number(fine));
 
-        // HISTORY
         db.ref(path+"/fineHistory").push({
           amount:Number(fine),
           date:new Date().toLocaleString()
@@ -124,16 +153,23 @@ function autoFine(){
     }
   });
 
-  msg.innerHTML="<p class='success'>✅ Auto Fine Applied</p>";
+  msg.innerHTML="<p class='success'>✅ Fine Applied</p>";
 }
 
 // REMOVE FINE
 function removeFine(){
+  let selectedMonth=document.getElementById("monthSelect").value;
+
   document.querySelectorAll(".student:checked").forEach(st=>{
     let mob=st.value;
     let s=students[mob];
 
+    if(!s.fees) return;
+
     for(let month in s.fees){
+
+      if(selectedMonth && month !== selectedMonth) continue;
+
       db.ref(`${mob}/fees/${month}/fine`).remove();
     }
   });
@@ -147,6 +183,7 @@ function downloadReport(){
 
   for(let mob in students){
     let s=students[mob];
+    if(!s || !s.fees) continue;
 
     for(let m in s.fees){
       let f=s.fees[m];
@@ -167,6 +204,11 @@ function downloadReport(){
   a.click();
 }
 </script>
+
+<!-- Footer -->
+<footer style="text-align:center;padding:10px;font-size:12px;color:#2563eb;font-family:Arial;margin-top:20px;">
+This system was developed with the assistance of AI tools.
+</footer>
 
 </body>
 </html>
