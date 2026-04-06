@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teacher Logbook & Attendance</title>
+<title>Teacher Viewer</title>
 
-<!-- ✅ ONLY USE THESE (DO NOT USE firebase-app.js v10) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -22,10 +20,11 @@ select, input, button { padding:10px; margin:5px; }
 </head>
 <body>
 
-<header><h2>Teacher Logbook & Attendance</h2></header>
+<header><h2>Teacher Logbook / Attendance</h2></header>
 
 <div class="container">
-<select id="classSelect" onchange="loadData()">
+
+<select id="classSelect">
 <option value="">Select Class</option>
 <option value="IK-1">IK-1</option>
 <option value="IK-2">IK-2</option>
@@ -37,115 +36,148 @@ select, input, button { padding:10px; margin:5px; }
 <option value="Class 5">Class 5</option>
 </select>
 
-<input type="date" id="fromDate" onchange="loadData()">
-<input type="date" id="toDate" onchange="loadData()">
+<select id="viewType">
+<option value="">Select View</option>
+<option value="logbook">Logbook</option>
+<option value="attendance">Attendance</option>
+</select>
 
-<button onclick="downloadExcel()">Download Excel</button>
-<button onclick="downloadPDF()">Download PDF</button>
+<input type="date" id="fromDate">
+<input type="date" id="toDate">
+
+<button onclick="loadData()">Load</button>
+<button onclick="downloadExcel()">Excel</button>
+<button onclick="downloadPDF()">PDF</button>
 
 <div id="dataContainer"></div>
 </div>
 
 <script>
-// ✅ DEFINE VARIABLES FIRST (fixes all reference errors)
 let db;
 let currentData = [];
 
-// 🔥 YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+ apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
 };
 
-// ✅ INIT FIREBASE
 firebase.initializeApp(firebaseConfig);
 db = firebase.database();
 
 async function loadData() {
   const cls = document.getElementById("classSelect").value;
+  const type = document.getElementById("viewType").value;
   const from = document.getElementById("fromDate").value;
   const to = document.getElementById("toDate").value;
 
   const container = document.getElementById("dataContainer");
 
-  if (!cls) {
-    container.innerHTML = "";
+  if (!cls || !type) {
+    container.innerHTML = "Please select class & view type";
     return;
   }
 
   container.innerHTML = "Loading...";
+  currentData = [];
 
   try {
-    const logSnap = await db.ref("logbook/" + cls).once("value");
-    const attSnap = await db.ref("attendance").once("value");
 
-    const logData = logSnap.val() || {};
-    const attData = attSnap.val() || {};
+    // ✅ LOGBOOK VIEW
+    if (type === "logbook") {
+      const snap = await db.ref("logbook/" + cls).once("value");
+      const data = snap.val() || {};
 
-    container.innerHTML = "";
-    currentData = [];
+      container.innerHTML = "";
 
-    Object.keys(logData).forEach(date => {
+      Object.keys(data).forEach(date => {
 
-      if (from && date < from) return;
-      if (to && date > to) return;
+        if (from && date < from) return;
+        if (to && date > to) return;
 
-      let present = 0;
-      let absent = 0;
+        const log = data[date];
 
-      Object.values(attData).forEach(section => {
-        if (section[date]) {
+        const record = {
+          date,
+          subject: log.subject,
+          topic: log.topic,
+          homework: log.homework,
+          teacher: log.teacher
+        };
+
+        currentData.push(record);
+
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <b>${date}</b><br>
+          👩‍🏫 ${log.teacher}<br>
+          📘 ${log.subject} - ${log.topic}<br>
+          📝 HW: ${log.homework}
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    // ✅ ATTENDANCE VIEW
+    if (type === "attendance") {
+      const snap = await db.ref("attendance").once("value");
+      const data = snap.val() || {};
+
+      container.innerHTML = "";
+
+      Object.values(data).forEach(section => {
+
+        Object.keys(section).forEach(date => {
+
+          if (from && date < from) return;
+          if (to && date > to) return;
+
+          let present = 0;
+          let absent = 0;
+
           Object.values(section[date]).forEach(student => {
             if (student.status === "Present") present++;
             if (student.status === "Absent") absent++;
           });
-        }
+
+          const record = {
+            date,
+            present,
+            absent
+          };
+
+          currentData.push(record);
+
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <b>${date}</b><br>
+            ✅ Present: ${present}<br>
+            ❌ Absent: ${absent}
+          `;
+
+          container.appendChild(div);
+        });
       });
-
-      const log = logData[date];
-
-      const record = {
-        date,
-        attendance: `Present: ${present} | Absent: ${absent}`,
-        subject: log.subject || "",
-        topic: log.topic || "",
-        homework: log.homework || "",
-        teacher: log.teacher || ""
-      };
-
-      currentData.push(record);
-
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <b>${date}</b><br>
-        👩‍🏫 ${record.teacher}<br>
-        📘 ${record.subject} - ${record.topic}<br>
-        📝 HW: ${record.homework}<br>
-        ✅ ${record.attendance}
-      `;
-
-      container.appendChild(div);
-    });
+    }
 
     if (currentData.length === 0) {
       container.innerHTML = "No data found";
     }
 
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     container.innerHTML = "Error loading data";
   }
 }
 
 function downloadExcel() {
   if (currentData.length === 0) return alert("No data");
-
   const ws = XLSX.utils.json_to_sheet(currentData);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Report");
-
-  XLSX.writeFile(wb, "Logbook_Report.xlsx");
+  XLSX.writeFile(wb, "Report.xlsx");
 }
 
 async function downloadPDF() {
@@ -153,19 +185,17 @@ async function downloadPDF() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
   let y = 10;
 
   currentData.forEach(item => {
-    doc.text(`Date: ${item.date}`, 10, y); y+=7;
-    doc.text(`Teacher: ${item.teacher}`, 10, y); y+=7;
-    doc.text(`Subject: ${item.subject}`, 10, y); y+=7;
-    doc.text(`Topic: ${item.topic}`, 10, y); y+=7;
-    doc.text(`HW: ${item.homework}`, 10, y); y+=7;
-    doc.text(`Attendance: ${item.attendance}`, 10, y); y+=10;
+    Object.values(item).forEach(val => {
+      doc.text(String(val), 10, y);
+      y += 7;
+    });
+    y += 5;
   });
 
-  doc.save("Logbook_Report.pdf");
+  doc.save("Report.pdf");
 }
 </script>
 
