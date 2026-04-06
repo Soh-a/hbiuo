@@ -5,9 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Teacher Logbook & Attendance</title>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+<!-- ✅ Firebase COMPAT version (fixes your errors) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- Excel -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+<!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -43,11 +48,13 @@ select, input, button { padding:10px; margin:5px; }
 </div>
 
 <script>
+// 🔥 YOUR Firebase config (fill this)
 const firebaseConfig = {
- apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
+  apiKey: "YOUR_API_KEY",
+  databaseURL: "YOUR_DB_URL"
 };
 
+// ✅ Initialize FIRST (fixes 'db before initialization')
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -61,63 +68,71 @@ async function loadData() {
   const container = document.getElementById("dataContainer");
   container.innerHTML = "Loading...";
 
-  if (!cls) return alert("Select class");
+  if (!cls) {
+    alert("Select class");
+    return;
+  }
 
-  const logSnap = await db.ref("logbook/" + cls).once("value");
-  const attSnap = await db.ref("attendance").once("value");
+  try {
+    const logSnap = await db.ref("logbook/" + cls).once("value");
+    const attSnap = await db.ref("attendance").once("value");
 
-  const logData = logSnap.val() || {};
-  const attData = attSnap.val() || {};
+    const logData = logSnap.val() || {};
+    const attData = attSnap.val() || {};
 
-  container.innerHTML = "";
-  currentData = [];
+    container.innerHTML = "";
+    currentData = [];
 
-  Object.keys(logData).forEach(date => {
+    Object.keys(logData).forEach(date => {
 
-    if (from && date < from) return;
-    if (to && date > to) return;
+      if (from && date < from) return;
+      if (to && date > to) return;
 
-    let present = 0;
-    let absent = 0;
+      let present = 0;
+      let absent = 0;
 
-    // Find attendance for this class & date
-    Object.values(attData).forEach(section => {
-      if (section[date]) {
-        Object.values(section[date]).forEach(student => {
-          if (student.status === "Present") present++;
-          if (student.status === "Absent") absent++;
-        });
-      }
+      Object.values(attData).forEach(section => {
+        if (section[date]) {
+          Object.values(section[date]).forEach(student => {
+            if (student.status === "Present") present++;
+            if (student.status === "Absent") absent++;
+          });
+        }
+      });
+
+      const log = logData[date];
+
+      const record = {
+        date,
+        attendance: `Present: ${present} | Absent: ${absent}`,
+        subject: log.subject || "",
+        topic: log.topic || "",
+        homework: log.homework || "",
+        teacher: log.teacher || ""
+      };
+
+      currentData.push(record);
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <b>${date}</b><br>
+        👩‍🏫 ${record.teacher}<br>
+        📘 ${record.subject} - ${record.topic}<br>
+        📝 HW: ${record.homework}<br>
+        ✅ ${record.attendance}
+      `;
+
+      container.appendChild(div);
     });
 
-    const log = logData[date];
+    if (currentData.length === 0) {
+      container.innerHTML = "No data found";
+    }
 
-    const record = {
-      date,
-      attendance: `Present: ${present} | Absent: ${absent}`,
-      subject: log.subject || "",
-      topic: log.topic || "",
-      homework: log.homework || "",
-      teacher: log.teacher || ""
-    };
-
-    currentData.push(record);
-
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <b>${date}</b><br>
-      👩‍🏫 ${record.teacher}<br>
-      📘 ${record.subject} - ${record.topic}<br>
-      📝 HW: ${record.homework}<br>
-      ✅ ${record.attendance}
-    `;
-
-    container.appendChild(div);
-  });
-
-  if (currentData.length === 0) {
-    container.innerHTML = "No data found";
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = "Error loading data";
   }
 }
 
