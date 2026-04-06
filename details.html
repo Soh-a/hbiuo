@@ -98,7 +98,7 @@ async function loadData() {
       });
     }
 
-    // ATTENDANCE
+    // ATTENDANCE (WITH STUDENT NAMES)
     if (type === "attendance") {
       const classKey = getClassKey(cls);
 
@@ -114,10 +114,20 @@ async function loadData() {
 
         let present = 0;
         let absent = 0;
+        let studentsHTML = "";
 
         Object.values(data[date]).forEach(student => {
           if (student.status === "Present") present++;
           if (student.status === "Absent") absent++;
+
+          studentsHTML += `
+            <div style="padding:5px 0; border-bottom:1px solid #eee;">
+              👤 ${student.name || 'No Name'} 
+              - <b style="color:${student.status === 'Present' ? 'green' : 'red'}">
+                ${student.status}
+              </b>
+            </div>
+          `;
         });
 
         currentData.push({ date, present, absent });
@@ -126,9 +136,12 @@ async function loadData() {
         div.className = "card";
         div.innerHTML = `
           <b>📅 ${date}</b><br>
-          ✅ Present: ${present}<br>
-          ❌ Absent: ${absent}
+          ✅ Present: ${present} | ❌ Absent: ${absent}
+          <div style="margin-top:10px;">
+            ${studentsHTML}
+          </div>
         `;
+
         container.appendChild(div);
       });
     }
