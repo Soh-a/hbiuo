@@ -1,86 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teacher Dashboard</title>
-
-<!-- Firebase Compat -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<!-- Excel + PDF -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg,#4facfe,#00f2fe);
-}
-
-.header {
-  padding: 20px;
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.container {
-  background: white;
-  margin: 20px;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
-  gap: 10px;
-}
-
-select, input, button {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-button {
-  background: #4facfe;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover { opacity: 0.9; }
-
-.card {
-  background: #f9f9f9;
-  margin-top: 15px;
-  padding: 15px;
-  border-radius: 10px;
-  border-left: 5px solid #4facfe;
-}
-
-.title { font-weight: bold; margin-bottom: 5px; }
-
-.empty {
-  text-align: center;
-  margin-top: 20px;
-  color: gray;
-}
-</style>
-</head>
-<body>
-
-<div class="header">📊 Teacher Dashboard</div>
-
-<div class="container">
-
+<title>Teacher Dashboard</title><!-- Firebase --><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script><!-- Excel + PDF --><script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>
+body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#4facfe,#00f2fe); }
+.header { padding:20px; color:white; font-size:22px; font-weight:bold; }
+.container { background:white; margin:20px; padding:20px; border-radius:15px; }
+.controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+select,input,button { padding:10px; border-radius:8px; border:1px solid #ccc; }
+button { background:#4facfe; color:white; border:none; cursor:pointer; }
+.card { background:#f9f9f9; margin-top:15px; padding:15px; border-radius:10px; border-left:5px solid #4facfe; }
+.empty { text-align:center; margin-top:20px; color:gray; }
+</style></head>
+<body><div class="header">📊 Teacher Dashboard</div><div class="container">
 <div class="controls">
 <select id="classSelect">
 <option value="">Select Class</option>
@@ -92,39 +24,34 @@ button:hover { opacity: 0.9; }
 <option value="Class 3">Class 3</option>
 <option value="Class 4">Class 4</option>
 <option value="Class 5">Class 5</option>
-</select>
-
-<select id="viewType">
+</select><select id="viewType">
 <option value="">Select View</option>
 <option value="logbook">Logbook</option>
 <option value="attendance">Attendance</option>
-</select>
+</select><input type="date" id="fromDate">
+<input type="date" id="toDate"><button id="loadBtn">Load</button> <button onclick="downloadExcel()">Excel</button> <button onclick="downloadPDF()">PDF</button>
 
-<input type="date" id="fromDate">
-<input type="date" id="toDate">
-
-<button id="loadBtn">Load</button>
-<button onclick="downloadExcel()">Excel</button>
-<button onclick="downloadPDF()">PDF</button>
-</div>
-
-<div id="dataContainer"></div>
-
-</div>
-
-<script>
+</div><div id="dataContainer"></div>
+</div><script>
 let db;
 let currentData = [];
 
 const firebaseConfig = {
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com/"
 };
 
 firebase.initializeApp(firebaseConfig);
 db = firebase.database();
 
 document.getElementById("loadBtn").addEventListener("click", loadData);
+
+function getClassKey(cls) {
+  if (cls.startsWith("Class")) {
+    return cls.split(" ")[1]; // Class 1 -> 1
+  }
+  return cls; // IK classes
+}
 
 async function loadData() {
   const cls = document.getElementById("classSelect").value;
@@ -144,6 +71,7 @@ async function loadData() {
 
   try {
 
+    // LOGBOOK
     if (type === "logbook") {
       const snap = await db.ref("logbook/" + cls).once("value");
       const data = snap.val() || {};
@@ -161,7 +89,7 @@ async function loadData() {
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <div class="title">📅 ${date}</div>
+          <b>📅 ${date}</b><br>
           👩‍🏫 ${log.teacher || ''}<br>
           📘 ${log.subject || ''} - ${log.topic || ''}<br>
           📝 ${log.homework || ''}
@@ -170,41 +98,38 @@ async function loadData() {
       });
     }
 
+    // ATTENDANCE
     if (type === "attendance") {
-      const snap = await db.ref("attendance").once("value");
+      const classKey = getClassKey(cls);
+
+      const snap = await db.ref("attendance/" + classKey).once("value");
       const data = snap.val() || {};
 
       container.innerHTML = "";
 
-      Object.values(data).forEach(section => {
-        Object.keys(section).forEach(date => {
+      Object.keys(data).forEach(date => {
 
-          if (from && date < from) return;
-          if (to && date > to) return;
+        if (from && date < from) return;
+        if (to && date > to) return;
 
-          let present = 0;
-          let absent = 0;
+        let present = 0;
+        let absent = 0;
 
-          Object.values(section[date]).forEach(student => {
-            if (student.class === cls) {
-              if (student.status === "Present") present++;
-              if (student.status === "Absent") absent++;
-            }
-          });
-
-          if (present === 0 && absent === 0) return;
-
-          currentData.push({ date, present, absent });
-
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <div class="title">📅 ${date}</div>
-            ✅ Present: ${present}<br>
-            ❌ Absent: ${absent}
-          `;
-          container.appendChild(div);
+        Object.values(data[date]).forEach(student => {
+          if (student.status === "Present") present++;
+          if (student.status === "Absent") absent++;
         });
+
+        currentData.push({ date, present, absent });
+
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <b>📅 ${date}</b><br>
+          ✅ Present: ${present}<br>
+          ❌ Absent: ${absent}
+        `;
+        container.appendChild(div);
       });
     }
 
@@ -240,7 +165,5 @@ function downloadPDF() {
 
   doc.save("Report.pdf");
 }
-</script>
-
-</body>
+</script></body>
 </html>
