@@ -128,8 +128,7 @@ async function loadData() {
           let absent = 0;
           let matched = false;
 
-          Object.values(section[date]).forEach(student => {
-            if (student.class === cls) {
+          Object.values(section[date]).forEach(student => 
               matched = true;
               if (student.status === "Present") present++;
               if (student.status === "Absent") absent++;
