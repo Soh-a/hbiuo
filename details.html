@@ -57,8 +57,8 @@ let db;
 let currentData = [];
 
 const firebaseConfig = {
- apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com""
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -119,14 +119,14 @@ async function loadData() {
       });
     }
 
-    // ✅ ATTENDANCE VIEW
+    // ✅ ATTENDANCE VIEW (FIXED: FILTER BY CLASS)
     if (type === "attendance") {
       const snap = await db.ref("attendance").once("value");
       const data = snap.val() || {};
 
       container.innerHTML = "";
 
-      Object.values(data).forEach(section => {
+      Object.entries(data).forEach(([sectionId, section]) => {
 
         Object.keys(section).forEach(date => {
 
@@ -135,11 +135,21 @@ async function loadData() {
 
           let present = 0;
           let absent = 0;
+          let matched = false;
 
           Object.values(section[date]).forEach(student => {
-            if (student.status === "Present") present++;
-            if (student.status === "Absent") absent++;
+
+            // 🔥 IMPORTANT FILTER (matches selected class)
+            if (student.class === cls || student.className === cls || student.cls === cls) {
+              matched = true;
+
+              if (student.status === "Present") present++;
+              if (student.status === "Absent") absent++;
+            }
           });
+
+          // Only show if class matched
+          if (!matched) return;
 
           const record = {
             date,
