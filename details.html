@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Logbook & Attendance</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body { font-family: Arial; background:#f4f6f9; margin:0; }
+header { background:#2c3e50; color:white; padding:15px; text-align:center; }
+.container { padding:20px; }
+select, input, button { padding:10px; margin:5px; }
+.card { background:white; padding:15px; margin-top:10px; border-radius:10px; }
+</style>
+</head>
+<body>
+
+<header><h2>Teacher Logbook & Attendance</h2></header>
+
+<div class="container">
+<select id="classSelect">
+<option value="">Select Class</option>
+<option value="IK-2">IK-2</option>
+<option value="Class 1">Class 1</option>
+<option value="Class 2">Class 2</option>
+<option value="Class 3">Class 3</option>
+<option value="Class 4">Class 4</option>
+</select>
+
+<input type="date" id="fromDate">
+<input type="date" id="toDate">
+
+<button onclick="loadData()">Load Data</button>
+<button onclick="downloadExcel()">Download Excel</button>
+<button onclick="downloadPDF()">Download PDF</button>
+
+<div id="dataContainer"></div>
+</div>
+
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let currentData = [];
+
+async function loadData() {
+  const cls = document.getElementById("classSelect").value;
+  const from = document.getElementById("fromDate").value;
+  const to = document.getElementById("toDate").value;
+
+  const container = document.getElementById("dataContainer");
+  container.innerHTML = "Loading...";
+
+  if (!cls) return alert("Select class");
+
+  const logSnap = await db.ref("logbook/" + cls).once("value");
+  const attSnap = await db.ref("attendance").once("value");
+
+  const logData = logSnap.val() || {};
+  const attData = attSnap.val() || {};
+
+  container.innerHTML = "";
+  currentData = [];
+
+  Object.keys(logData).forEach(date => {
+
+    if (from && date < from) return;
+    if (to && date > to) return;
+
+    let present = 0;
+    let absent = 0;
+
+    // Find attendance for this class & date
+    Object.values(attData).forEach(section => {
+      if (section[date]) {
+        Object.values(section[date]).forEach(student => {
+          if (student.status === "Present") present++;
+          if (student.status === "Absent") absent++;
+        });
+      }
+    });
+
+    const log = logData[date];
+
+    const record = {
+      date,
+      attendance: `Present: ${present} | Absent: ${absent}`,
+      subject: log.subject || "",
+      topic: log.topic || "",
+      homework: log.homework || "",
+      teacher: log.teacher || ""
+    };
+
+    currentData.push(record);
+
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>${date}</b><br>
+      👩‍🏫 ${record.teacher}<br>
+      📘 ${record.subject} - ${record.topic}<br>
+      📝 HW: ${record.homework}<br>
+      ✅ ${record.attendance}
+    `;
+
+    container.appendChild(div);
+  });
+
+  if (currentData.length === 0) {
+    container.innerHTML = "No data found";
+  }
+}
+
+function downloadExcel() {
+  if (currentData.length === 0) return alert("No data");
+
+  const ws = XLSX.utils.json_to_sheet(currentData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+
+  XLSX.writeFile(wb, "Logbook_Report.xlsx");
+}
+
+async function downloadPDF() {
+  if (currentData.length === 0) return alert("No data");
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  let y = 10;
+
+  currentData.forEach(item => {
+    doc.text(`Date: ${item.date}`, 10, y); y+=7;
+    doc.text(`Teacher: ${item.teacher}`, 10, y); y+=7;
+    doc.text(`Subject: ${item.subject}`, 10, y); y+=7;
+    doc.text(`Topic: ${item.topic}`, 10, y); y+=7;
+    doc.text(`HW: ${item.homework}`, 10, y); y+=7;
+    doc.text(`Attendance: ${item.attendance}`, 10, y); y+=10;
+  });
+
+  doc.save("Logbook_Report.pdf");
+}
+</script>
+
+</body>
+</html>
