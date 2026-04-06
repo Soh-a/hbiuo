@@ -3,27 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teacher Viewer</title>
+<title>Teacher Dashboard</title>
 
+<!-- Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- Excel + PDF -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body { font-family: Arial; background:#f4f6f9; margin:0; }
-header { background:#2c3e50; color:white; padding:15px; text-align:center; }
-.container { padding:20px; }
-select, input, button { padding:10px; margin:5px; }
-.card { background:white; padding:15px; margin-top:10px; border-radius:10px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#4facfe,#00f2fe);
+}
+
+.header {
+  padding: 20px;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.container {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+  gap: 10px;
+}
+
+select, input, button {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+button {
+  background: #4facfe;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover { opacity: 0.9; }
+
+.card {
+  background: #f9f9f9;
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 5px solid #4facfe;
+}
+
+.title { font-weight: bold; margin-bottom: 5px; }
+
+.empty {
+  text-align: center;
+  margin-top: 20px;
+  color: gray;
+}
 </style>
 </head>
 <body>
 
-<header><h2>Teacher Logbook / Attendance</h2></header>
+<div class="header">📊 Teacher Dashboard</div>
 
 <div class="container">
 
+<div class="controls">
 <select id="classSelect">
 <option value="">Select Class</option>
 <option value="IK-1">IK-1</option>
@@ -48,8 +106,10 @@ select, input, button { padding:10px; margin:5px; }
 <button id="loadBtn">Load</button>
 <button onclick="downloadExcel()">Excel</button>
 <button onclick="downloadPDF()">PDF</button>
+</div>
 
 <div id="dataContainer"></div>
+
 </div>
 
 <script>
@@ -57,14 +117,13 @@ let db;
 let currentData = [];
 
 const firebaseConfig = {
- apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
- databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
 };
 
 firebase.initializeApp(firebaseConfig);
 db = firebase.database();
 
-// ✅ attach event safely (fix loadData undefined)
 document.getElementById("loadBtn").addEventListener("click", loadData);
 
 async function loadData() {
@@ -76,7 +135,7 @@ async function loadData() {
   const container = document.getElementById("dataContainer");
 
   if (!cls || !type) {
-    container.innerHTML = "Please select class & view type";
+    container.innerHTML = '<div class="empty">Select class & view</div>';
     return;
   }
 
@@ -92,20 +151,21 @@ async function loadData() {
       container.innerHTML = "";
 
       Object.keys(data).forEach(date => {
-
         if (from && date < from) return;
         if (to && date > to) return;
 
         const log = data[date];
 
+        currentData.push({ date, ...log });
+
         const div = document.createElement("div");
         div.className = "card";
-        div.innerHTML = "<b>" + date + "</b><br>" +
-                        "👩‍🏫 " + (log.teacher || "") + "<br>" +
-                        "📘 " + (log.subject || "") + " - " + (log.topic || "") + "<br>" +
-                        "📝 HW: " + (log.homework || "");
-
-        currentData.push({ date: date, teacher: log.teacher });
+        div.innerHTML = `
+          <div class="title">📅 ${date}</div>
+          👩‍🏫 ${log.teacher || ''}<br>
+          📘 ${log.subject || ''} - ${log.topic || ''}<br>
+          📝 ${log.homework || ''}
+        `;
         container.appendChild(div);
       });
     }
@@ -116,9 +176,7 @@ async function loadData() {
 
       container.innerHTML = "";
 
-      Object.entries(data).forEach(function(entry) {
-        const section = entry[1];
-
+      Object.values(data).forEach(section => {
         Object.keys(section).forEach(date => {
 
           if (from && date < from) return;
@@ -126,49 +184,50 @@ async function loadData() {
 
           let present = 0;
           let absent = 0;
-          let matched = false;
 
-          Object.values(section[date]).forEach(student => 
-              matched = true;
+          Object.values(section[date]).forEach(student => {
+            if (student.class === cls) {
               if (student.status === "Present") present++;
               if (student.status === "Absent") absent++;
             }
           });
 
-          if (!matched) return;
+          if (present === 0 && absent === 0) return;
+
+          currentData.push({ date, present, absent });
 
           const div = document.createElement("div");
           div.className = "card";
-          div.innerHTML = "<b>" + date + "</b><br>" +
-                          "✅ Present: " + present + "<br>" +
-                          "❌ Absent: " + absent;
-
-          currentData.push({ date: date, present: present, absent: absent });
+          div.innerHTML = `
+            <div class="title">📅 ${date}</div>
+            ✅ Present: ${present}<br>
+            ❌ Absent: ${absent}
+          `;
           container.appendChild(div);
         });
       });
     }
 
     if (currentData.length === 0) {
-      container.innerHTML = "No data found";
+      container.innerHTML = '<div class="empty">No data found</div>';
     }
 
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = "Error loading data";
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = '<div class="empty">Error loading data</div>';
   }
 }
 
 function downloadExcel() {
-  if (currentData.length === 0) return alert("No data");
+  if (!currentData.length) return alert("No data");
   const ws = XLSX.utils.json_to_sheet(currentData);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Report");
   XLSX.writeFile(wb, "Report.xlsx");
 }
 
-async function downloadPDF() {
-  if (currentData.length === 0) return alert("No data");
+function downloadPDF() {
+  if (!currentData.length) return alert("No data");
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
