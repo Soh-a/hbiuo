@@ -45,7 +45,7 @@ select, input, button { padding:10px; margin:5px; }
 <input type="date" id="fromDate">
 <input type="date" id="toDate">
 
-<button onclick="loadData()">Load</button>
+<button id="loadBtn">Load</button>
 <button onclick="downloadExcel()">Excel</button>
 <button onclick="downloadPDF()">PDF</button>
 
@@ -57,12 +57,15 @@ let db;
 let currentData = [];
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com""
+ apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+ databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
 };
 
 firebase.initializeApp(firebaseConfig);
 db = firebase.database();
+
+// ✅ attach event safely (fix loadData undefined)
+document.getElementById("loadBtn").addEventListener("click", loadData);
 
 async function loadData() {
   const cls = document.getElementById("classSelect").value;
@@ -82,7 +85,6 @@ async function loadData() {
 
   try {
 
-    // ✅ LOGBOOK VIEW
     if (type === "logbook") {
       const snap = await db.ref("logbook/" + cls).once("value");
       const data = snap.val() || {};
@@ -96,37 +98,26 @@ async function loadData() {
 
         const log = data[date];
 
-        const record = {
-          date,
-          subject: log.subject,
-          topic: log.topic,
-          homework: log.homework,
-          teacher: log.teacher
-        };
-
-        currentData.push(record);
-
         const div = document.createElement("div");
         div.className = "card";
-        div.innerHTML = `
-          <b>${date}</b><br>
-          👩‍🏫 ${log.teacher}<br>
-          📘 ${log.subject} - ${log.topic}<br>
-          📝 HW: ${log.homework}
-        `;
+        div.innerHTML = "<b>" + date + "</b><br>" +
+                        "👩‍🏫 " + (log.teacher || "") + "<br>" +
+                        "📘 " + (log.subject || "") + " - " + (log.topic || "") + "<br>" +
+                        "📝 HW: " + (log.homework || "");
 
+        currentData.push({ date: date, teacher: log.teacher });
         container.appendChild(div);
       });
     }
 
-    // ✅ ATTENDANCE VIEW (FIXED: FILTER BY CLASS)
     if (type === "attendance") {
       const snap = await db.ref("attendance").once("value");
       const data = snap.val() || {};
 
       container.innerHTML = "";
 
-      Object.entries(data).forEach(([sectionId, section]) => {
+      Object.entries(data).forEach(function(entry) {
+        const section = entry[1];
 
         Object.keys(section).forEach(date => {
 
@@ -138,35 +129,22 @@ async function loadData() {
           let matched = false;
 
           Object.values(section[date]).forEach(student => {
-
-            // 🔥 IMPORTANT FILTER (matches selected class)
-            if (student.class === cls || student.className === cls || student.cls === cls) {
+            if (student.class === cls) {
               matched = true;
-
               if (student.status === "Present") present++;
               if (student.status === "Absent") absent++;
             }
           });
 
-          // Only show if class matched
           if (!matched) return;
-
-          const record = {
-            date,
-            present,
-            absent
-          };
-
-          currentData.push(record);
 
           const div = document.createElement("div");
           div.className = "card";
-          div.innerHTML = `
-            <b>${date}</b><br>
-            ✅ Present: ${present}<br>
-            ❌ Absent: ${absent}
-          `;
+          div.innerHTML = "<b>" + date + "</b><br>" +
+                          "✅ Present: " + present + "<br>" +
+                          "❌ Absent: " + absent;
 
+          currentData.push({ date: date, present: present, absent: absent });
           container.appendChild(div);
         });
       });
@@ -198,11 +176,8 @@ async function downloadPDF() {
   let y = 10;
 
   currentData.forEach(item => {
-    Object.values(item).forEach(val => {
-      doc.text(String(val), 10, y);
-      y += 7;
-    });
-    y += 5;
+    doc.text(JSON.stringify(item), 10, y);
+    y += 10;
   });
 
   doc.save("Report.pdf");
