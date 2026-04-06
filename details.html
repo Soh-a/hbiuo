@@ -5,14 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Teacher Logbook & Attendance</title>
 
-<!-- ✅ Firebase COMPAT version (fixes your errors) -->
+<!-- ✅ ONLY USE THESE (DO NOT USE firebase-app.js v10) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<!-- Excel -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-
-<!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -28,19 +25,21 @@ select, input, button { padding:10px; margin:5px; }
 <header><h2>Teacher Logbook & Attendance</h2></header>
 
 <div class="container">
-<select id="classSelect">
+<select id="classSelect" onchange="loadData()">
 <option value="">Select Class</option>
+<option value="IK-1">IK-1</option>
 <option value="IK-2">IK-2</option>
+<option value="IK-3">IK-3</option>
 <option value="Class 1">Class 1</option>
 <option value="Class 2">Class 2</option>
 <option value="Class 3">Class 3</option>
 <option value="Class 4">Class 4</option>
+<option value="Class 5">Class 5</option>
 </select>
 
-<input type="date" id="fromDate">
-<input type="date" id="toDate">
+<input type="date" id="fromDate" onchange="loadData()">
+<input type="date" id="toDate" onchange="loadData()">
 
-<button onclick="loadData()">Load Data</button>
 <button onclick="downloadExcel()">Download Excel</button>
 <button onclick="downloadPDF()">Download PDF</button>
 
@@ -48,17 +47,19 @@ select, input, button { padding:10px; margin:5px; }
 </div>
 
 <script>
-// 🔥 YOUR Firebase config (fill this)
+// ✅ DEFINE VARIABLES FIRST (fixes all reference errors)
+let db;
+let currentData = [];
+
+// 🔥 YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  databaseURL: "YOUR_DB_URL"
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
 };
 
-// ✅ Initialize FIRST (fixes 'db before initialization')
+// ✅ INIT FIREBASE
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let currentData = [];
+db = firebase.database();
 
 async function loadData() {
   const cls = document.getElementById("classSelect").value;
@@ -66,12 +67,13 @@ async function loadData() {
   const to = document.getElementById("toDate").value;
 
   const container = document.getElementById("dataContainer");
-  container.innerHTML = "Loading...";
 
   if (!cls) {
-    alert("Select class");
+    container.innerHTML = "";
     return;
   }
+
+  container.innerHTML = "Loading...";
 
   try {
     const logSnap = await db.ref("logbook/" + cls).once("value");
