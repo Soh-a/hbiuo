@@ -20,7 +20,7 @@ body{font-family:Arial;background:#f1f5f9;margin:0;display:flex}
 table{width:100%;margin-top:10px;border-collapse:collapse}
 td,th{padding:10px;border-bottom:1px solid #ddd}
 .status-paid{color:green}
-.status-pending{color:red}
+.status-unpaid{color:red}
 </style>
 </head>
 
@@ -29,8 +29,6 @@ td,th{padding:10px;border-bottom:1px solid #ddd}
 <div class="sidebar">
 <h2>SAI DRS</h2>
 <a href="#">Dashboard</a>
-<a href="#">Receipts</a>
-<a href="#">Receivable</a>
 </div>
 
 <div class="main">
@@ -38,25 +36,10 @@ td,th{padding:10px;border-bottom:1px solid #ddd}
 <h2>Finance Dashboard</h2>
 
 <div class="cards">
-<div class="card">
-<h4>Total Revenue</h4>
-<h2 id="totalRevenue">₹0</h2>
-</div>
-
-<div class="card">
-<h4>Outstanding</h4>
-<h2 id="outstandingFees">₹0</h2>
-</div>
-
-<div class="card">
-<h4>This Month</h4>
-<h2 id="monthlyCollection">₹0</h2>
-</div>
-
-<div class="card">
-<h4>Defaulters</h4>
-<h2 id="defaultersCount">0</h2>
-</div>
+<div class="card"><h4>Total Revenue</h4><h2 id="totalRevenue">₹0</h2></div>
+<div class="card"><h4>Outstanding</h4><h2 id="outstandingFees">₹0</h2></div>
+<div class="card"><h4>This Month</h4><h2 id="monthlyCollection">₹0</h2></div>
+<div class="card"><h4>Defaulters</h4><h2 id="defaultersCount">0</h2></div>
 </div>
 
 <div class="chart-box">
@@ -101,102 +84,106 @@ const db = firebase.database();
 
 /* FORMAT */
 function formatINR(num){
-  return "₹" + num.toLocaleString("en-IN");
+  return "₹" + Number(num).toLocaleString("en-IN");
 }
 
-/* VARIABLES */
-let totalRevenue=0, outstanding=0, monthly=0, defaulters=0;
-let monthlyData = Array(12).fill(0);
+/* CHART INSTANCES */
+let revenueChart, collectionChart;
 
-/* FETCH DATA */
-db.ref("students").on("value", snap => {
+/* LOAD DATA */
+db.ref("/").on("value", snap => {
 
     let table = document.getElementById("transactionTable");
-    table.innerHTML="";
+    table.innerHTML = "";
 
-    totalRevenue=0;
-    outstanding=0;
-    monthly=0;
-    defaulters=0;
-    monthlyData = Array(12).fill(0);
+    let totalRevenue = 0;
+    let outstanding = 0;
+    let monthly = 0;
+    let defaultersSet = new Set();
+    let monthlyData = Array(12).fill(0);
 
-    snap.forEach(studentSnap => {
+    const currentMonth = new Date().getMonth();
 
-        let student = studentSnap.val();
-        let studentId = studentSnap.key;
-        let studentClass = student.class || "-";
-        let studentName = student.name || studentId;
+    snap.forEach(child => {
 
-        let fees = student.fees;
-        if(!fees) return;
+        const key = child.key;
+        const student = child.val();
 
-        Object.keys(fees).forEach(month => {
+        // ❌ Skip non-student nodes
+        if(key === "attendance" || key === "staff" || key === "questions") return;
 
-            let d = fees[month];
+        const name = student.name || key;
+        const studentClass = student.class || "-";
 
-            let status = (d.status || "pending").toLowerCase();
-            let date = new Date(d.paidAt || Date.now());
+        // ✅ FIX: correct field name
+        const fee = Number(student.monthlyfee || 0);
 
-            // ✅ FIX: use monthlyFee
-            let amount = Number(student.monthlyFee || 0);
+        if(!student.fees) return;
+
+        let hasPending = false;
+
+        Object.keys(student.fees).forEach(month => {
+
+            const d = student.fees[month] || {};
+            const status = (d.status || "unpaid").toLowerCase();
+
+            let date = d.paidAt ? new Date(d.paidAt) : new Date();
 
             if(status === "paid"){
-                totalRevenue += amount;
+                totalRevenue += fee;
 
-                if(new Date().getMonth() === date.getMonth()){
-                    monthly += amount;
+                if(date.getMonth() === currentMonth){
+                    monthly += fee;
                 }
 
-                monthlyData[date.getMonth()] += amount;
+                monthlyData[date.getMonth()] += fee;
 
             } else {
-                outstanding += amount;
-                defaulters++;
+                outstanding += fee;
+                hasPending = true;
             }
 
             table.innerHTML += `
             <tr>
-                <td>${studentName}</td>
+                <td>${name}</td>
                 <td>${studentClass}</td>
-                <td>${formatINR(amount)}</td>
+                <td>${formatINR(fee)}</td>
                 <td class="status-${status}">${status}</td>
                 <td>${date.toLocaleDateString()}</td>
             </tr>`;
         });
 
+        if(hasPending){
+            defaultersSet.add(key);
+        }
+
     });
 
-    updateUI();
-
-});
-
-/* UPDATE UI */
-function updateUI(){
+    // UI UPDATE
     document.getElementById("totalRevenue").innerText = formatINR(totalRevenue);
     document.getElementById("outstandingFees").innerText = formatINR(outstanding);
     document.getElementById("monthlyCollection").innerText = formatINR(monthly);
-    document.getElementById("defaultersCount").innerText = defaulters;
+    document.getElementById("defaultersCount").innerText = defaultersSet.size;
 
-    loadCharts();
-}
+    // DESTROY OLD CHARTS
+    if(revenueChart) revenueChart.destroy();
+    if(collectionChart) collectionChart.destroy();
 
-/* CHARTS */
-function loadCharts(){
-
-    new Chart(document.getElementById("revenueChart"), {
+    // REVENUE CHART
+    revenueChart = new Chart(document.getElementById("revenueChart"), {
         type:"line",
         data:{
             labels:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
             datasets:[{
                 label:"Revenue",
                 data:monthlyData,
-                borderWidth:2,
-                fill:false
+                borderWidth:2
             }]
         }
     });
 
-    new Chart(document.getElementById("collectionChart"), {
+    // PIE CHART
+    collectionChart = new Chart(document.getElementById("collectionChart"), {
         type:"doughnut",
         data:{
             labels:["Collected","Pending"],
@@ -206,7 +193,7 @@ function loadCharts(){
         }
     });
 
-}
+});
 
 </script>
 
