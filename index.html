@@ -9,8 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-
 <style>
 body{font-family:Arial;background:#f1f5f9;margin:0;display:flex}
 .sidebar{width:250px;background:#1e3a8a;color:#fff;padding:20px;height:100vh}
@@ -110,7 +108,7 @@ function formatINR(num){
 let totalRevenue=0, outstanding=0, monthly=0, defaulters=0;
 let monthlyData = Array(12).fill(0);
 
-/* FETCH DATA (FIXED FOR YOUR STRUCTURE) */
+/* FETCH DATA */
 db.ref("students").on("value", snap => {
 
     let table = document.getElementById("transactionTable");
@@ -127,6 +125,7 @@ db.ref("students").on("value", snap => {
         let student = studentSnap.val();
         let studentId = studentSnap.key;
         let studentClass = student.class || "-";
+        let studentName = student.name || studentId;
 
         let fees = student.fees;
         if(!fees) return;
@@ -135,22 +134,20 @@ db.ref("students").on("value", snap => {
 
             let d = fees[month];
 
-            let amount = d.status === "paid"
-    ? Number(student.monthlyFee || 0)
-    : Number(student.monthlyFee || 0);
             let status = (d.status || "pending").toLowerCase();
             let date = new Date(d.paidAt || Date.now());
 
-            let m = date.getMonth();
+            // ✅ FIX: use monthlyFee
+            let amount = Number(student.monthlyFee || 0);
 
             if(status === "paid"){
                 totalRevenue += amount;
 
-                if(new Date().getMonth() === m){
+                if(new Date().getMonth() === date.getMonth()){
                     monthly += amount;
                 }
 
-                monthlyData[m] += amount;
+                monthlyData[date.getMonth()] += amount;
 
             } else {
                 outstanding += amount;
@@ -159,7 +156,7 @@ db.ref("students").on("value", snap => {
 
             table.innerHTML += `
             <tr>
-                <td>${studentId}</td>
+                <td>${studentName}</td>
                 <td>${studentClass}</td>
                 <td>${formatINR(amount)}</td>
                 <td class="status-${status}">${status}</td>
