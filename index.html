@@ -3,76 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sai DRS Kids – Finance Dashboard</title>
+<title>Sai DRS Kids – Executive Finance Dashboard</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
 <style>
-body{font-family:Arial;background:#f1f5f9;margin:0;display:flex}
-.sidebar{width:250px;background:#1e3a8a;color:#fff;padding:20px;height:100vh}
-.sidebar a{display:block;color:#fff;padding:10px;text-decoration:none;margin:5px 0}
-.main{flex:1;padding:20px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
-.card{background:#fff;padding:15px;border-radius:10px}
-.chart-box{background:#fff;margin-top:20px;padding:20px;border-radius:10px}
-table{width:100%;margin-top:10px;border-collapse:collapse}
-td,th{padding:10px;border-bottom:1px solid #ddd}
-.status-paid{color:green}
-.status-unpaid{color:red}
+:root {
+  --primary: #1e3a8a;
+  --secondary: #64748b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body { display: flex; background: var(--bg); color: #1e293b; min-height: 100vh; }
+
+/* Sidebar Styling */
+.sidebar {
+  width: 260px;
+  background: var(--primary);
+  color: #fff;
+  padding: 30px 20px;
+  position: fixed;
+  height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.sidebar h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #cbd5e1;
+  padding: 14px 18px;
+  text-decoration: none;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: 0.2s;
+}
+
+.sidebar a:hover, .sidebar a.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Main Content Area */
+.main { flex: 1; margin-left: 260px; padding: 40px; transition: 0.3s; }
+
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header-flex h2 { font-weight: 700; color: #0f172a; }
+
+/* KPI Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
+}
+
+.card h4 { font-size: 0.85rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.card h2 { font-size: 1.75rem; margin-top: 10px; font-weight: 700; color: #1e293b; }
+
+/* Grid for Charts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.chart-box {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.chart-box h4 { margin-bottom: 20px; font-weight: 600; color: #334155; }
+
+/* Table Styling */
+.table-container { overflow-x: auto; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { padding: 15px; background: #f8fafc; color: var(--secondary); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; border-bottom: 2px solid #f1f5f9; }
+td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #334155; }
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.status-paid { background: #dcfce7; color: #166534; }
+.status-unpaid { background: #fee2e2; color: #991b1b; }
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .sidebar { width: 80px; padding: 20px 10px; }
+  .sidebar h2, .sidebar a span { display: none; }
+  .main { margin-left: 80px; padding: 20px; }
+  .grid-2 { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-<h2>SAI DRS</h2>
-<a href="#">Dashboard</a>
+  <h2><i class="fas fa-graduation-cap"></i> <span>SAI DRS</span></h2>
+  <a href="#" class="active"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
+  <a href="#"><i class="fas fa-receipt"></i> <span>Fees</span></a>
+  <a href="#"><i class="fas fa-users-slash"></i> <span>Defaulters</span></a>
+  <a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a>
 </div>
 
 <div class="main">
+  <div class="header-flex">
+    <h2>Finance Insights</h2>
+    <div style="font-size: 0.9rem; color: var(--secondary);">
+      <i class="far fa-calendar-alt"></i> <span id="currentDate"></span>
+    </div>
+  </div>
 
-<h2>Finance Dashboard</h2>
+  <div class="cards">
+    <div class="card">
+      <h4><i class="fas fa-wallet" style="color: var(--primary)"></i> Total Revenue</h4>
+      <h2 id="totalRevenue">₹0</h2>
+    </div>
+    <div class="card">
+      <h4><i class="fas fa-hand-holding-usd" style="color: var(--danger)"></i> Outstanding</h4>
+      <h2 id="outstandingFees">₹0</h2>
+    </div>
+    <div class="card">
+      <h4><i class="fas fa-calendar-check" style="color: var(--success)"></i> This Month</h4>
+      <h2 id="monthlyCollection">₹0</h2>
+    </div>
+    <div class="card">
+      <h4><i class="fas fa-user-clock" style="color: var(--warning)"></i> Defaulters</h4>
+      <h2 id="defaultersCount">0</h2>
+    </div>
+  </div>
 
-<div class="cards">
-<div class="card"><h4>Total Revenue</h4><h2 id="totalRevenue">₹0</h2></div>
-<div class="card"><h4>Outstanding</h4><h2 id="outstandingFees">₹0</h2></div>
-<div class="card"><h4>This Month</h4><h2 id="monthlyCollection">₹0</h2></div>
-<div class="card"><h4>Defaulters</h4><h2 id="defaultersCount">0</h2></div>
-</div>
+  <div class="grid-2">
+    <div class="chart-box">
+      <h4>Monthly Revenue Growth</h4>
+      <canvas id="revenueChart" height="120"></canvas>
+    </div>
+    <div class="chart-box">
+      <h4>Collection Ratio</h4>
+      <canvas id="collectionChart"></canvas>
+    </div>
+  </div>
 
-<div class="chart-box">
-<h4>Revenue Trend</h4>
-<canvas id="revenueChart"></canvas>
-</div>
-
-<div class="chart-box">
-<h4>Collection vs Pending</h4>
-<canvas id="collectionChart"></canvas>
-</div>
-
-<div class="chart-box">
-<h4>Transactions</h4>
-<table>
-<thead>
-<tr>
-<th>Student</th>
-<th>Class</th>
-<th>Amount</th>
-<th>Status</th>
-<th>Date</th>
-</tr>
-</thead>
-<tbody id="transactionTable"></tbody>
-</table>
-</div>
-
+  <div class="chart-box">
+    <h4>Recent Transactions</h4>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Class</th>
+            <th>Fee Amount</th>
+            <th>Payment Status</th>
+            <th>Transaction Date</th>
+          </tr>
+        </thead>
+        <tbody id="transactionTable"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script>
+/* DATE DISPLAY */
+document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-/* FIREBASE */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
@@ -82,62 +219,42 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* FORMAT */
 function formatINR(num){
   return "₹" + Number(num).toLocaleString("en-IN");
 }
 
-/* CHART INSTANCES */
 let revenueChart, collectionChart;
 
-/* LOAD DATA */
 db.ref("/").on("value", snap => {
-
     let table = document.getElementById("transactionTable");
     table.innerHTML = "";
 
-    let totalRevenue = 0;
-    let outstanding = 0;
-    let monthly = 0;
+    let totalRevenue = 0, outstanding = 0, monthly = 0;
     let defaultersSet = new Set();
     let monthlyData = Array(12).fill(0);
-
     const currentMonth = new Date().getMonth();
 
     snap.forEach(child => {
-
         const key = child.key;
         const student = child.val();
-
-        // ❌ Skip non-student nodes
-        if(key === "attendance" || key === "staff" || key === "questions") return;
+        if(["attendance", "staff", "questions"].includes(key)) return;
 
         const name = student.name || key;
         const studentClass = student.class || "-";
-
-        // ✅ FIX: correct field name
         const fee = Number(student.monthlyfee || 0);
 
         if(!student.fees) return;
 
         let hasPending = false;
-
         Object.keys(student.fees).forEach(month => {
-
             const d = student.fees[month] || {};
             const status = (d.status || "unpaid").toLowerCase();
-
             let date = d.paidAt ? new Date(d.paidAt) : new Date();
 
             if(status === "paid"){
                 totalRevenue += fee;
-
-                if(date.getMonth() === currentMonth){
-                    monthly += fee;
-                }
-
+                if(date.getMonth() === currentMonth) monthly += fee;
                 monthlyData[date.getMonth()] += fee;
-
             } else {
                 outstanding += fee;
                 hasPending = true;
@@ -145,18 +262,14 @@ db.ref("/").on("value", snap => {
 
             table.innerHTML += `
             <tr>
-                <td>${name}</td>
+                <td><strong>${name}</strong></td>
                 <td>${studentClass}</td>
                 <td>${formatINR(fee)}</td>
-                <td class="status-${status}">${status}</td>
-                <td>${date.toLocaleDateString()}</td>
+                <td><span class="status-pill status-${status}">${status}</span></td>
+                <td>${date.toLocaleDateString('en-IN')}</td>
             </tr>`;
         });
-
-        if(hasPending){
-            defaultersSet.add(key);
-        }
-
+        if(hasPending) defaultersSet.add(key);
     });
 
     // UI UPDATE
@@ -165,11 +278,12 @@ db.ref("/").on("value", snap => {
     document.getElementById("monthlyCollection").innerText = formatINR(monthly);
     document.getElementById("defaultersCount").innerText = defaultersSet.size;
 
-    // DESTROY OLD CHARTS
+    // REFRESH CHARTS
     if(revenueChart) revenueChart.destroy();
     if(collectionChart) collectionChart.destroy();
 
-    // REVENUE CHART
+    const chartOptions = { responsive: true, plugins: { legend: { display: false } } };
+
     revenueChart = new Chart(document.getElementById("revenueChart"), {
         type:"line",
         data:{
@@ -177,24 +291,28 @@ db.ref("/").on("value", snap => {
             datasets:[{
                 label:"Revenue",
                 data:monthlyData,
-                borderWidth:2
+                borderColor:"#1e3a8a",
+                backgroundColor:"rgba(30, 58, 138, 0.1)",
+                fill: true,
+                tension: 0.4
             }]
-        }
+        },
+        options: chartOptions
     });
 
-    // PIE CHART
     collectionChart = new Chart(document.getElementById("collectionChart"), {
         type:"doughnut",
         data:{
             labels:["Collected","Pending"],
             datasets:[{
-                data:[totalRevenue,outstanding]
+                data:[totalRevenue, outstanding],
+                backgroundColor:["#10b981","#ef4444"],
+                hoverOffset: 4
             }]
-        }
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
     });
-
 });
-
 </script>
 
 </body>
