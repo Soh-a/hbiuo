@@ -135,7 +135,9 @@ db.ref("students").on("value", snap => {
 
             let d = fees[month];
 
-            let amount = Number(d.amountPaid || 0);
+            let amount = d.status === "paid"
+    ? Number(student.monthlyFee || 0)
+    : Number(student.monthlyFee || 0);
             let status = (d.status || "pending").toLowerCase();
             let date = new Date(d.paidAt || Date.now());
 
