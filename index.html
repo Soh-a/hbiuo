@@ -1,366 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sai DRS Kids – Executive Finance Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sai DRS Kids – Finance Dashboard</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-
-    <style>
-        :root {
-            --primary: #2563eb;
-            --secondary: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --sidebar: #0f172a;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
-        body { display: flex; background: var(--bg); color: #1e293b; min-height: 100vh; overflow-x: hidden; }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px;
-            background: var(--sidebar);
-            color: #fff;
-            padding: 30px 20px;
-            position: fixed;
-            height: 100vh;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #38bdf8;
-        }
-
-        .nav { display: flex; flex-direction: column; height: calc(100% - 100px); }
-
-        .nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            color: #94a3b8;
-            text-decoration: none;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            transition: 0.2s;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-
-        .nav a:hover, .nav a.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-
-        .logout-btn { margin-top: auto; color: #fca5a5 !important; }
-
-        /* --- MAIN CONTENT --- */
-        .main { flex: 1; margin-left: 260px; padding: 40px; transition: 0.3s; width: 100%; }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .header-left { display: flex; align-items: center; gap: 15px; }
-
-        .menu-toggle {
-            display: none;
-            font-size: 22px;
-            cursor: pointer;
-            color: var(--sidebar);
-        }
-
-        .date-pill {
-            background: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            color: var(--secondary);
-        }
-
-        /* --- KPI CARDS --- */
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 24px;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .icon-circle {
-            width: 45px; height: 45px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 15px; font-size: 18px;
-        }
-
-        .rev-bg { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
-        .out-bg { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        .col-bg { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .def-bg { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-
-        /* --- CHARTS & TABLES --- */
-        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 30px; }
-        .chart-box {
-            background: var(--card-bg);
-            padding: 24px;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-        .chart-box h4 { margin-bottom: 20px; font-weight: 600; color: var(--sidebar); }
-
-        .table-container { overflow-x: auto; width: 100%; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th { text-align: left; padding: 15px; background: #f8fafc; color: var(--secondary); font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
-
-        .status-pill {
-            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
-        }
-        .paid { background: #dcfce7; color: #166534; }
-        .pending { background: #fee2e2; color: #991b1b; }
-
-        /* --- MOBILE QUERIES --- */
-        @media (max-width: 1024px) {
-            .sidebar { left: -260px; }
-            .sidebar.active { left: 0; }
-            .main { margin-left: 0; padding: 20px; }
-            .menu-toggle { display: block; }
-            .grid-2 { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 480px) {
-            .header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .cards { grid-template-columns: 1fr; }
-        }
-    </style>
+<style>
+body{font-family:Arial;background:#f1f5f9;margin:0;display:flex}
+.sidebar{width:250px;background:#1e3a8a;color:#fff;padding:20px;height:100vh}
+.sidebar a{display:block;color:#fff;padding:10px;text-decoration:none;margin:5px 0}
+.main{flex:1;padding:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+.card{background:#fff;padding:15px;border-radius:10px}
+.chart-box{background:#fff;margin-top:20px;padding:20px;border-radius:10px}
+table{width:100%;margin-top:10px;border-collapse:collapse}
+td,th{padding:10px;border-bottom:1px solid #ddd}
+.status-paid{color:green}
+.status-pending{color:red}
+</style>
 </head>
+
 <body>
 
-<div class="sidebar" id="sidebar">
-    <div class="logo"><i class="fas fa-university"></i> SAI DRS KIDS</div>
-    <div class="nav">
-        <a href="#" class="active"><i class="fas fa-th-large"></i> Dashboard</a>
-        <a href="#"><i class="fas fa-receipt"></i> Receipts</a>
-        <a href="#"><i class="fas fa-file-invoice"></i> Receivables</a>
-        <a href="#"><i class="fas fa-user-shield"></i> Defaulters</a>
-        <a onclick="logout()" class="logout-btn"><i class="fas fa-power-off"></i> Logout</a>
-    </div>
+<div class="sidebar">
+<h2>SAI DRS</h2>
+<a href="#">Dashboard</a>
+<a href="#">Receipts</a>
+<a href="#">Receivable</a>
 </div>
 
 <div class="main">
-    <div class="header">
-        <div class="header-left">
-            <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
-            <h2>Finance Insights</h2>
-        </div>
-        <div class="date-pill" id="currentDate">--</div>
-    </div>
 
-    <div class="cards">
-        <div class="card">
-            <div class="icon-circle rev-bg"><i class="fas fa-chart-pie"></i></div>
-            <h4>Total Revenue</h4>
-            <h2 id="totalRevenue">₹0</h2>
-        </div>
-        <div class="card">
-            <div class="icon-circle out-bg"><i class="fas fa-clock"></i></div>
-            <h4>Outstanding</h4>
-            <h2 id="outstandingFees">₹0</h2>
-        </div>
-        <div class="card">
-            <div class="icon-circle col-bg"><i class="fas fa-check-circle"></i></div>
-            <h4>This Month</h4>
-            <h2 id="monthlyCollection">₹0</h2>
-        </div>
-        <div class="card">
-            <div class="icon-circle def-bg"><i class="fas fa-users"></i></div>
-            <h4>Defaulters</h4>
-            <h2 id="defaultersCount">0</h2>
-        </div>
-    </div>
+<h2>Finance Dashboard</h2>
 
-    <div class="grid-2">
-        <div class="chart-box">
-            <h4>Revenue Trend</h4>
-            <canvas id="revenueChart"></canvas>
-        </div>
-        <div class="chart-box">
-            <h4>Collection Ratio</h4>
-            <canvas id="collectionChart"></canvas>
-        </div>
-    </div>
+<div class="cards">
+<div class="card">
+<h4>Total Revenue</h4>
+<h2 id="totalRevenue">₹0</h2>
+</div>
 
-    <div class="chart-box">
-        <h4>Recent Transactions</h4>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>Class</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionTable"></tbody>
-            </table>
-        </div>
-    </div>
+<div class="card">
+<h4>Outstanding</h4>
+<h2 id="outstandingFees">₹0</h2>
+</div>
+
+<div class="card">
+<h4>This Month</h4>
+<h2 id="monthlyCollection">₹0</h2>
+</div>
+
+<div class="card">
+<h4>Defaulters</h4>
+<h2 id="defaultersCount">0</h2>
+</div>
+</div>
+
+<div class="chart-box">
+<h4>Revenue Trend</h4>
+<canvas id="revenueChart"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>Collection vs Pending</h4>
+<canvas id="collectionChart"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>Transactions</h4>
+<table>
+<thead>
+<tr>
+<th>Student</th>
+<th>Class</th>
+<th>Amount</th>
+<th>Status</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody id="transactionTable"></tbody>
+</table>
+</div>
+
 </div>
 
 <script>
-/* FIREBASE CONFIG */
+
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
   databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
   projectId: "students-6e271"
 };
-
-if (firebaseConfig.apiKey !== "YOUR_KEY") {
-    firebase.initializeApp(firebaseConfig);
-}
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* FORMATTERS */
-const formatINR = (num) => "₹" + num.toLocaleString("en-IN");
-document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('active');
+/* FORMAT */
+function formatINR(num){
+  return "₹" + num.toLocaleString("en-IN");
 }
 
-/* DATA LOGIC */
-let totalRevenue = 0;
-let outstanding = 0;
-let monthly = 0;
-let defaulters = 0;
+/* VARIABLES */
+let totalRevenue=0, outstanding=0, monthly=0, defaulters=0;
 let monthlyData = Array(12).fill(0);
 
-// Sample Data Trigger (If Firebase is not connected)
-function updateUI() {
-    document.getElementById("totalRevenue").innerText = formatINR(totalRevenue);
-    document.getElementById("outstandingFees").innerText = formatINR(outstanding);
-    document.getElementById("monthlyCollection").innerText = formatINR(monthly);
-    document.getElementById("defaultersCount").innerText = defaulters;
-    loadCharts();
-}
+/* FETCH DATA (FIXED FOR YOUR STRUCTURE) */
+db.ref("students").on("value", snap => {
 
-/* FETCH FROM FIREBASE */
-if (firebaseConfig.apiKey !== "YOUR_KEY") {
-    db.ref("fees").on("value", snap => {
-        let table = document.getElementById("transactionTable");
-        table.innerHTML = "";
-        totalRevenue = 0; outstanding = 0; monthly = 0; defaulters = 0;
-        
-        snap.forEach(child => {
-            let d = child.val();
-            let amt = Number(d.amount || 0);
-            let status = d.status ? d.status.toLowerCase() : "pending";
-            let date = new Date(d.date || Date.now());
+    let table = document.getElementById("transactionTable");
+    table.innerHTML="";
+
+    totalRevenue=0;
+    outstanding=0;
+    monthly=0;
+    defaulters=0;
+    monthlyData = Array(12).fill(0);
+
+    snap.forEach(studentSnap => {
+
+        let student = studentSnap.val();
+        let studentId = studentSnap.key;
+        let studentClass = student.class || "-";
+
+        let fees = student.fees;
+        if(!fees) return;
+
+        Object.keys(fees).forEach(month => {
+
+            let d = fees[month];
+
+            let amount = Number(d.amountPaid || 0);
+            let status = (d.status || "pending").toLowerCase();
+            let date = new Date(d.paidAt || Date.now());
+
+            let m = date.getMonth();
 
             if(status === "paid"){
-                totalRevenue += amt;
-                if(new Date().getMonth() === date.getMonth()) monthly += amt;
-                monthlyData[date.getMonth()] += amt;
+                totalRevenue += amount;
+
+                if(new Date().getMonth() === m){
+                    monthly += amount;
+                }
+
+                monthlyData[m] += amount;
+
             } else {
-                outstanding += amt;
+                outstanding += amount;
                 defaulters++;
             }
 
             table.innerHTML += `
-                <tr>
-                    <td><strong>${d.name || "N/A"}</strong></td>
-                    <td>${d.class || "N/A"}</td>
-                    <td>${formatINR(amt)}</td>
-                    <td><span class="status-pill ${status}">${status.toUpperCase()}</span></td>
-                    <td>${date.toLocaleDateString()}</td>
-                </tr>
-            `;
+            <tr>
+                <td>${studentId}</td>
+                <td>${studentClass}</td>
+                <td>${formatINR(amount)}</td>
+                <td class="status-${status}">${status}</td>
+                <td>${date.toLocaleDateString()}</td>
+            </tr>`;
         });
-        updateUI();
+
     });
+
+    updateUI();
+
+});
+
+/* UPDATE UI */
+function updateUI(){
+    document.getElementById("totalRevenue").innerText = formatINR(totalRevenue);
+    document.getElementById("outstandingFees").innerText = formatINR(outstanding);
+    document.getElementById("monthlyCollection").innerText = formatINR(monthly);
+    document.getElementById("defaultersCount").innerText = defaulters;
+
+    loadCharts();
 }
 
 /* CHARTS */
 function loadCharts(){
-    Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = '#64748b';
 
-    // Revenue Chart
-    const ctxLine = document.getElementById("revenueChart").getContext("2d");
-    new Chart(ctxLine, {
-        type: "line",
-        data: {
-            labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-            datasets: [{
-                label: "Revenue",
-                data: monthlyData,
-                borderColor: "#2563eb",
-                backgroundColor: "rgba(37, 99, 235, 0.05)",
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3
+    new Chart(document.getElementById("revenueChart"), {
+        type:"line",
+        data:{
+            labels:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+            datasets:[{
+                label:"Revenue",
+                data:monthlyData,
+                borderWidth:2,
+                fill:false
             }]
-        },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } } } }
+        }
     });
 
-    // Doughnut Chart
-    const ctxDoughnut = document.getElementById("collectionChart").getContext("2d");
-    new Chart(ctxDoughnut, {
-        type: "doughnut",
-        data: {
-            labels: ["Collected", "Pending"],
-            datasets: [{
-                data: [totalRevenue || 1, outstanding || 1],
-                backgroundColor: ["#10b981", "#ef4444"],
-                borderWidth: 0
+    new Chart(document.getElementById("collectionChart"), {
+        type:"doughnut",
+        data:{
+            labels:["Collected","Pending"],
+            datasets:[{
+                data:[totalRevenue,outstanding]
             }]
-        },
-        options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+        }
     });
+
 }
 
-function logout(){
-    alert("Logging out...");
-    // location.href="login.html";
-}
 </script>
+
 </body>
 </html>
