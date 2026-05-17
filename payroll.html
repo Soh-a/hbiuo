@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Payroll & Institutional Slip System</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #1e3a8a; /* Formal navy blue for institutional feel */
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #cbd5e1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            padding: 30px;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1350px;
+            margin: auto;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            background: #f1f5f9;
+            color: #1e293b;
+            font-size: 13px;
+            text-transform: uppercase;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        table td {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .paid {
+            background: #dcfce7;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        .pending {
+            background: #fee2e2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .pay-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .mark-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .slip-btn {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .slip-btn:hover {
+            background: #cbd5e1;
+        }
+
+        select {
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: white;
+        }
+
+        /* SCHOOL STYLE PAYSLIP STYLES */
+        #payslip {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .school-slip-box {
+            background: white;
+            max-width: 750px;
+            margin: auto;
+            border: 2px solid #000000;
+            padding: 30px;
+            position: relative;
+            color: #000000;
+        }
+
+        /* Side-by-Side Flexbox Header Layout */
+        .school-header-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px double #000000;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .school-logo {
+            width: 95px;
+            height: 95px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .school-header-text {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .school-name {
+            font-size: 26px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .school-sub {
+            font-size: 13px;
+            margin: 2px 0;
+            color: #1e293b;
+        }
+
+        .slip-title-badge {
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 4px 15px;
+            font-weight: bold;
+            margin-top: 12px;
+            text-transform: uppercase;
+            font-size: 13px;
+            background: #f1f5f9;
+        }
+
+        /* Meta Information Grid */
+        .school-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .meta-item {
+            display: flex;
+            border-bottom: 1px dotted #64748b;
+            padding-bottom: 3px;
+        }
+
+        .meta-item label {
+            font-weight: bold;
+            width: 130px;
+            color: #1e293b;
+        }
+
+        .meta-item span {
+            flex-grow: 1;
+        }
+
+        /* School Salary Particulars Table */
+        .particulars-table {
+            width: 100%;
+            border: 1px solid #000;
+            margin-bottom: 30px;
+        }
+
+        .particulars-table th {
+            background: #f1f5f9;
+            color: #000;
+            border: 1px solid #000;
+            font-weight: bold;
+            padding: 8px;
+        }
+
+        .particulars-table td {
+            border: 1px solid #000;
+            padding: 10px;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background: #f8fafc;
+        }
+
+        .print-btn {
+            width: 100%;
+            margin-top: 25px;
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .print-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Print Media Setup */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #payslip,
+            #payslip * {
+                visibility: visible;
+            }
+
+            #payslip {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .school-slip-box {
+                border: 2px solid #000000;
+                padding: 20px;
+            }
+
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1 class="title">Staff Payroll Ledger (Academic Year 2026-27)</h1>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Role / Designation</th>
+                        <th>Phone</th>
+                        <th>Month</th>
+                        <th>Salary</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTable"></tbody>
+            </table>
+        </div>
+
+        <!-- SCHOOL RECEIPT FORMAT PAYSLIP -->
+        <div id="payslip">
+            <div class="school-slip-box">
+                
+                <!-- Flexbox Container: Logo on Side, Text details on Right -->
+                <div class="school-header-container">
+                    <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.display='none'">
+                    
+                    <div class="school-header-text">
+                        <div class="school-name">SAI DRS SCHOOL</div>
+                        <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
+                        <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
+                        <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
+                    </div>
+                </div>
+
+                <div class="school-meta-grid">
+                    <div class="meta-item">
+                        <label>Employee Name:</label>
+                        <span id="slipName"></span>
+                    </div>
+                    <div class="meta-item">
+                        <label>Ref/Receipt No:</label>
+                        <span id="slipReceiptId"></span>
+                    </div>
+                    <div class="meta-item">
+                        <label>Designation/Role:</label>
+                        <span id="slipRole"></span>
+                    </div>
+                    <div class="meta-item">
+                        <label>Pay Period / Month:</label>
+                        <span id="slipMonth"></span>
+                    </div>
+                    <div class="meta-item">
+                        <label>Staff ID / User:</label>
+                        <span id="slipUsername"></span>
+                    </div>
+                    <div class="meta-item">
+                        <label>Disbursal Date:</label>
+                        <span id="slipDate"></span>
+                    </div>
+                </div>
+
+                <table class="particulars-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70%; text-align: left;">Earnings Particulars</th>
+                            <th style="width: 30%; text-align: right;">Amount (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Basic Pay Scale & Allowances</td>
+                            <td style="text-align: right;">₹<span id="slipSalary">0</span></td>
+                        </tr>
+                        <tr>
+                            <td>ESIC / Welfare Component</td>
+                            <td style="text-align: right;">Included</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Net Disbursed Amount (in Figures)</td>
+                            <td style="text-align: right;">₹<span id="slipTotalSalary">0</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="font-size: 12px; font-style: italic; margin-top: -15px;">
+                    * This is an officially generated digital system statement. No physical signature required.
+                </div>
+
+                <button class="print-btn" onclick="window.print()">
+                    Print / Download Official Slip
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+            authDomain: "students-6e271.firebaseapp.com",
+            databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+            projectId: "students-6e271",
+            storageBucket: "students-6e271.firebasestorage.app",
+            messagingSenderId: "336382170224",
+            appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const staffRef = ref(db, "staff");
+
+        const months = [
+            "April", "May", "June", "July", "August", "September",
+            "October", "November", "December", "January", "February", "March"
+        ];
+
+        onValue(staffRef, (snapshot) => {
+            const data = snapshot.val();
+            const table = document.getElementById("employeeTable");
+            table.innerHTML = "";
+
+            for (let key in data) {
+                let emp = data[key];
+                let monthOptions = "";
+
+                months.forEach(month => {
+                    monthOptions += `<option value="${month}">${month}</option>`;
+                });
+
+                table.innerHTML += `
+                    <tr>
+                        <td><b>${emp.name || ""}</b></td>
+                        <td>${emp.username || ""}</td>
+                        <td><span style="color: var(--primary); font-weight:500;">${emp.role || ""}</span></td>
+                        <td>${emp.phone || ""}</td>
+                        <td>
+                            <select id="month-${key}">
+                                ${monthOptions}
+                            </select>
+                        </td>
+                        <td><b>₹${emp.salary || 0}</b></td>
+                        <td>
+                            <span class="status ${emp.paymentStatus === 'Paid' ? 'paid' : 'pending'}">
+                                ${emp.paymentStatus || "Pending"}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btns">
+                                <button class="pay-btn" onclick="openBank()">Pay</button>
+                                <button class="mark-btn" onclick="markPaid('${key}')">Mark Paid</button>
+                                <button class="slip-btn" onclick="generatePayslip(
+                                    '${key}',
+                                    '${emp.name || ""}',
+                                    '${emp.username || ""}',
+                                    '${emp.role || ""}',
+                                    '${emp.salary || 0}',
+                                    document.getElementById('month-${key}').value
+                                )">Payslip</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        window.openBank = function () {
+            window.open("https://canarabank.com", "_blank");
+        };
+
+        window.markPaid = function (key) {
+            let month = document.getElementById(`month-${key}`).value;
+            update(ref(db, `staff/${key}`), {
+                paymentStatus: "Paid",
+                paidMonth: month,
+                paidDate: new Date().toLocaleDateString()
+            });
+            alert("Marked As Paid Successfully");
+        };
+
+        window.generatePayslip = function (key, name, username, role, salary, month) {
+            document.getElementById("payslip").style.display = "block";
+            
+            document.getElementById("slipName").innerText = name;
+            document.getElementById("slipUsername").innerText = username;
+            document.getElementById("slipRole").innerText = role;
+            document.getElementById("slipSalary").innerText = salary;
+            document.getElementById("slipTotalSalary").innerText = salary;
+            document.getElementById("slipMonth").innerText = month;
+            
+            // Auto voucher indexing
+            document.getElementById("slipReceiptId").innerText = "SDS/" + key.substring(1, 6).toUpperCase() + "/26-27";
+            document.getElementById("slipDate").innerText = new Date().toLocaleDateString();
+
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: "smooth"
+            });
+        };
+    </script>
+</body>
+</html>
