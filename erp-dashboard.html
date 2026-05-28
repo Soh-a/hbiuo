@@ -353,6 +353,7 @@ table td{
 
 </div>
 
+
 <script>
 
 /* FIREBASE CONFIG */
@@ -368,16 +369,79 @@ const db = firebase.database();
 
 /* TOTAL STUDENTS */
 
-db.ref("/").once("value", snapshot => {
+db.ref("/").once("value").then(snapshot => {
+
+    let totalStudents = 0;
+    let totalFeesPaid = 0;
+    let totalFeesPending = 0;
+
+    const tbody = document.getElementById("paymentTable");
+    tbody.innerHTML = "";
+
+    snapshot.forEach(student => {
+
+        const data = student.val();
+
+        /* Skip non student nodes */
+        if(typeof data !== "object") return;
+
+        totalStudents++;
+
+        /* FEES */
+
+        if(data.fees){
+
+            Object.keys(data.fees).forEach(month => {
+
+                const fee = data.fees[month];
+
+                const status =
+                    (fee.status || "").toLowerCase();
+
+                const amount =
+                    Number(fee.amount || 0);
+
+                if(status === "paid"){
+                    totalFeesPaid += amount;
+                }else{
+                    totalFeesPending += amount;
+                }
+
+                tbody.innerHTML += `
+
+                <tr>
+                    <td>${data.name || student.key}</td>
+                    <td>${data.class || "-"}</td>
+                    <td>₹${amount}</td>
+                    <td>
+                        <span class="status">
+                            ${fee.status || "unpaid"}
+                        </span>
+                    </td>
+                </tr>
+
+                `;
+
+            });
+
+        }
+
+    });
 
     document.getElementById("totalStudents").innerText =
-        snapshot.numChildren();
+        totalStudents;
+
+    document.getElementById("collectedFees").innerText =
+        "₹" + totalFeesPaid.toLocaleString();
+
+    document.getElementById("pendingFees").innerText =
+        "₹" + totalFeesPending.toLocaleString();
 
 });
 
 /* TOTAL STAFF */
 
-db.ref("staff").once("value", snapshot => {
+db.ref("staff").once("value").then(snapshot => {
 
     document.getElementById("totalStaff").innerText =
         snapshot.numChildren();
@@ -386,7 +450,7 @@ db.ref("staff").once("value", snapshot => {
 
 /* ATTENDANCE */
 
-db.ref("attendance").once("value", snapshot => {
+db.ref("attendance").once("value").then(snapshot => {
 
     let total = 0;
     let present = 0;
@@ -407,74 +471,13 @@ db.ref("attendance").once("value", snapshot => {
 
     });
 
-    let percent = 0;
-
-    if(total > 0){
-        percent = Math.round((present / total) * 100);
-    }
+    const percent =
+        total > 0
+        ? Math.round((present / total) * 100)
+        : 0;
 
     document.getElementById("attendancePercent").innerText =
         percent + "%";
-
-});
-
-/* FEES */
-
-db.ref("fees").once("value", snapshot => {
-
-    let collected = 0;
-    let pending = 0;
-
-    snapshot.forEach(child => {
-
-        const fee = child.val();
-
-        const amount = Number(fee.amount || 0);
-
-        if((fee.status || "").toLowerCase() === "paid"){
-            collected += amount;
-        }else{
-            pending += amount;
-        }
-
-    });
-
-    document.getElementById("collectedFees").innerText =
-        "₹" + collected.toLocaleString();
-
-    document.getElementById("pendingFees").innerText =
-        "₹" + pending.toLocaleString();
-
-});
-
-/* RECENT PAYMENTS */
-
-db.ref("fees").limitToLast(5).once("value", snapshot => {
-
-    const tbody = document.getElementById("paymentTable");
-
-    tbody.innerHTML = "";
-
-    snapshot.forEach(child => {
-
-        const fee = child.val();
-
-        tbody.innerHTML += `
-
-        <tr>
-            <td>${fee.studentName || "-"}</td>
-            <td>${fee.class || "-"}</td>
-            <td>₹${fee.amount || 0}</td>
-            <td>
-                <span class="status">
-                    ${fee.status || "Pending"}
-                </span>
-            </td>
-        </tr>
-
-        `;
-
-    });
 
 });
 
@@ -491,6 +494,5 @@ function logout(){
 }
 
 </script>
-
 </body>
 </html>
