@@ -371,11 +371,6 @@ button:hover{
 </div>
 
 <script>
-/* 🔐 SECURITY ROUTINE GATEKEEPERS */
-if(localStorage.getItem("erpRole") !== "DV"){
-  alert("Unauthorized access system termination execution.");
-  location.href = "index.html";
-}
 
 /* 🔥 DB STRUCTURAL INTERFACES INITIALIZATION */
 const firebaseConfig = {
