@@ -570,34 +570,39 @@ firebase.initializeApp({
 const db = firebase.database();
 let masterFeesDataset = []; 
 
-// Month indexing mapping system to validate clean numerical chronologies
 const strategicMonthsMap = {
     "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
     "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12
 };
 
-/* RESPONSIVE TOGGLE ACTIONS */
 function toggleSidebar() {
     document.getElementById("appSidebar").classList.toggle("open");
 }
 
-/* CORE DATA LOADER AND RENDERER */
+/* REAL-TIME LEDGER LOADER PATH UPDATED TO /students */
 function loadFeesLedger() {
-    db.ref("/").on("value", snapshot => {
+    db.ref("students").on("value", snapshot => {
         let totalCollected = 0;
         let totalOutstanding = 0;
         let counter = 0;
         masterFeesDataset = [];
 
-        snapshot.forEach(studentNode => {
-            const studentKey = studentNode.key;
-            const data = studentNode.val();
+        const studentsData = snapshot.val();
+        if (!studentsData) {
+            updateDashboardWidgets(0, 0, 0);
+            renderTable([]);
+            return;
+        }
 
-            if (typeof data !== "object" || studentKey === "staff" || studentKey === "attendance") return;
+        Object.keys(studentsData).forEach(studentKey => {
+            const data = studentsData[studentKey];
+            if (!data || typeof data !== "object") return;
 
-            if (data.fees) {
+            if (data.fees && typeof data.fees === "object") {
                 Object.keys(data.fees).forEach(monthKey => {
                     const transaction = data.fees[monthKey];
+                    if (!transaction) return;
+
                     const amount = Number(transaction.amount || 0);
                     const statusStr = (transaction.status || "unpaid").toLowerCase();
 
@@ -610,7 +615,7 @@ function loadFeesLedger() {
 
                     masterFeesDataset.push({
                         studentId: studentKey,
-                        name: data.name || studentKey,
+                        name: data.name || studentKey, 
                         class: data.class || "-",
                         term: monthKey,
                         amount: amount,
@@ -620,20 +625,24 @@ function loadFeesLedger() {
             }
         });
 
-        document.getElementById("totalCollected").innerText = "₹" + totalCollected.toLocaleString();
-        document.getElementById("totalOutstanding").innerText = "₹" + totalOutstanding.toLocaleString();
-        document.getElementById("totalTransactions").innerText = counter;
-
-        // Route structural data straight through filtering sequence initialization
+        updateDashboardWidgets(totalCollected, totalOutstanding, counter);
         filterFeesTable();
+    }, error => {
+        console.error("Firebase Read Failure: ", error);
     });
+}
+
+function updateDashboardWidgets(collected, outstanding, totalCount) {
+    document.getElementById("totalCollected").innerText = "₹" + collected.toLocaleString();
+    document.getElementById("totalOutstanding").innerText = "₹" + outstanding.toLocaleString();
+    document.getElementById("totalTransactions").innerText = totalCount;
 }
 
 function renderTable(dataset) {
     const tbody = document.getElementById("masterFeesTable");
     tbody.innerHTML = "";
 
-    if(dataset.length === 0) {
+    if(!dataset || dataset.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#9ca3af;">No accounting ledgers found matching criteria.</td></tr>`;
         return;
     }
@@ -652,7 +661,6 @@ function renderTable(dataset) {
     });
 }
 
-/* CHRONOLOGICAL FILTERING & CHRONO-SORT SELECTION MECHANICS */
 function filterFeesTable() {
     const searchVal = document.getElementById("feeSearch").value.toLowerCase();
     const classVal = document.getElementById("classFilter").value;
@@ -667,7 +675,6 @@ function filterFeesTable() {
         return matchesSearch && matchesClass && matchesStatus;
     });
 
-    // Chronological Sort Sorting Engine Integration
     filtered.sort((a, b) => {
         const indexA = strategicMonthsMap[a.term.toLowerCase()] || 0;
         const indexB = strategicMonthsMap[b.term.toLowerCase()] || 0;
@@ -677,11 +684,8 @@ function filterFeesTable() {
     renderTable(filtered);
 }
 
-/* GENERATE & DOWNLOAD CLEAN PDF DOCUMENT EXPORTS */
 function downloadLedgerPDF() {
     const element = document.getElementById('pdfReportContainer');
-    
-    // Config properties for clean output formatting
     const options = {
         margin:       [10, 10, 10, 10],
         filename:     `Fee_Collection_Ledger_${new Date().toISOString().slice(0,10)}.pdf`,
@@ -689,22 +693,57 @@ function downloadLedgerPDF() {
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-
     html2pdf().set(options).from(element).save();
 }
 
-/* MODAL CONFIGURATIONS */
 function openModal() {
     document.getElementById("feeModal").style.display = "flex";
 }
+
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById("feeModal");
+    if (e.target === modal) {
+        closeModal();
+    }
+});
 
 function closeModal() {
     document.getElementById("feeModal").style.display = "none";
     document.getElementById("feeForm").reset();
 }
 
+/* TRANSACTION WRITER UPDATED TO PATH: students/${studentId}/fees/${month} */
 function saveFeePayment(e) {
     e.preventDefault();
 
     const studentId = document.getElementById("modalStudentId").value.trim();
-    const
+    const month = document.getElementById("modalMonth").value;
+    const amount = document.getElementById("modalAmount").value;
+    const status = document.getElementById("modalStatus").value;
+
+    if(!studentId) return;
+
+    db.ref(`students/${studentId}/fees/${month}`).set({
+        amount: Number(amount),
+        status: status
+    }).then(() => {
+        closeModal();
+        alert("Transaction posted successfully!");
+    }).catch(error => {
+        alert("Transaction Write Failure: " + error.message);
+    });
+}
+
+function logout(){
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("erpRole");
+    localStorage.removeItem("teacherId");
+    localStorage.removeItem("teacherName");
+    window.location.href = "index.html";
+}
+
+window.onload = loadFeesLedger;
+</script>
+
+</body>
+</html>
