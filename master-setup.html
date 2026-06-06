@@ -2,232 +2,508 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ERP – Master Setup</title>
+<title>ERP – Master Setup Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
 :root{
-  --primary:#1e40af;
-  --bg:#f1f5f9;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #10b981;
+  --dark-bg: #111827;
+  --card-bg: #ffffff;
+  --body-bg: #f3f4f6;
+  --border-color: #e5e7eb;
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+  --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial}
-body{background:var(--bg)}
-.wrapper{display:flex;min-height:100vh}
 
-/* SIDEBAR */
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body{
+  background: var(--body-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* MOBILE NAV HEADER & HAMBURGER */
+.mobile-header {
+  display: none;
+  background: var(--dark-bg);
+  color: white;
+  padding: 15px 20px;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.hamburger {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  padding: 5px;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: 0.3s ease;
+}
+
+/* APPLICATION APP WRAPPER GRID */
+.wrapper{
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
+/* SIDEBAR STYLING */
 .sidebar{
-  width:260px;
-  background:#0f172a;
-  color:#fff;
-  padding:20px;
-}
-.sidebar h2{
-  text-align:center;
-  margin-bottom:25px;
-}
-.sidebar a{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
-  color:#cbd5f5;
-  text-decoration:none;
-  border-radius:8px;
-  margin-bottom:8px;
-}
-.sidebar a:hover,.sidebar a.active{
-  background:#1e293b;
-  color:#fff;
+  width: 280px;
+  background: var(--dark-bg);
+  color: #fff;
+  padding: 25px 20px;
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* MAIN */
-.main{flex:1;padding:30px}
+.sidebar h2{
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding-bottom: 20px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.sidebar a{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  color: #9ca3af;
+  text-decoration: none;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar a:hover, .sidebar a.active{
+  background: var(--primary);
+  color: #fff;
+}
+
+/* MAIN CONTENT ENGINE AREA */
+.main{
+  flex: 1;
+  margin-left: 280px;
+  padding: 40px;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* MASTER CONTROLLER PANELS */
 .card{
-  background:#fff;
-  padding:25px;
-  border-radius:14px;
-  box-shadow:0 8px 25px rgba(0,0,0,.06);
-  max-width:650px;
+  background: var(--card-bg);
+  padding: 35px;
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+  width: 100%;
+  max-width: 680px;
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.card h3{margin-bottom:15px}
-input,select,button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:8px;
-  border:1px solid #cbd5f5;
+
+@keyframes fadeUp {
+  from { transform: translateY(15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
+
+.card h3{
+  font-size: 22px;
+  color: var(--text-dark);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card .subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 25px;
+}
+
+/* UTILITY INPUT BLOCKS */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input, select {
+  border: 1px solid var(--border-color);
+  background: #f9fafb;
+  color: var(--text-dark);
+}
+
+input:focus, select:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
 button{
-  background:var(--primary);
-  color:#fff;
-  border:none;
-  cursor:pointer;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 10px;
 }
-button:hover{background:#1d4ed8}
-.list{
-  margin-top:15px;
-  font-size:14px;
+
+button:hover{
+  background: var(--primary-hover);
 }
-.list div{
-  padding:8px;
-  border-bottom:1px solid #e5e7eb;
+
+/* LIST COMPONENT BOXES */
+.list {
+  margin-top: 25px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f9fafb;
 }
-.hidden{display:none}
+
+.list div {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-dark);
+  font-size: 14px;
+  font-weight: 500;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list div:last-child {
+  border-bottom: none;
+}
+
+.hidden{
+  display: none !important;
+}
+
+/* LARGE SCREEN EXTRA RESOLUTIONS */
+@media(min-width: 1400px) {
+  .main { padding: 60px; }
+  .card { max-width: 800px; padding: 45px; }
+}
+
+/* RESPONSIVE LAYOUT DESKTOP UNIFICATION BREAKPOINTS */
+@media(max-width:992px){
+  .mobile-header {
+    display: flex;
+  }
+  .sidebar {
+    transform: translateX(-100%);
+    top: 60px;
+    height: calc(100% - 60px);
+    width: 260px;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<script>
-/* 🔐 SECURITY */
-if(localStorage.getItem("erpRole")!=="DV"){
-  alert("Unauthorized access");
-  location.href="login.html";
-}
-
-/* 🔥 FIREBASE */
-var firebaseConfig={
-  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain:"students-6e271.firebaseapp.com",
-  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com",
-  projectId:"students-6e271"
-};
-if(!firebase.apps.length){
-  firebase.initializeApp(firebaseConfig);
-}
-const db=firebase.database();
-</script>
+<div class="mobile-header">
+  <div style="font-weight:600; font-size:18px;">Master Configurations</div>
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar(event)">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</div>
 
 <div class="wrapper">
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>MASTER SETUP</h2>
-  <a class="active" onclick="show('school')"><i class="fa-solid fa-school"></i> School</a>
-  <a onclick="show('class')"><i class="fa-solid fa-layer-group"></i> Classes</a>
-  <a onclick="show('fee')"><i class="fa-solid fa-indian-rupee-sign"></i> Fee</a>
-  <a onclick="show('year')"><i class="fa-solid fa-calendar"></i> Academic Year</a>
-  <a onclick="show('role')"><i class="fa-solid fa-user-tie"></i> Staff Roles</a>
-  <a href="erp-dashboard.html"><i class="fa-solid fa-arrow-left"></i> Back</a>
-</div>
+  <div class="sidebar" id="appSidebar">
+    <h2>MASTER SETUP</h2>
+    <a class="active" onclick="switchTab(event, 'school')"><i class="fa-solid fa-school"></i> School Profile</a>
+    <a onclick="switchTab(event, 'class')"><i class="fa-solid fa-layer-group"></i> Class Registry</a>
+    <a onclick="switchTab(event, 'fee')"><i class="fa-solid fa-indian-rupee-sign"></i> Fee Structure</a>
+    <a onclick="switchTab(event, 'year')"><i class="fa-solid fa-calendar"></i> Academic Year</a>
+    <a onclick="switchTab(event, 'role')"><i class="fa-solid fa-user-tie"></i> Staff Roles</a>
+    <a href="erp-dashboard.html" style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); border-radius:0; padding-top:20px;">
+      <i class="fa-solid fa-arrow-left"></i> Return Dashboard
+    </a>
+  </div>
 
-<!-- MAIN -->
-<div class="main">
+  <div class="main">
 
-<!-- SCHOOL -->
-<div id="school" class="card">
-  <h3>🏫 School Profile</h3>
-  <input id="schoolName" placeholder="School Name">
-  <input id="schoolAddress" placeholder="Address">
-  <input id="schoolPhone" placeholder="Phone">
-  <button onclick="saveSchool()">Save</button>
-</div>
+    <div id="school" class="card">
+      <h3>🏫 School Profile</h3>
+      <p class="subtitle">Update institutional meta metrics and contact options</p>
+      
+      <div class="form-group">
+        <label for="schoolName">Official Institution Name</label>
+        <input id="schoolName" placeholder="e.g. Oakridge International School">
+      </div>
+      <div class="form-group">
+        <label for="schoolAddress">Campus Office Address</label>
+        <input id="schoolAddress" placeholder="e.g. 12 High Street, Block C">
+      </div>
+      <div class="form-group">
+        <label for="schoolPhone">Public Helpline Number</label>
+        <input id="schoolPhone" placeholder="e.g. +91 98765 43210">
+      </div>
+      <button onclick="saveSchool()">Save Profile Data</button>
+    </div>
 
-<!-- CLASS -->
-<div id="class" class="card hidden">
-  <h3>📚 Class Setup</h3>
-  <input id="className" placeholder="Class Name (e.g. Class 1)">
-  <button onclick="addClass()">Add Class</button>
-  <div id="classList" class="list"></div>
-</div>
+    <div id="class" class="card hidden">
+      <h3>📚 Class Setup</h3>
+      <p class="subtitle">Register academic grades and tracking cohorts</p>
+      
+      <div class="form-group">
+        <label for="className">Grade / Class Name</label>
+        <input id="className" placeholder="e.g. Class 1">
+      </div>
+      <button onclick="addClass()">Add Class Target</button>
+      <div id="classList" class="list"></div>
+    </div>
 
-<!-- FEE -->
-<div id="fee" class="card hidden">
-  <h3>💰 Fee Structure</h3>
-  <input id="feeClass" placeholder="Class Name">
-  <input id="feeAmount" type="number" placeholder="Monthly Fee">
-  <button onclick="saveFee()">Save Fee</button>
-</div>
+    <div id="fee" class="card hidden">
+      <h3>💰 Fee Structure</h3>
+      <p class="subtitle">Establish structural base financial parameters per tier</p>
+      
+      <div class="form-group">
+        <label for="feeClass">Target Grade Level</label>
+        <input id="feeClass" placeholder="e.g. Class 1">
+      </div>
+      <div class="form-group">
+        <label for="feeAmount">Default Base Monthly Tuition Fee (₹)</label>
+        <input id="feeAmount" type="number" placeholder="Amount in ₹">
+      </div>
+      <button onclick="saveFee()">Commit Fee Rule</button>
+    </div>
 
-<!-- YEAR -->
-<div id="year" class="card hidden">
-  <h3>📅 Academic Year</h3>
-  <input id="academicYear" placeholder="2025-26">
-  <button onclick="saveYear()">Save</button>
-</div>
+    <div id="year" class="card hidden">
+      <h3>📅 Academic Year</h3>
+      <p class="subtitle">Control current baseline active operations period</p>
+      
+      <div class="form-group">
+        <label for="academicYear">Active Academic Session Span</label>
+        <input id="academicYear" placeholder="e.g. 2026-27">
+      </div>
+      <button onclick="saveYear()">Set Active Session</button>
+    </div>
 
-<!-- ROLE -->
-<div id="role" class="card hidden">
-  <h3>👨‍🏫 Staff Roles</h3>
-  <input id="roleName" placeholder="Role Name">
-  <button onclick="addRole()">Add Role</button>
-  <div id="roleList" class="list"></div>
-</div>
+    <div id="role" class="card hidden">
+      <h3>👨‍🏫 Staff Roles</h3>
+      <p class="subtitle">Manage directory assignments constraints indices</p>
+      
+      <div class="form-group">
+        <label for="roleName">Designation Assignment Identity</label>
+        <input id="roleName" placeholder="e.g. Senior Lecturer">
+      </div>
+      <button onclick="addRole()">Add Custom Designation</button>
+      <div id="roleList" class="list"></div>
+    </div>
 
-</div>
+  </div>
 </div>
 
 <script>
-function show(id){
-  document.querySelectorAll(".card").forEach(c=>c.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-  document.querySelectorAll(".sidebar a").forEach(a=>a.classList.remove("active"));
-  event.target.classList.add("active");
+/* 🔐 SECURITY ROUTINE GATEKEEPERS */
+if(localStorage.getItem("erpRole") !== "DV"){
+  alert("Unauthorized access system termination execution.");
+  location.href = "login.html";
 }
 
-/* SAVE FUNCTIONS */
+/* 🔥 DB STRUCTURAL INTERFACES INITIALIZATION */
+const firebaseConfig = {
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271"
+};
+
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+/* RESPONSIVE TOGGLE ACTIONS ENGINE */
+function toggleSidebar(e) {
+  e.stopPropagation();
+  document.getElementById("appSidebar").classList.toggle("open");
+}
+
+// Close sidebar automatically on screen tap outside limits
+document.addEventListener("click", function(e) {
+  const sidebar = document.getElementById("appSidebar");
+  if(window.innerWidth <= 992 && sidebar.classList.contains("open")) {
+    if(!sidebar.contains(e.target) && e.target !== document.getElementById("hamburgerBtn")) {
+      sidebar.classList.remove("open");
+    }
+  }
+});
+
+/* CORE INTERFACE COMPONENT ROUTING ACTIONS */
+function switchTab(event, tabId){
+  document.querySelectorAll(".card").forEach(card => card.classList.add("hidden"));
+  document.getElementById(tabId).classList.remove("hidden");
+  
+  document.querySelectorAll(".sidebar a").forEach(anchor => anchor.classList.remove("active"));
+  
+  // Safe handler variant addressing programmatic or user-triggered pointer event objects
+  if(event && event.currentTarget) {
+    event.currentTarget.classList.add("active");
+  } else if (event && event.target) {
+    event.target.closest("a").classList.add("active");
+  }
+
+  // Auto-collapse sidebar wrapper stack grid upon choice during mobile layout operations
+  if(window.innerWidth <= 992) {
+    document.getElementById("appSidebar").classList.remove("open");
+  }
+}
+
+/* MASTER DATA TRANSFERS & CONTROLLER OPERATIONS */
 function saveSchool(){
   db.ref("master/school").set({
-    name:schoolName.value,
-    address:schoolAddress.value,
-    phone:schoolPhone.value
-  });
-  alert("School Saved");
+    name: document.getElementById("schoolName").value,
+    address: document.getElementById("schoolAddress").value,
+    phone: document.getElementById("schoolPhone").value
+  }).then(() => alert("School Profile metrics successfully pushed."));
 }
 
 function addClass(){
-  if(!className.value) return alert("Enter class name");
-  db.ref("master/classes").push({name:className.value});
-  className.value="";
-  loadClasses();
+  const classInput = document.getElementById("className");
+  if(!classInput.value.trim()) return alert("Provide validation target class string index entry.");
+  
+  db.ref("master/classes").push({ name: classInput.value.trim() });
+  classInput.value = "";
 }
 
 function saveFee(){
-  db.ref("master/fees/"+feeClass.value).set({
-    monthly:feeAmount.value
-  });
-  alert("Fee Saved");
+  const targetClass = document.getElementById("feeClass").value;
+  const targetAmt = document.getElementById("feeAmount").value;
+  
+  db.ref("master/fees/" + targetClass).set({
+    monthly: targetAmt
+  }).then(() => alert("Fee Configuration guidelines locked."));
 }
 
 function saveYear(){
-  db.ref("master/academicYear").set(academicYear.value);
-  alert("Academic Year Saved");
+  const termValue = document.getElementById("academicYear").value;
+  db.ref("master/academicYear").set(termValue)
+    .then(() => alert("Systemic Academic timeline synchronized."));
 }
 
 function addRole(){
-  if(!roleName.value) return;
-  db.ref("master/roles").push(roleName.value);
-  roleName.value="";
-  loadRoles();
+  const roleInput = document.getElementById("roleName");
+  if(!roleInput.value.trim()) return alert("Provide role label specification descriptor.");
+  
+  db.ref("master/roles").push(roleInput.value.trim());
+  roleInput.value = "";
 }
 
-/* LOAD LISTS */
-function loadClasses(){
-  db.ref("master/classes").on("value",snap=>{
-    classList.innerHTML="";
-    snap.forEach(c=>{
-      classList.innerHTML+=`<div>${c.val().name}</div>`;
+/* SYNCHRONOUS LISTS INTERFACE PARSERS */
+function startMasterRealtimeSync(){
+  // Bind dynamic event listeners replacing standard snapshot iterations to guarantee zero visual lag
+  db.ref("master/classes").on("value", snap => {
+    const listEl = document.getElementById("classList");
+    listEl.innerHTML = "";
+    snap.forEach(c => {
+      listEl.innerHTML += `<div><span><i class="fa-solid fa-graduation-cap style="color:var(--primary); margin-right:8px;"></i> ${c.val().name}</span></div>`;
     });
+    if(listEl.innerHTML === "") listEl.innerHTML = `<div style="color:var(--text-muted); justify-content:center;">No registry files loaded.</div>`;
   });
-}
-function loadRoles(){
-  db.ref("master/roles").on("value",snap=>{
-    roleList.innerHTML="";
-    snap.forEach(r=>{
-      roleList.innerHTML+=`<div>${r.val()}</div>`;
+
+  db.ref("master/roles").on("value", snap => {
+    const listEl = document.getElementById("roleList");
+    listEl.innerHTML = "";
+    snap.forEach(r => {
+      listEl.innerHTML += `<div><span><i class="fa-solid fa-user-shield" style="color:var(--success); margin-right:8px;"></i> ${r.val()}</span></div>`;
     });
+    if(listEl.innerHTML === "") listEl.innerHTML = `<div style="color:var(--text-muted); justify-content:center;">No roles files assigned.</div>`;
+  });
+
+  // Pull baseline configuration variables placeholders instantly for forms representation visibility 
+  db.ref("master/school").once("value", snap => {
+    const val = snap.val();
+    if(val) {
+      document.getElementById("schoolName").value = val.name || "";
+      document.getElementById("schoolAddress").value = val.address || "";
+      document.getElementById("schoolPhone").value = val.phone || "";
+    }
+  });
+
+  db.ref("master/academicYear").once("value", snap => {
+    if(snap.exists()) document.getElementById("academicYear").value = snap.val();
   });
 }
 
-loadClasses();
-loadRoles();
+// Global Core App Workspace Bootstrap hook run initialization
+window.onload = startMasterRealtimeSync;
 </script>
 
 </body>
