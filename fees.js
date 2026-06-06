@@ -18,7 +18,7 @@ const collectedEl = document.getElementById("collected");
 const toCollectEl = document.getElementById("toCollect");
 
 async function loadFeeSummary() {
-  const snapshot = await get(ref(db, "/"));
+  const snapshot = await get(ref(db, "students/"));
   let totalCollected = 0;
   let totalFee = 0;
 
