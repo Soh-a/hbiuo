@@ -200,3 +200,195 @@ body{
     .topbar {
         flex-direction: column;
         gap: 15px;
+        align-items: flex-start;
+    }
+    .logout-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <h1>Student Directory</h1>
+                <p style="color: #6b7280; font-size: 14px; margin-top: 2px;">Comprehensive master listing including profile credentials</p>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="stat-grid-summary">
+            <div class="stat-card">
+                <h3>Total Registrations</h3>
+                <h2 id="cntTotal">0</h2>
+            </div>
+            <div class="stat-card">
+                <h3>High School Enrolled (9-10)</h3>
+                <h2 id="cntSenior">0</h2>
+            </div>
+            <div class="stat-card">
+                <h3>Primary Enrolled (1-5)</h3>
+                <h2 id="cntPrimary">0</h2>
+            </div>
+        </div>
+
+        <div class="utils-bar">
+            <input type="text" id="directorySearch" class="search-input" placeholder="Search by name, roll number, or username/mobile..." oninput="filterDirectoryTable()">
+            
+            <select id="directoryClassFilter" class="filter-select" onchange="filterDirectoryTable()">
+                <option value="">All Classes</option>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                <option value="3">Class 3</option>
+                <option value="4">Class 4</option>
+                <option value="5">Class 5</option>
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10">Class 10</option>
+            </select>
+        </div>
+
+        <div class="table-panel">
+            <h2>Master Core Records Registry</h2>
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Firebase DB Key</th>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Roll Number</th>
+                            <th>Username / Mobile</th>
+                            <th>Password (Raw)</th>
+                            <th>Base Monthly Fee</th>
+                        </tr>
+                    </thead>
+                    <tbody id="directoryTableBody">
+                        <tr><td colspan="7" style="text-align:center; color:#9ca3af;">Streaming database collections data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* FIREBASE CONNECTOR INITIALIZATION ENGINE */
+firebase.initializeApp({
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271"
+});
+
+const db = firebase.database();
+let completeDirectoryDataset = [];
+
+/* TRACK AND STREAM ALL FIELDS UNDER STUDENTS PARENT NODE */
+function syncStudentDirectoryData() {
+    db.ref("students").on("value", snapshot => {
+        const studentProfiles = snapshot.val();
+        completeDirectoryDataset = [];
+
+        let totalRecords = 0;
+        let seniorCount = 0;
+        let primaryCount = 0;
+
+        if (studentProfiles) {
+            Object.keys(studentProfiles).forEach(keyId => {
+                const profile = studentProfiles[keyId];
+                if (!profile || typeof profile !== 'object') return;
+
+                totalRecords++;
+                const currentClassNum = parseInt(profile.class) || 0;
+                
+                if(currentClassNum >= 9 && currentClassNum <= 10) seniorCount++;
+                if(currentClassNum >= 1 && currentClassNum <= 5) primaryCount++;
+
+                completeDirectoryDataset.push({
+                    firebaseKey: keyId,
+                    name: profile.name || "N/A",
+                    class: profile.class || "-",
+                    roll: profile.roll || "N/A",
+                    mobile: profile.mobile || keyId, 
+                    password: profile.password || "N/A", 
+                    monthlyFee: Number(profile.monthlyfee || 0)
+                });
+            });
+        }
+
+        document.getElementById("cntTotal").innerText = totalRecords;
+        document.getElementById("cntSenior").innerText = seniorCount;
+        document.getElementById("cntPrimary").innerText = primaryCount;
+
+        filterDirectoryTable();
+    }, error => {
+        console.error("Critical Directory Synchronization Halt: ", error);
+    });
+}
+
+/* RENDER ROWS TO SCREEN VIEW DOM ELEMENT */
+function renderDirectoryGrid(dataset) {
+    const tbody = document.getElementById("directoryTableBody");
+    tbody.innerHTML = "";
+
+    if (dataset.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#9ca3af; padding:25px;">No corresponding structural records matching your input metrics were located.</td></tr>`;
+        return;
+    }
+
+    dataset.forEach(student => {
+        tbody.innerHTML += `
+            <tr>
+                <td><small style="color:#64748b; font-weight:500;">${student.firebaseKey}</small></td>
+                <td><strong>${student.name}</strong></td>
+                <td>Class ${student.class}</td>
+                <td>#${student.roll}</td>
+                <td><span class="credential-badge">${student.mobile}</span></td>
+                <td><span class="credential-badge" style="background:#fff3f2; color:#c2410c; border-color:#fed7aa;">${student.password}</span></td>
+                <td><span class="fee-badge">₹${student.monthlyFee.toLocaleString()}</span></td>
+            </tr>
+        `;
+    });
+}
+
+/* LIVE SEARCH REAL-TIME COMPILER FILTER ELEMENT ENGINE */
+function filterDirectoryTable() {
+    const searchString = document.getElementById("directorySearch").value.toLowerCase().trim();
+    const classSelection = document.getElementById("directoryClassFilter").value;
+
+    const computedList = completeDirectoryDataset.filter(record => {
+        const matchesClass = classSelection === "" || String(record.class) === String(classSelection);
+        
+        const matchesSearch = record.name.toLowerCase().includes(searchString) || 
+                              record.firebaseKey.toLowerCase().includes(searchString) || 
+                              record.mobile.toLowerCase().includes(searchString) ||
+                              String(record.roll).toLowerCase().includes(searchString);
+
+        return matchesClass && matchesSearch;
+    });
+
+    renderDirectoryGrid(computedList);
+}
+
+function logout(){
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("erpRole");
+    localStorage.removeItem("teacherId");
+    localStorage.removeItem("teacherName");
+    window.location.href = "index.html";
+}
+
+window.onload = syncStudentDirectoryData;
+</script>
+
+</body>
+</html>
