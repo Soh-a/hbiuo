@@ -44,110 +44,23 @@ body{
     min-height: 100vh;
 }
 
-/* MOBILE NAV BAR */
-.mobile-header {
-    display: none;
-    background: var(--dark-bg);
-    color: white;
-    padding: 15px 20px;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 101;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+body, html {
+    width: 100%;
 }
 
-.hamburger {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    background: transparent;
-    border: none;
-}
-
-.hamburger span {
-    display: block;
-    width: 25px;
-    height: 3px;
-    background: white;
-    border-radius: 2px;
-    transition: 0.3s;
-}
-
-/* SIDEBAR SYSTEM WRAPPER */
+/* CONTAINER WORKSPACE */
 .app-container {
     display: flex;
     flex: 1;
     width: 100%;
 }
 
-.sidebar{
-    width: 260px;
-    background: var(--dark-bg);
-    color: white;
-    padding: 20px;
-    position: fixed;
-    height: 100%;
-    overflow-y: auto;
-    z-index: 100;
-    transition: transform 0.3s ease;
-}
-
-.logo{
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.logo img{
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid var(--primary);
-}
-
-.logo h2{
-    margin-top: 12px;
-    font-size: 24px;
-}
-
-.logo p{
-    font-size: 13px;
-    opacity: .7;
-}
-
-.menu{
-    margin-top: 20px;
-}
-
-.menu a{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-    text-decoration: none;
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    transition: .3s;
-    font-size: 15px;
-}
-
-.menu a:hover{
-    background: var(--primary);
-}
-
-.menu a.active{
-    background: var(--primary);
-}
-
-/* MAIN BODY GRID */
+/* FULL-WIDTH MAIN WORKSPACE */
 .main{
-    margin-left: 260px;
-    width: calc(100% - 260px);
-    padding: 25px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
     transition: all 0.3s ease;
 }
 
@@ -338,17 +251,8 @@ body{
 .badge.unpaid { background: #fee2e2; color: #b91c1c; }
 
 /* RESPONSIVE LAYOUT BREAKPOINTS */
-@media(max-width:992px){
-    .mobile-header { display: flex; }
-    .sidebar {
-        transform: translateX(-100%);
-        top: 60px;
-        height: calc(100% - 60px);
-    }
-    .sidebar.open { transform: translateX(0); }
+@media(max-width:768px){
     .main {
-        margin-left: 0;
-        width: 100%;
         padding: 15px;
     }
     .topbar {
@@ -360,11 +264,10 @@ body{
 }
 
 @media print {
-    .sidebar, .mobile-header, .topbar-actions, .filter-cluster, .btn-print {
+    .topbar-actions, .filter-cluster, .btn-print {
         display: none !important;
     }
     .main {
-        margin-left: 0 !important;
         width: 100% !important;
         padding: 0 !important;
     }
@@ -377,33 +280,7 @@ body{
 </head>
 <body>
 
-<div class="mobile-header">
-    <div style="font-weight:600; font-size:18px;">ERP Reports System</div>
-    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-</div>
-
 <div class="app-container">
-
-    <div class="sidebar" id="appSidebar">
-        <div class="logo">
-            <img src="logo.jpeg" alt="School Logo" onerror="this.src='https://via.placeholder.com/90'">
-            <h2>ERP</h2>
-            <p>School Management</p>
-        </div>
-
-        <div class="menu">
-            <a href="dashboard.html">🏠 <span>Dashboard</span></a>
-            <a href="students.html">🎓 <span>Students</span></a>
-            <a href="fees.html">💰 <span>Fees</span></a>
-            <a href="payroll.html">💵 <span>Payroll</span></a>
-            <a href="#" class="active">📊 <span>Reports</span></a>
-            <a href="sms.html">📩 <span>SMS</span></a>
-        </div>
-    </div>
 
     <div class="main">
         <div class="topbar">
@@ -517,10 +394,6 @@ firebase.initializeApp({
 const db = firebase.database();
 let localReportsCache = [];
 
-function toggleSidebar() {
-    document.getElementById("appSidebar").classList.toggle("open");
-}
-
 /* DATA EXTROLLER AND COMPILER FOR SYSTEM METRICS */
 function initManagementReportsReport() {
     db.ref("students").on("value", snapshot => {
@@ -533,7 +406,6 @@ function initManagementReportsReport() {
         
         localReportsCache = [];
         
-        // Matrix dynamic hash mappings placeholder for class-wise distribution sorting
         let classRevenueMatrix = {};
         for(let i=1; i<=10; i++) {
             classRevenueMatrix[i] = { collected: 0, pending: 0 };
@@ -571,7 +443,6 @@ function initManagementReportsReport() {
                             }
                         }
 
-                        // Local Array Cache compilation modeling
                         localReportsCache.push({
                             id: studentId,
                             name: student.name || studentId,
@@ -585,7 +456,6 @@ function initManagementReportsReport() {
             });
         }
 
-        // Render Dashboard metric display targets
         document.getElementById("grossCollected").innerText = "₹" + grossCollected.toLocaleString();
         document.getElementById("grossOutstanding").innerText = "₹" + grossOutstanding.toLocaleString();
         document.getElementById("invoiceCounter").innerText = invoiceCounter;
@@ -634,7 +504,7 @@ function renderClassDistributionMatrixTable(matrix) {
 
     Object.keys(matrix).forEach(cls => {
         const item = matrix[cls];
-        if(item.collected === 0 && item.pending === 0) return; // Hide empty class rows to keep it concise
+        if(item.collected === 0 && item.pending === 0) return; 
         
         tbody.innerHTML += `
             <tr>
@@ -672,7 +542,6 @@ function logout(){
     window.location.href = "index.html";
 }
 
-// Global script initial run lifecycle call
 window.onload = initManagementReportsReport;
 </script>
 
