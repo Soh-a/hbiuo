@@ -1,102 +1,680 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>School ERP – Admin Panel</title>
-  <link rel="stylesheet" href="css/style.css">
-
-  <!-- Firebase -->
-  <script type="module" src="js/firebase.js"></script>
-
-  <!-- Page Scripts -->
-  <script type="module" src="js/students.js"></script>
-</head>
-
-<body>
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="logo">🏫 School ERP</div>
-
-  <a class="menu active" onclick="loadPage('students')">👨‍🎓 Students</a>
-  <a class="menu" onclick="loadPage('attendance')">📅 Attendance</a>
-  <a class="menu" onclick="loadPage('exams')">📝 Exams</a>
-  <a class="menu" onclick="loadPage('fees')">💰 Fees</a>
-  <a class="menu" onclick="loadPage('receipts')">🧾 Receipts</a>
-  <a class="menu" onclick="loadPage('reports')">📊 Reports</a>
-
-  <div class="footer">Admin • Sai DRS Kids</div>
-</div>
-
-<!-- MAIN CONTENT -->
-<div class="main">
-  <div id="pageContent">
-    <!-- Students page loads by default -->
-    <h1>Student Details</h1>
-
-    <table id="studentTable">
-      <thead>
-        <tr>
-          <th>Admission No</th>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Section</th>
-          <th>Phone</th>
-          <th>Fee Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td colspan="6">Loading...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP - Financial & Collection Reports</title>
 
 <script>
-function loadPage(page) {
-  document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
-  event.target.classList.add('active');
-
-  const content = document.getElementById("pageContent");
-
-  if (page === "students") {
-    content.innerHTML = document.getElementById("studentsPage").innerHTML;
-  }
-  if (page === "attendance") {
-    content.innerHTML = "<h1>Attendance</h1><p>Upload photo & auto-calculate attendance.</p>";
-  }
-  if (page === "exams") {
-    content.innerHTML = "<h1>Exams</h1><p>Upload exam details → auto timetable.</p>";
-  }
-  if (page === "fees") {
-    content.innerHTML = "<h1>Fees</h1><p>Firebase-based fee management.</p>";
-  }
-  if (page === "receipts") {
-    content.innerHTML = "<h1>Receipts</h1><p>Generate & print receipts.</p>";
-  }
-  if (page === "reports") {
-    content.innerHTML = "<h1>Reports</h1><p>Graphs & analytics dashboard.</p>";
-  }
+// Session Guard
+const isLoggedIn = localStorage.getItem("isLoggedIn");
+if(isLoggedIn !== "true"){
+    window.location.href = "login.html";
 }
 </script>
 
-<!-- TEMPLATE -->
-<template id="studentsPage">
-  <h1>Student Details</h1>
-  <table id="studentTable">
-    <thead>
-      <tr>
-        <th>Admission No</th>
-        <th>Name</th>
-        <th>Class</th>
-        <th>Section</th>
-        <th>Phone</th>
-        <th>Fee Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</template>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark-bg: #111827;
+    --light-bg: #f3f4f6;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    background: var(--light-bg);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* MOBILE NAV BAR */
+.mobile-header {
+    display: none;
+    background: var(--dark-bg);
+    color: white;
+    padding: 15px 20px;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 101;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.hamburger {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: transparent;
+    border: none;
+}
+
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+/* SIDEBAR SYSTEM WRAPPER */
+.app-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.sidebar{
+    width: 260px;
+    background: var(--dark-bg);
+    color: white;
+    padding: 20px;
+    position: fixed;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.3s ease;
+}
+
+.logo{
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo img{
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary);
+}
+
+.logo h2{
+    margin-top: 12px;
+    font-size: 24px;
+}
+
+.logo p{
+    font-size: 13px;
+    opacity: .7;
+}
+
+.menu{
+    margin-top: 20px;
+}
+
+.menu a{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: .3s;
+    font-size: 15px;
+}
+
+.menu a:hover{
+    background: var(--primary);
+}
+
+.menu a.active{
+    background: var(--primary);
+}
+
+/* MAIN BODY GRID */
+.main{
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 25px;
+    transition: all 0.3s ease;
+}
+
+/* TOPBAR styling */
+.topbar{
+    background: white;
+    padding: 20px 25px;
+    border-radius: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--card-shadow);
+}
+
+.topbar h1{
+    font-size: 28px;
+    color: var(--dark-bg);
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-print {
+    background: #4b5563;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-print:hover { background: #374151; }
+
+.logout-btn{
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-btn:hover{ background: #dc2626; }
+
+/* REVENUE DASHBOARD CARDS */
+.report-grid-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.analytics-card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.analytics-card h3 {
+    color: #6b7280;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.analytics-card h2 {
+    font-size: 32px;
+    color: var(--dark-bg);
+    font-weight: 700;
+}
+
+.analytics-card .meta-indicator {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-primary { color: var(--primary); }
+
+/* CONTENT WRAPPER SPLIT BLOCKS */
+.report-sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin-top: 30px;
+}
+
+@media(min-width: 1200px) {
+    .report-sections {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.report-panel {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.panel-header h2 {
+    font-size: 20px;
+    color: var(--dark-bg);
+    font-weight: 600;
+}
+
+/* FILTERS BLOCK INSIDE PANEL */
+.filter-cluster {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.report-select {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #f9fafb;
+    outline: none;
+    cursor: pointer;
+}
+
+/* TABLES STYLING */
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.modern-table th {
+    background: #f8fafc;
+    color: #4b5563;
+    padding: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.modern-table td {
+    padding: 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 14px;
+}
+
+.modern-table tr:hover {
+    background: #f8fafc;
+}
+
+/* MICRO BADGES */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.badge.paid { background: #dcfce7; color: #15803d; }
+.badge.unpaid { background: #fee2e2; color: #b91c1c; }
+
+/* RESPONSIVE LAYOUT BREAKPOINTS */
+@media(max-width:992px){
+    .mobile-header { display: flex; }
+    .sidebar {
+        transform: translateX(-100%);
+        top: 60px;
+        height: calc(100% - 60px);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+    .topbar {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    .topbar-actions { width: 100%; justify-content: space-between; }
+}
+
+@media print {
+    .sidebar, .mobile-header, .topbar-actions, .filter-cluster, .btn-print {
+        display: none !important;
+    }
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+    .report-panel {
+        box-shadow: none !important;
+        border: 1px solid #e5e7eb !important;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-header">
+    <div style="font-weight:600; font-size:18px;">ERP Reports System</div>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
+
+<div class="app-container">
+
+    <div class="sidebar" id="appSidebar">
+        <div class="logo">
+            <img src="logo.jpeg" alt="School Logo" onerror="this.src='https://via.placeholder.com/90'">
+            <h2>ERP</h2>
+            <p>School Management</p>
+        </div>
+
+        <div class="menu">
+            <a href="dashboard.html">🏠 <span>Dashboard</span></a>
+            <a href="students.html">🎓 <span>Students</span></a>
+            <a href="fees.html">💰 <span>Fees</span></a>
+            <a href="payroll.html">💵 <span>Payroll</span></a>
+            <a href="#" class="active">📊 <span>Reports</span></a>
+            <a href="sms.html">📩 <span>SMS</span></a>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <h1>Management Reports</h1>
+                <p style="color: #6b7280; font-size: 14px; margin-top: 2px;">Real-time balance sheet audits and revenue analysis</p>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-print" onclick="window.print()">🖨️ Print Report</button>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="report-grid-summary">
+            <div class="analytics-card">
+                <h3>Gross Revenue Collected</h3>
+                <h2 id="grossCollected" class="text-success">₹0</h2>
+                <div class="meta-indicator text-success" id="collectionRate">Rate: 0%</div>
+            </div>
+            <div class="analytics-card">
+                <h3>Total Outstanding Arrears</h3>
+                <h2 id="grossOutstanding" class="text-warning">₹0</h2>
+                <div class="meta-indicator text-warning" id="pendingDefaulters">Defaulters Logged</div>
+            </div>
+            <div class="analytics-card">
+                <h3>Total System Invoices</h3>
+                <h2 id="invoiceCounter" class="text-primary">0</h2>
+                <div class="meta-indicator" style="color:#6b7280;">Billed Term Items</div>
+            </div>
+        </div>
+
+        <div class="report-sections">
+            
+            <div class="report-panel">
+                <div class="panel-header">
+                    <h2>Master Transaction Audit Log</h2>
+                    <div class="filter-cluster">
+                        <select id="repClass" class="report-select" onchange="processLocalDatasetFilter()">
+                            <option value="">All Classes</option>
+                            <option value="1">Class 1</option>
+                            <option value="2">Class 2</option>
+                            <option value="3">Class 3</option>
+                            <option value="4">Class 4</option>
+                            <option value="5">Class 5</option>
+                            <option value="6">Class 6</option>
+                            <option value="7">Class 7</option>
+                            <option value="8">Class 8</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                        </select>
+                        <select id="repStatus" class="report-select" onchange="processLocalDatasetFilter()">
+                            <option value="">All Statuses</option>
+                            <option value="paid">Paid Only</option>
+                            <option value="unpaid">Unpaid Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Class</th>
+                                <th>Billing Month</th>
+                                <th>Total Bill (₹)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsLogTable">
+                            <tr><td colspan="6" style="text-align:center; color:#9ca3af;">Assembling dynamic data metrics...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="report-panel">
+                <div class="panel-header">
+                    <h2>Class Revenue Summary</h2>
+                </div>
+                <div class="table-container">
+                    <table class="modern-table" style="font-size: 13px;">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Collected</th>
+                                <th>Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classDistributionTable">
+                            <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Awaiting matrix maps...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+/* FIREBASE CONNECTION CONFIGURATION */
+firebase.initializeApp({
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271"
+});
+
+const db = firebase.database();
+let localReportsCache = [];
+
+function toggleSidebar() {
+    document.getElementById("appSidebar").classList.toggle("open");
+}
+
+/* DATA EXTROLLER AND COMPILER FOR SYSTEM METRICS */
+function initManagementReportsReport() {
+    db.ref("students").on("value", snapshot => {
+        const studentsData = snapshot.val();
+        
+        let grossCollected = 0;
+        let grossOutstanding = 0;
+        let invoiceCounter = 0;
+        let unpaidDefaultersCount = 0;
+        
+        localReportsCache = [];
+        
+        // Matrix dynamic hash mappings placeholder for class-wise distribution sorting
+        let classRevenueMatrix = {};
+        for(let i=1; i<=10; i++) {
+            classRevenueMatrix[i] = { collected: 0, pending: 0 };
+        }
+
+        if (studentsData) {
+            Object.keys(studentsData).forEach(studentId => {
+                const student = studentsData[studentId];
+                if (!student || typeof student !== 'object') return;
+
+                const baseFee = Number(student.monthlyfee || 0);
+                const studentClass = parseInt(student.class) || 0;
+
+                if (student.fees && typeof student.fees === 'object') {
+                    Object.keys(student.fees).forEach(month => {
+                        const trx = student.fees[month];
+                        if (!trx) return;
+
+                        const fineValue = Number(trx.fine || 0);
+                        const totalCalculatedBill = baseFee + fineValue;
+                        const parsedStatus = (trx.status || "unpaid").toLowerCase().trim();
+
+                        invoiceCounter++;
+
+                        if (parsedStatus === "paid") {
+                            grossCollected += totalCalculatedBill;
+                            if(classRevenueMatrix[studentClass]) {
+                                classRevenueMatrix[studentClass].collected += totalCalculatedBill;
+                            }
+                        } else {
+                            grossOutstanding += totalCalculatedBill;
+                            unpaidDefaultersCount++;
+                            if(classRevenueMatrix[studentClass]) {
+                                classRevenueMatrix[studentClass].pending += totalCalculatedBill;
+                            }
+                        }
+
+                        // Local Array Cache compilation modeling
+                        localReportsCache.push({
+                            id: studentId,
+                            name: student.name || studentId,
+                            class: studentClass || "-",
+                            month: month,
+                            amount: totalCalculatedBill,
+                            status: parsedStatus
+                        });
+                    });
+                }
+            });
+        }
+
+        // Render Dashboard metric display targets
+        document.getElementById("grossCollected").innerText = "₹" + grossCollected.toLocaleString();
+        document.getElementById("grossOutstanding").innerText = "₹" + grossOutstanding.toLocaleString();
+        document.getElementById("invoiceCounter").innerText = invoiceCounter;
+
+        const totalExpected = grossCollected + grossOutstanding;
+        const computedRate = totalExpected > 0 ? ((grossCollected / totalExpected) * 100).toFixed(1) : 0;
+        
+        document.getElementById("collectionRate").innerText = `Collection Rate: ${computedRate}%`;
+        document.getElementById("pendingDefaulters").innerText = `${unpaidDefaultersCount} Delinquent Invoices`;
+
+        renderClassDistributionMatrixTable(classRevenueMatrix);
+        processLocalDatasetFilter();
+    }, error => {
+        console.error("Firebase Database Data Retrieval Failure: ", error);
+    });
+}
+
+/* RENDERS MASTER LEDGER AUDIT LOG */
+function displayMasterLogTable(dataset) {
+    const tbody = document.getElementById("reportsLogTable");
+    tbody.innerHTML = "";
+
+    if (dataset.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#9ca3af; padding:30px;">No transaction files match the selected filter limits.</td></tr>`;
+        return;
+    }
+
+    dataset.forEach(item => {
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>#${item.id}</strong></td>
+                <td>${item.name}</td>
+                <td>Class ${item.class}</td>
+                <td>${item.month}</td>
+                <td><strong>₹${item.amount.toLocaleString()}</strong></td>
+                <td><span class="badge ${item.status}">${item.status}</span></td>
+            </tr>
+        `;
+    });
+}
+
+/* RENDERS SIDE BAR CLASS METRICS TABLE */
+function renderClassDistributionMatrixTable(matrix) {
+    const tbody = document.getElementById("classDistributionTable");
+    tbody.innerHTML = "";
+
+    Object.keys(matrix).forEach(cls => {
+        const item = matrix[cls];
+        if(item.collected === 0 && item.pending === 0) return; // Hide empty class rows to keep it concise
+        
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>Class ${cls}</strong></td>
+                <td class="text-success">₹${item.collected.toLocaleString()}</td>
+                <td class="text-warning">₹${item.pending.toLocaleString()}</td>
+            </tr>
+        `;
+    });
+
+    if(tbody.innerHTML === "") {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#9ca3af;">No active class matrix files on record.</td></tr>`;
+    }
+}
+
+/* FILTERS DYNAMIC DATA CACHE IN REAL-TIME */
+function processLocalDatasetFilter() {
+    const targetClass = document.getElementById("repClass").value;
+    const targetStatus = document.getElementById("repStatus").value;
+
+    const filteredResult = localReportsCache.filter(record => {
+        const matchClass = targetClass === "" || String(record.class) === String(targetClass);
+        const matchStatus = targetStatus === "" || record.status === targetStatus;
+        return matchClass && matchStatus;
+    });
+
+    displayMasterLogTable(filteredResult);
+}
+
+function logout(){
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("erpRole");
+    localStorage.removeItem("teacherId");
+    localStorage.removeItem("teacherName");
+    window.location.href = "index.html";
+}
+
+// Global script initial run lifecycle call
+window.onload = initManagementReportsReport;
+</script>
 
 </body>
 </html>
