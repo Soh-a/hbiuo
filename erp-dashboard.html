@@ -3,28 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ERP Dashboard</title>
+<title>ERP - Fees & Accounts</title>
 
-<!-- LOGIN CHECK -->
 <script>
-
 const isLoggedIn = localStorage.getItem("isLoggedIn");
-
 if(isLoggedIn !== "true"){
     window.location.href = "login.html";
 }
-
 </script>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<!-- GOOGLE FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-
 *{
     margin:0;
     padding:0;
@@ -39,7 +32,6 @@ body{
 }
 
 /* SIDEBAR */
-
 .sidebar{
     width:260px;
     background:#111827;
@@ -48,6 +40,7 @@ body{
     position:fixed;
     height:100%;
     overflow-y:auto;
+    z-index: 100;
 }
 
 .logo{
@@ -98,8 +91,7 @@ body{
     background:#2563eb;
 }
 
-/* MAIN */
-
+/* MAIN CONTENT */
 .main{
     margin-left:260px;
     width:100%;
@@ -107,7 +99,6 @@ body{
 }
 
 /* TOPBAR */
-
 .topbar{
     background:white;
     padding:20px 25px;
@@ -123,19 +114,28 @@ body{
     color:#111827;
 }
 
-.profile{
-    display:flex;
-    align-items:center;
-    gap:15px;
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-.profile img{
-    width:45px;
-    height:45px;
-    border-radius:50%;
+/* BUTTONS */
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s;
 }
 
-/* BUTTON */
+.btn-primary:hover {
+    background: #1d4ed8;
+}
 
 .logout-btn{
     background:#ef4444;
@@ -151,8 +151,7 @@ body{
     background:#dc2626;
 }
 
-/* CARDS */
-
+/* FINANCIAL CARDS */
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -183,10 +182,37 @@ body{
     font-size:30px;
 }
 
-/* TABLE */
+.card.collected h2 { color: #16a34a; }
+.card.pending h2 { color: #ea580c; }
 
+/* UTILITY BAR (SEARCH & FILTERS) */
+.utils-bar {
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.search-input, .filter-select {
+    padding: 10px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    background: #f9fafb;
+}
+
+.search-input { flex: 1; min-width: 200px; }
+.filter-select { min-width: 150px; }
+
+/* DATA TABLES */
 .table-section{
-    margin-top:30px;
+    margin-top: 20px;
     background:white;
     padding:25px;
     border-radius:20px;
@@ -196,6 +222,11 @@ body{
 .table-section h2{
     margin-bottom:20px;
     color:#111827;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
 }
 
 table{
@@ -213,45 +244,91 @@ table th{
 table td{
     padding:14px;
     border-bottom:1px solid #e5e7eb;
+    color: #374151;
 }
 
-.status{
-    background:#dcfce7;
-    color:#166534;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
+/* BADGES */
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.status.paid { background: #dcfce7; color: #166534; }
+.status.unpaid { background: #fee2e2; color: #991b1b; }
+.status.pending { background: #fef9c3; color: #854d0e; }
+
+/* MODAL BOX SYSTEM */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
 }
 
-/* RESPONSIVE */
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+}
 
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 { font-size: 20px; color: #111827; }
+.close-modal { font-size: 24px; cursor: pointer; color: #6b7280; }
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+}
+
+/* RESPONSIVE LAYOUTS */
 @media(max-width:900px){
-
-.sidebar{
-    width:80px;
+    .sidebar{ width:80px; }
+    .sidebar h2, .sidebar p, .sidebar a span{ display:none; }
+    .main{ margin-left:80px; }
 }
-
-.sidebar h2,
-.sidebar p,
-.sidebar a span{
-    display:none;
-}
-
-.main{
-    margin-left:80px;
-}
-
-}
-
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
-
     <div class="logo">
         <img src="logo.jpeg" alt="">
         <h2>ERP</h2>
@@ -259,105 +336,130 @@ table td{
     </div>
 
     <div class="menu">
-        <a href="#" class="active">🏠 <span>Dashboard</span></a>
+        <a href="dashboard.html">🏠 <span>Dashboard</span></a>
         <a href="students.html">🎓 <span>Students</span></a>
-        <a href="attendance.html">📅 <span>Attendance</span></a>
-        <a href="fees.html">💰 <span>Fees</span></a>
-        <a href="exam.html">📝 <span>Exams</span></a>
-        <a href="gradebook.html">📘 <span>Gradebook</span></a>
-        <a href="homework.html">📚 <span>Homework</span></a>
+        <a href="#" class="active">💰 <span>Fees</span></a>
         <a href="payroll.html">💵 <span>Payroll</span></a>
         <a href="reports.html">📊 <span>Reports</span></a>
-        <a href="Notification.html">🔔 <span>Notifications</span></a>
         <a href="sms.html">📩 <span>SMS</span></a>
-        <a href="logbook.html">📖 <span>Logbook</span></a>
     </div>
-
 </div>
-
-<!-- MAIN -->
 
 <div class="main">
 
-    <!-- TOPBAR -->
-
     <div class="topbar">
-
-        <h1>ERP Dashboard</h1>
-
-        <div class="profile">
-
-            <img src="https://i.pravatar.cc/100" alt="">
-
-            <button class="logout-btn" onclick="logout()">
-                Logout
-            </button>
-
+        <h1>Accounts & Fees</h1>
+        <div class="topbar-actions">
+            <button class="btn-primary" onclick="openModal()">➕ Collect New Fee</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
-
     </div>
-
-    <!-- CARDS -->
 
     <div class="cards">
-
-        <div class="card">
-            <h3>Total Students</h3>
-            <h2 id="totalStudents">0</h2>
+        <div class="card collected">
+            <h3>Total Collected</h3>
+            <h2 id="totalCollected">₹0</h2>
         </div>
-
-        <div class="card">
-            <h3>Total Staff</h3>
-            <h2 id="totalStaff">0</h2>
+        <div class="card pending">
+            <h3>Total Outstanding</h3>
+            <h2 id="totalOutstanding">₹0</h2>
         </div>
-
         <div class="card">
-            <h3>Collected Fees</h3>
-            <h2 id="collectedFees">₹0</h2>
+            <h3>Total Transactions</h3>
+            <h2 id="totalTransactions">0</h2>
         </div>
-
-        <div class="card">
-            <h3>Pending Fees</h3>
-            <h2 id="pendingFees">₹0</h2>
-        </div>
-
-        <div class="card">
-            <h3>Attendance</h3>
-            <h2 id="attendancePercent">0%</h2>
-        </div>
-
     </div>
 
-    <!-- TABLE -->
+    <div class="utils-bar">
+        <input type="text" id="feeSearch" class="search-input" placeholder="Search by student name or ID..." oninput="filterFeesTable()">
+        <select id="classFilter" class="filter-select" onchange="filterFeesTable()">
+            <option value="">All Classes</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6</option>
+            <option value="7">Class 7</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+        </select>
+        <select id="statusFilter" class="filter-select" onchange="filterFeesTable()">
+            <option value="">All Statuses</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+        </select>
+    </div>
 
     <div class="table-section">
-
-        <h2>Recent Fee Payments</h2>
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Class</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody id="paymentTable"></tbody>
-
-        </table>
-
+        <h2>Fee Collection Ledger</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Class</th>
+                        <th>Fee Term/Month</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="masterFeesTable">
+                    <tr><td colspan="6" style="text-align:center;">Fetching accounts ledger configuration...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-
 </div>
 
+<div class="modal" id="feeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Process Fee Payment</h2>
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="feeForm" onsubmit="saveFeePayment(event)">
+            <div class="form-group">
+                <label for="modalStudentId">Student Database ID (Firebase Key)</label>
+                <input type="text" id="modalStudentId" required placeholder="e.g. student1">
+            </div>
+            <div class="form-group">
+                <label for="modalMonth">Billing Term / Month</label>
+                <select id="modalMonth" required>
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modalAmount">Payment Amount (₹)</label>
+                <input type="number" id="modalAmount" required placeholder="Amount in ₹">
+            </div>
+            <div class="form-group">
+                <label for="modalStatus">Payment Status</label>
+                <select id="modalStatus" required>
+                    <option value="paid">Paid</option>
+                    <option value="unpaid">Unpaid</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Post Transaction</button>
+        </form>
+    </div>
+</div>
 
 <script>
-
-/* FIREBASE CONFIG */
-
+/* FIREBASE APP CONFIGURATION */
 firebase.initializeApp({
     apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
     authDomain: "students-6e271.firebaseapp.com",
@@ -366,133 +468,141 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
+let masterFeesDataset = []; // Local cache tracking structural mutation array
 
-/* TOTAL STUDENTS */
+/* CORE DATA LOADER AND RENDERER */
+function loadFeesLedger() {
+    db.ref("/").on("value", snapshot => {
+        let totalCollected = 0;
+        let totalOutstanding = 0;
+        let counter = 0;
+        masterFeesDataset = [];
 
-db.ref("/").once("value").then(snapshot => {
+        snapshot.forEach(studentNode => {
+            const studentKey = studentNode.key;
+            const data = studentNode.val();
 
-    let totalStudents = 0;
-    let totalFeesPaid = 0;
-    let totalFeesPending = 0;
+            // Exclude infrastructural configuration roots (like /staff or /attendance strings)
+            if (typeof data !== "object" || studentKey === "staff" || studentKey === "attendance") return;
 
-    const tbody = document.getElementById("paymentTable");
+            if (data.fees) {
+                Object.keys(data.fees).forEach(monthKey => {
+                    const transaction = data.fees[monthKey];
+                    const amount = Number(transaction.amount || 0);
+                    const statusStr = (transaction.status || "unpaid").toLowerCase();
+
+                    if (statusStr === "paid") {
+                        totalCollected += amount;
+                    } else {
+                        totalOutstanding += amount;
+                    }
+                    counter++;
+
+                    masterFeesDataset.push({
+                        studentId: studentKey,
+                        name: data.name || studentKey,
+                        class: data.class || "-",
+                        term: monthKey,
+                        amount: amount,
+                        status: statusStr
+                    });
+                });
+            }
+        });
+
+        // Mutate metrics widgets dynamically
+        document.getElementById("totalCollected").innerText = "₹" + totalCollected.toLocaleString();
+        document.getElementById("totalOutstanding").innerText = "₹" + totalOutstanding.toLocaleString();
+        document.getElementById("totalTransactions").innerText = counter;
+
+        renderTable(masterFeesDataset);
+    });
+}
+
+function renderTable(dataset) {
+    const tbody = document.getElementById("masterFeesTable");
     tbody.innerHTML = "";
 
-    snapshot.forEach(student => {
+    if(dataset.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#9ca3af;">No accounting ledgers found matching criteria.</td></tr>`;
+        return;
+    }
 
-        const data = student.val();
+    dataset.forEach(row => {
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>#${row.studentId}</strong></td>
+                <td>${row.name}</td>
+                <td>Class ${row.class}</td>
+                <td>${row.term}</td>
+                <td>₹${row.amount.toLocaleString()}</td>
+                <td><span class="status ${row.status}">${row.status}</span></td>
+            </tr>
+        `;
+    });
+}
 
-        /* Skip non student nodes */
-        if(typeof data !== "object") return;
+/* REAL-TIME FILTERING & SELECTION MECHANICS */
+function filterFeesTable() {
+    const searchVal = document.getElementById("feeSearch").value.toLowerCase();
+    const classVal = document.getElementById("classFilter").value;
+    const statusVal = document.getElementById("statusFilter").value;
 
-        totalStudents++;
-
-        /* FEES */
-
-        if(data.fees){
-
-            Object.keys(data.fees).forEach(month => {
-
-                const fee = data.fees[month];
-
-                const status =
-                    (fee.status || "").toLowerCase();
-
-                const amount =
-                    Number(fee.amount || 0);
-
-                if(status === "paid"){
-                    totalFeesPaid += amount;
-                }else{
-                    totalFeesPending += amount;
-                }
-
-                tbody.innerHTML += `
-
-                <tr>
-                    <td>${data.name || student.key}</td>
-                    <td>${data.class || "-"}</td>
-                    <td>₹${amount}</td>
-                    <td>
-                        <span class="status">
-                            ${fee.status || "unpaid"}
-                        </span>
-                    </td>
-                </tr>
-
-                `;
-
-            });
-
-        }
-
+    const filtered = masterFeesDataset.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.studentId.toLowerCase().includes(searchVal);
+        const matchesClass = classVal === "" || String(item.class) === String(classVal);
+        const matchesStatus = statusVal === "" || item.status === statusVal;
+        
+        return matchesSearch && matchesClass && matchesStatus;
     });
 
-    document.getElementById("totalStudents").innerText =
-        totalStudents;
+    renderTable(filtered);
+}
 
-    document.getElementById("collectedFees").innerText =
-        "₹" + totalFeesPaid.toLocaleString();
+/* TRANS-POST TRANSACTION ACTIONS (MODAL WRITER) */
+function openModal() {
+    document.getElementById("feeModal").style.display = "flex";
+}
 
-    document.getElementById("pendingFees").innerText =
-        "₹" + totalFeesPending.toLocaleString();
+function closeModal() {
+    document.getElementById("feeModal").style.display = "none";
+    document.getElementById("feeForm").reset();
+}
 
-});
+function saveFeePayment(e) {
+    e.preventDefault();
 
-/* TOTAL STAFF */
+    const studentId = document.getElementById("modalStudentId").value.trim();
+    const month = document.getElementById("modalMonth").value;
+    const amount = document.getElementById("modalAmount").value;
+    const status = document.getElementById("modalStatus").value;
 
-db.ref("staff").once("value").then(snapshot => {
+    if(!studentId) return;
 
-    document.getElementById("totalStaff").innerText =
-        snapshot.numChildren();
-
-});
-
-/* ATTENDANCE */
-
-db.ref("attendance").once("value").then(snapshot => {
-
-    let total = 0;
-    let present = 0;
-
-    snapshot.forEach(child => {
-
-        const data = child.val();
-
-        if(data.status){
-
-            total++;
-
-            if(data.status.toLowerCase() === "present"){
-                present++;
-            }
-
-        }
-
+    // Direct path targeting child properties matching structure schema down to root database nodes
+    db.ref(`${studentId}/fees/${month}`).set({
+        amount: Number(amount),
+        status: status
+    }).then(() => {
+        closeModal();
+        alert("Transaction posted successfully!");
+    }).catch(error => {
+        alert("Transaction Write Failure: " + error.message);
     });
+}
 
-    const percent =
-        total > 0
-        ? Math.round((present / total) * 100)
-        : 0;
-
-    document.getElementById("attendancePercent").innerText =
-        percent + "%";
-
-});
-
-/* LOGOUT */
-
+/* AUTH LOGOUT RUNNER */
 function logout(){
-
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("erpRole");
     localStorage.removeItem("teacherId");
     localStorage.removeItem("teacherName");
-
     window.location.href = "index.html";
 }
 
+// Initial Entry Call
+window.onload = loadFeesLedger;
 </script>
+
 </body>
 </html>
