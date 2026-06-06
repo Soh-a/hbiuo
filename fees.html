@@ -4,7 +4,7 @@
   <title>Monthly Fee Summary</title>
   <style>
     body{
-      font-family:Segoe UI;
+      font-family:Segoe UI, sans-serif;
       margin:0;
       background:linear-gradient(135deg,#667eea,#764ba2);
       min-height:100vh;
@@ -16,6 +16,7 @@
     .card{
       background:rgba(255,255,255,0.15);
       backdrop-filter:blur(15px);
+      -webkit-backdrop-filter:blur(15px);
       padding:30px;
       border-radius:16px;
       box-shadow:0 8px 32px rgba(0,0,0,0.2);
@@ -54,8 +55,12 @@
       color:#fff;
       cursor:pointer;
       font-weight:bold;
+      transition: background 0.2s;
     }
-
+    
+    button:hover{
+      background:#1d4ed8;
+    }
   </style>
 </head>
 <body>
@@ -93,30 +98,43 @@ function refreshData(){
   let totalCollected = 0;
   let totalPending = 0;
 
-  db.ref().once("value",snap=>{
+  // Point reference to the "students" parent object array wrapper
+  db.ref("students").once("value", snap => {
     const data = snap.val();
 
-    for(let mobile in data){
-      let s = data[mobile];
+    if (!data) {
+      document.getElementById("collected").innerText = "₹0";
+      document.getElementById("toCollect").innerText = "₹0";
+      return;
+    }
 
-      for(let m in s.fees){
-        let fee = Number(s.monthlyfee);
-        let fine = Number(s.fees[m].fine || 0);
+    for(let studentKey in data){
+      let s = data[studentKey];
 
-        if(s.fees[m].status === "paid"){
-          totalCollected += (fee + fine);
-        }else{
-          totalPending += (fee + fine);
+      // Handle structural checks gracefully to ignore edge modifications or incomplete data records
+      if (s && s.fees && typeof s.fees === "object") {
+        for(let m in s.fees){
+          let fee = Number(s.monthlyfee || 0);
+          let fine = Number(s.fees[m].fine || 0);
+          const currentStatus = (s.fees[m].status || "").toLowerCase().trim();
+
+          if(currentStatus === "paid"){
+            totalCollected += (fee + fine);
+          } else {
+            totalPending += (fee + fine);
+          }
         }
       }
     }
 
-    document.getElementById("collected").innerText = "₹" + totalCollected;
-    document.getElementById("toCollect").innerText = "₹" + totalPending;
+    document.getElementById("collected").innerText = "₹" + totalCollected.toLocaleString();
+    document.getElementById("toCollect").innerText = "₹" + totalPending.toLocaleString();
+  }, error => {
+    console.error("Firebase Snapshot Error: ", error);
   });
 }
 
-// auto load
+// Initial structural dataset load hook execution
 refreshData();
 </script>
 
