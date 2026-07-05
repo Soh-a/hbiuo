@@ -736,21 +736,55 @@ function saveFeePayment(e) {
 
     const studentId = document.getElementById("modalStudentId").value.trim();
     const month = document.getElementById("modalMonth").value;
-    const amount = document.getElementById("modalAmount").value;
+    const amount = Number(document.getElementById("modalAmount").value);
     const status = document.getElementById("modalStatus").value;
 
-    if(!studentId) return;
+    db.ref("students/" + studentId).once("value")
+    .then(snapshot => {
 
-    db.ref(`students/${studentId}/fees/${month}`).set({
-        amount: Number(amount),
-        status: status
-    }).then(() => {
+        if (!snapshot.exists()) {
+            alert("Student not found.");
+            return;
+        }
+
+        const student = snapshot.val();
+
+        const payment = {
+            studentId: studentId,
+            studentName: student.name || "",
+            class: student.class || "",
+            month: month,
+            amount: amount,
+            status: status,
+            paymentMode: "Cash",
+            receiptNo: "R" + Date.now(),
+            collectedBy: localStorage.getItem("teacherName") || "Admin",
+            transactionDate: firebase.database.ServerValue.TIMESTAMP,
+            academicYear: "2026-27"
+        };
+
+        const paymentRef = db.ref("cashPayments").push();
+
+        return paymentRef.set(payment).then(() => {
+
+            return db.ref("students/" + studentId + "/fees/" + month).update({
+                amount: amount,
+                status: status,
+                receiptNo: payment.receiptNo,
+                paymentId: paymentRef.key
+            });
+
+        });
+
+    })
+    .then(() => {
+        alert("Payment saved successfully.");
         closeModal();
-        alert("Transaction recorded successfully!");
-    }).catch(error => {
-        alert("Write Failure: " + error.message);
+    })
+    .catch(err => {
+        alert(err.message);
     });
-}
+    }
 
 function logout(){
     localStorage.removeItem("isLoggedIn");
