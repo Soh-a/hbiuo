@@ -854,37 +854,122 @@ function showToast(message, type = "success") {
 
 /* RECURSIVE SYNCHRONIZATION WITH CENTRAL PAYMENT NODES */
 function initializeRealtimeLedger() {
+function initializeRealtimeLedger() {
     showSpinner();
-    db.ref("cashPayments").on("value", snapshot => {
-        masterCashPaymentsDataset = [];
-        let runningCollected = 0;
-        let runningOutstanding = 0;
 
-        const paymentsData = snapshot.val();
-        if (paymentsData) {
-            Object.keys(paymentsData).forEach(payId => {
-                const record = paymentsData[payId];
-                masterCashPaymentsDataset.push({ paymentId: payId, ...record });
-                
-                const amt = Number(record.amount || 0);
-                if (record.status === "paid") {
-                    runningCollected += amt;
-                } else {
-                    runningOutstanding += amt;
-                }
+    db.ref("cashPayments").once("value").then(cashSnap => {
+
+        // If cashPayments exists, use it
+        if (cashSnap.exists()) {
+
+            db.ref("cashPayments").on("value", snapshot => {
+
+                masterCashPaymentsDataset = [];
+
+                let collected = 0;
+                let outstanding = 0;
+
+                snapshot.forEach(child => {
+
+                    const record = child.val();
+
+                    masterCashPaymentsDataset.push({
+                        paymentId: child.key,
+                        ...record
+                    });
+
+                    const amt = Number(record.amount || 0);
+
+                    if ((record.status || "").toLowerCase() === "paid") {
+                        collected += amt;
+                    } else {
+                        outstanding += amt;
+                    }
+                });
+
+                document.getElementById("totalCollected").innerText =
+                    "₹" + collected.toLocaleString("en-IN");
+
+                document.getElementById("totalOutstanding").innerText =
+                    "₹" + outstanding.toLocaleString("en-IN");
+
+                document.getElementById("totalTransactions").innerText =
+                    masterCashPaymentsDataset.length;
+
+                filterAndPaginateData();
+                hideSpinner();
+
             });
-        }
-        
-        // Update dashboard values
-        document.getElementById("totalCollected").innerText = "₹" + runningCollected.toLocaleString('en-IN');
-        document.getElementById("totalOutstanding").innerText = "₹" + runningOutstanding.toLocaleString('en-IN');
-        document.getElementById("totalTransactions").innerText = masterCashPaymentsDataset.length;
 
-        filterAndPaginateData();
+        }
+
+        // cashPayments doesn't exist, load old students/fees
+        else {
+
+            db.ref("students").on("value", snapshot => {
+
+                masterCashPaymentsDataset = [];
+
+                let collected = 0;
+                let outstanding = 0;
+
+                snapshot.forEach(studentSnap => {
+
+                    const student = studentSnap.val();
+
+                    if (!student.fees) return;
+
+                    Object.keys(student.fees).forEach(month => {
+
+                        const fee = student.fees[month];
+
+                        const record = {
+                            paymentId: studentSnap.key + "_" + month,
+                            receiptNo: fee.receiptNo || "-",
+                            studentId: studentSnap.key,
+                            studentName: student.name || "",
+                            class: student.class || "",
+                            academicYear: fee.academicYear || "2026-2027",
+                            month: month,
+                            amount: Number(fee.amount || 0),
+                            paymentMode: fee.paymentMode || "Cash",
+                            status: fee.status || "unpaid",
+                            collectedBy: fee.collectedBy || "",
+                            transactionDate: fee.transactionDate || 0,
+                            remarks: fee.remarks || ""
+                        };
+
+                        masterCashPaymentsDataset.push(record);
+
+                        if (record.status.toLowerCase() === "paid") {
+                            collected += record.amount;
+                        } else {
+                            outstanding += record.amount;
+                        }
+
+                    });
+
+                });
+
+                document.getElementById("totalCollected").innerText =
+                    "₹" + collected.toLocaleString("en-IN");
+
+                document.getElementById("totalOutstanding").innerText =
+                    "₹" + outstanding.toLocaleString("en-IN");
+
+                document.getElementById("totalTransactions").innerText =
+                    masterCashPaymentsDataset.length;
+
+                filterAndPaginateData();
+                hideSpinner();
+
+            });
+
+        }
+
+    }).catch(err => {
         hideSpinner();
-    }, error => {
-        hideSpinner();
-        showToast("Database synchronization error: " + error.message, "error");
+        showToast(err.message, "error");
     });
 }
 
