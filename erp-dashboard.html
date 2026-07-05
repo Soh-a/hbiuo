@@ -12,9 +12,11 @@ if(isLoggedIn !== "true"){
 }
 </script>
 
+<!-- Core Dependencies -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -26,6 +28,7 @@ if(isLoggedIn !== "true"){
     --success-hover: #059669;
     --danger: #ef4444;
     --danger-hover: #dc2626;
+    --warning: #f59e0b;
     --dark-bg: #111827;
     --light-bg: #f3f4f6;
     --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
@@ -197,6 +200,19 @@ body{
 }
 .btn-success:hover { background: var(--success-hover); }
 
+.btn-excel {
+    background: #1f2937;
+    color: white;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s ease;
+}
+.btn-excel:hover { background: #111827; }
+
 .logout-btn{
     background: var(--danger);
     color: white;
@@ -244,7 +260,7 @@ body{
 }
 
 .card.collected h2 { color: var(--success); }
-.card.pending h2 { color: #f59e0b; }
+.card.pending h2 { color: var(--warning); }
 
 /* UTILITY BAR (SEARCH & FILTERS) */
 .utils-bar {
@@ -253,9 +269,9 @@ body{
     padding: 20px;
     border-radius: 18px;
     box-shadow: var(--card-shadow);
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 15px;
-    flex-wrap: wrap;
     align-items: center;
 }
 
@@ -266,6 +282,7 @@ body{
     font-size: 14px;
     outline: none;
     background: #f9fafb;
+    width: 100%;
     transition: all 0.2s;
 }
 .search-input:focus, .filter-select:focus {
@@ -273,9 +290,6 @@ body{
     background: white;
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
-
-.search-input { flex: 1; min-width: 240px; }
-.filter-select { min-width: 160px; cursor: pointer; }
 
 /* DATA TABLES */
 .table-section{
@@ -324,6 +338,27 @@ table tr:hover {
     background: #f8fafc;
 }
 
+/* ACTION BUTTONS IN TABLE */
+.action-btn-group {
+    display: flex;
+    gap: 8px;
+}
+.table-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+.btn-edit { background: #dbeafe; color: #1e40af; }
+.btn-edit:hover { background: #bfdbfe; }
+.btn-delete { background: #fee2e2; color: #991b1b; }
+.btn-delete:hover { background: #fecaca; }
+.btn-receipt { background: #fef3c7; color: #92400e; }
+.btn-receipt:hover { background: #fde68a; }
+
 /* STATUS BADGES */
 .status {
     padding: 5px 12px;
@@ -335,6 +370,41 @@ table tr:hover {
 }
 .status.paid { background: #dcfce7; color: #15803d; }
 .status.unpaid { background: #fee2e2; color: #b91c1c; }
+
+/* PAGINATION CONTROLS */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+.pagination-info {
+    font-size: 14px;
+    color: #6b7280;
+}
+.pagination-btns {
+    display: flex;
+    gap: 8px;
+}
+.page-btn {
+    padding: 8px 14px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.page-btn:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 /* MODAL SYSTEM */
 .modal {
@@ -353,7 +423,9 @@ table tr:hover {
     padding: 30px;
     border-radius: 24px;
     width: 90%;
-    max-width: 460px;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
     position: relative;
     animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -375,6 +447,15 @@ table tr:hover {
 .close-modal { font-size: 24px; cursor: pointer; color: #9ca3af; transition: color 0.2s; }
 .close-modal:hover { color: var(--dark-bg); }
 
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.full-width {
+    grid-column: span 2;
+}
+
 .form-group {
     margin-bottom: 18px;
 }
@@ -387,7 +468,7 @@ table tr:hover {
     font-weight: 500;
 }
 
-.form-group input, .form-group select {
+.form-group input, .form-group select, .form-group textarea {
     width: 100%;
     padding: 11px 14px;
     border: 1px solid #e5e7eb;
@@ -397,10 +478,81 @@ table tr:hover {
     background: #f9fafb;
     transition: all 0.2s;
 }
-.form-group input:focus, .form-group select:focus {
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     border-color: var(--primary);
     background: white;
 }
+
+/* CUSTOM NOTIFICATIONS */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toast {
+    padding: 14px 24px;
+    border-radius: 12px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s forwards;
+}
+.toast.toast-success { background: var(--success); }
+.toast.toast-error { background: var(--danger); }
+.toast.toast-info { background: var(--primary); }
+
+@keyframes slideIn {
+    from { transform: translateX(120%); }
+    to { transform: translateX(0); }
+}
+
+/* GLOBAL SPINNER */
+.spinner-overlay {
+    display: none;
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(255,255,255,0.7);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+}
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f4f6;
+    border-top: 5px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* RECEIPT PRINTING STYLES */
+@media print {
+    body * { visibility: hidden; }
+    #printableReceipt, #printableReceipt * { visibility: visible; }
+    #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; }
+}
+
+#printableReceipt {
+    display: none;
+    padding: 30px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #000;
+}
+.receipt-title { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 5px; }
+.receipt-subtitle { font-size: 14px; text-align: center; margin-bottom: 20px; color: #4b5563; }
+.receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 14px;}
+.receipt-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; }
+.receipt-table th, .receipt-table td { border: 1px solid #000; padding: 10px; text-align: left; }
 
 /* RESPONSIVE LAYOUT */
 @media(max-width:992px){
@@ -427,6 +579,14 @@ table tr:hover {
 </head>
 
 <body>
+
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="loadingSpinner">
+    <div class="spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div class="notification-container" id="toastContainer"></div>
 
 <div class="mobile-header">
     <div style="font-weight:600; font-size:18px;">ERP Control Panel</div>
@@ -459,10 +619,11 @@ table tr:hover {
 
     <div class="main">
         <div class="topbar">
-            <h1>Accounts & Fees</h1>
+            <h1>Accounts & Fees Ledger</h1>
             <div class="topbar-actions">
-                <button class="btn-success" onclick="downloadLedgerPDF()">📥 Download Ledger</button>
-                <button class="btn-primary" onclick="openModal()">➕ Collect New Fee</button>
+                <button class="btn-excel" onclick="exportToExcel()">📊 Export Excel</button>
+                <button class="btn-success" onclick="downloadLedgerPDF()">📥 Download Ledger PDF</button>
+                <button class="btn-primary" onclick="openPaymentModal('create')">➕ Collect New Fee</button>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -483,9 +644,9 @@ table tr:hover {
         </div>
 
         <div class="utils-bar">
-            <input type="text" id="feeSearch" class="search-input" placeholder="Search student name, key, or mobile..." oninput="filterFeesTable()">
+            <input type="text" id="feeSearch" class="search-input" placeholder="Search Name, Mobile, Adm No, Receipt..." oninput="filterAndPaginateData()">
             
-            <select id="classFilter" class="filter-select" onchange="filterFeesTable()">
+            <select id="classFilter" class="filter-select" onchange="filterAndPaginateData()">
                 <option value="">All Classes</option>
                 <option value="1">Class 1</option>
                 <option value="2">Class 2</option>
@@ -499,87 +660,165 @@ table tr:hover {
                 <option value="10">Class 10</option>
             </select>
             
-            <select id="statusFilter" class="filter-select" onchange="filterFeesTable()">
+            <select id="monthFilter" class="filter-select" onchange="filterAndPaginateData()">
+                <option value="">All Months</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+            </select>
+
+            <select id="modeFilter" class="filter-select" onchange="filterAndPaginateData()">
+                <option value="">All Modes</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cheque">Cheque</option>
+            </select>
+
+            <select id="yearFilter" class="filter-select" onchange="filterAndPaginateData()">
+                <option value="">All Academic Years</option>
+                <option value="2025-2026">2025-2026</option>
+                <option value="2026-2027">2026-2027</option>
+            </select>
+
+            <select id="statusFilter" class="filter-select" onchange="filterAndPaginateData()">
                 <option value="">All Statuses</option>
                 <option value="paid">Paid</option>
                 <option value="unpaid">Unpaid</option>
             </select>
 
-            <select id="dateSortFilter" class="filter-select" onchange="filterFeesTable()">
-                <option value="latest">Latest to Oldest</option>
-                <option value="oldest">Oldest to Latest</option>
+            <select id="dateSortFilter" class="filter-select" onchange="filterAndPaginateData()">
+                <option value="latest">Latest First</option>
+                <option value="oldest">Oldest First</option>
             </select>
         </div>
 
         <div class="table-section" id="pdfReportContainer">
-            <h2>Fee Collection Ledger</h2>
+            <h2>Central Fee Collection Register Ledger</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>Student ID / Mobile</th>
+                            <th>Receipt No</th>
+                            <th>Student ID</th>
                             <th>Name</th>
-                            <th>Class</th>
-                            <th>Fee Term/Month</th>
+                            <th>Class (Year)</th>
+                            <th>Term / Month</th>
                             <th>Amount</th>
+                            <th>Mode</th>
                             <th>Status</th>
+                            <th class="no-pdf-print">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="masterFeesTable">
-                        <tr><td colspan="6" style="text-align:center; color:#9ca3af;">Loading structural data logs...</td></tr>
+                        <tr><td colspan="9" style="text-align:center; color:#9ca3af;">Loading log entries...</td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination Wrapper -->
+            <div class="pagination-container no-pdf-print">
+                <div class="pagination-info" id="paginationDisplayInfo">Showing 0 to 0 of 0 logs</div>
+                <div class="pagination-btns">
+                    <button class="page-btn" id="prevPageBtn" onclick="changePaginationPage(-1)">Previous</button>
+                    <button class="page-btn" id="nextPageBtn" onclick="changePaginationPage(1)">Next</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Transaction Modal -->
 <div class="modal" id="feeModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Process Fee Payment</h2>
+            <h2 id="modalActionTitle">Process Fee Payment</h2>
             <span class="close-modal" onclick="closeModal()">&times;</span>
         </div>
-        <form id="feeForm" onsubmit="saveFeePayment(event)">
+        <form id="feeForm" onsubmit="handleFormSubmission(event)">
+            <input type="hidden" id="editPaymentId">
+            <input type="hidden" id="editReceiptNo">
+            
             <div class="form-group">
-                <label for="modalStudentId">Student Key (Mobile or ID)</label>
+                <label for="modalStudentId">Student Key (Mobile / Admission ID) *</label>
                 <input type="text" id="modalStudentId" required placeholder="e.g. 9876543210">
             </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="modalYear">Academic Year *</label>
+                    <select id="modalYear" required>
+                        <option value="2025-2026">2025-2026</option>
+                        <option value="2026-2027" selected>2026-2027</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalMonth">Billing Term / Month *</label>
+                    <select id="modalMonth" required>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="modalAmount">Payment Amount (₹) *</label>
+                    <input type="number" id="modalAmount" min="0" step="0.01" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="modalStatus">Payment Status *</label>
+                    <select id="modalStatus" required>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group">
-                <label for="modalMonth">Billing Term / Month</label>
-                <select id="modalMonth" required>
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September">September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
+                <label for="modalPaymentMode">Payment Method / Mode *</label>
+                <select id="modalPaymentMode" required>
+                    <option value="Cash">Cash</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Cheque">Cheque</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="modalAmount">Payment Amount (₹)</label>
-                <input type="number" id="modalAmount" required placeholder="Amount in ₹">
+
+            <div class="form-group full-width">
+                <label for="modalRemarks">Remarks / Notes</label>
+                <textarea id="modalRemarks" rows="2" placeholder="Optional transaction details..."></textarea>
             </div>
-            <div class="form-group">
-                <label for="modalStatus">Payment Status</label>
-                <select id="modalStatus" required>
-                    <option value="paid">Paid</option>
-                    <option value="unpaid">Unpaid</option>
-                </select>
-            </div>
-            <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Post Transaction</button>
+
+            <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;" id="modalSubmitButton">Post Transaction</button>
         </form>
     </div>
 </div>
 
+<!-- Static Sandbox Render Target for Printing Receipts -->
+<div id="printableReceipt"></div>
+
 <script>
-/* FIREBASE APP CONFIGURATION */
+/* FIREBASE CONNECTION PROFILES */
 firebase.initializeApp({
     apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
     authDomain: "students-6e271.firebaseapp.com",
@@ -588,213 +827,450 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
-let masterFeesDataset = []; 
+let masterCashPaymentsDataset = [];
+let filteredDataset = [];
 
-const strategicMonthsMap = {
-    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
-    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12
-};
+/* PAGINATION CONFIGURATION VALUES */
+let currentPage = 1;
+const recordsPerPage = 10;
 
 function toggleSidebar() {
     document.getElementById("appSidebar").classList.toggle("open");
 }
 
-function loadFeesLedger() {
-    db.ref("students").on("value", snapshot => {
-        let totalCollected = 0;
-        let totalOutstanding = 0;
-        let counter = 0;
-        masterFeesDataset = [];
+/* LOADING OVERLAY SPINNER IMPLEMENTATIONS */
+function showSpinner() { document.getElementById("loadingSpinner").style.display = "flex"; }
+function hideSpinner() { document.getElementById("loadingSpinner").style.display = "none"; }
 
-        const studentsData = snapshot.val();
-        if (!studentsData) {
-            updateDashboardWidgets(0, 0, 0);
-            renderTable([]);
-            return;
+/* TOAST ALERT BANNER MANAGER */
+function showToast(message, type = "success") {
+    const container = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.innerText = message;
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 4000);
+}
+
+/* RECURSIVE SYNCHRONIZATION WITH CENTRAL PAYMENT NODES */
+function initializeRealtimeLedger() {
+    showSpinner();
+    db.ref("cashPayments").on("value", snapshot => {
+        masterCashPaymentsDataset = [];
+        let runningCollected = 0;
+        let runningOutstanding = 0;
+
+        const paymentsData = snapshot.val();
+        if (paymentsData) {
+            Object.keys(paymentsData).forEach(payId => {
+                const record = paymentsData[payId];
+                masterCashPaymentsDataset.push({ paymentId: payId, ...record });
+                
+                const amt = Number(record.amount || 0);
+                if (record.status === "paid") {
+                    runningCollected += amt;
+                } else {
+                    runningOutstanding += amt;
+                }
+            });
         }
+        
+        // Update dashboard values
+        document.getElementById("totalCollected").innerText = "₹" + runningCollected.toLocaleString('en-IN');
+        document.getElementById("totalOutstanding").innerText = "₹" + runningOutstanding.toLocaleString('en-IN');
+        document.getElementById("totalTransactions").innerText = masterCashPaymentsDataset.length;
 
-        Object.keys(studentsData).forEach(studentKey => {
-            const data = studentsData[studentKey];
-            if (!data || typeof data !== "object") return;
-
-            if (data.fees && typeof data.fees === "object") {
-                Object.keys(data.fees).forEach(monthKey => {
-                    const transaction = data.fees[monthKey];
-                    if (!transaction) return;
-
-                    const amount = Number(transaction.amount || data.monthlyfee || 0);
-                    const statusStr = (transaction.status || "unpaid").toLowerCase().trim();
-
-                    if (statusStr === "paid") {
-                        totalCollected += amount;
-                    } else {
-                        totalOutstanding += amount;
-                    }
-                    counter++;
-
-                    masterFeesDataset.push({
-                        studentId: studentKey,
-                        name: data.name || studentKey, 
-                        class: data.class || "-",
-                        term: monthKey,
-                        amount: amount,
-                        status: statusStr
-                    });
-                });
-            }
-        });
-
-        updateDashboardWidgets(totalCollected, totalOutstanding, counter);
-        filterFeesTable();
+        filterAndPaginateData();
+        hideSpinner();
     }, error => {
-        console.error("Firebase Read Failure: ", error);
+        hideSpinner();
+        showToast("Database synchronization error: " + error.message, "error");
     });
 }
 
-function updateDashboardWidgets(collected, outstanding, totalCount) {
-    document.getElementById("totalCollected").innerText = "₹" + collected.toLocaleString();
-    document.getElementById("totalOutstanding").innerText = "₹" + outstanding.toLocaleString();
-    document.getElementById("totalTransactions").innerText = totalCount;
-}
-
-function renderTable(dataset) {
-    const tbody = document.getElementById("masterFeesTable");
-    tbody.innerHTML = "";
-
-    if(!dataset || dataset.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#9ca3af; padding: 20px;">No matching records found.</td></tr>`;
-        return;
-    }
-
-    dataset.forEach(row => {
-        tbody.innerHTML += `
-            <tr>
-                <td><span style="color:#64748b; font-family: monospace; font-weight:600;">${row.studentId}</span></td>
-                <td><strong>${row.name}</strong></td>
-                <td>Class ${row.class}</td>
-                <td>${row.term}</td>
-                <td><strong>₹${row.amount.toLocaleString()}</strong></td>
-                <td><span class="status ${row.status}">${row.status}</span></td>
-            </tr>
-        `;
-    });
-}
-
-function filterFeesTable() {
+/* DYNAMIC MULTI-PARAMETER SEARCH AND FILTER PIPELINE */
+function filterAndPaginateData() {
     const searchVal = document.getElementById("feeSearch").value.toLowerCase().trim();
     const classVal = document.getElementById("classFilter").value;
+    const monthVal = document.getElementById("monthFilter").value;
+    const modeVal = document.getElementById("modeFilter").value;
+    const yearVal = document.getElementById("yearFilter").value;
     const statusVal = document.getElementById("statusFilter").value;
     const dateSortOrder = document.getElementById("dateSortFilter").value;
 
-    let filtered = masterFeesDataset.filter(item => {
-        const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.studentId.toLowerCase().includes(searchVal);
-        const matchesClass = classVal === "" || String(item.class) === String(classVal);
-        const matchesStatus = statusVal === "" || item.status === statusVal;
+    filteredDataset = masterCashPaymentsDataset.filter(item => {
+        const matchesSearch = !searchVal || 
+            (item.studentName && item.studentName.toLowerCase().includes(searchVal)) ||
+            (item.studentId && item.studentId.toLowerCase().includes(searchVal)) ||
+            (item.receiptNo && item.receiptNo.toLowerCase().includes(searchVal));
+
+        const matchesClass = !classVal || String(item.class) === String(classVal);
+        const matchesMonth = !monthVal || item.month === monthVal;
+        const matchesMode = !modeVal || item.paymentMode === modeVal;
+        const matchesYear = !yearVal || item.academicYear === yearVal;
+        const matchesStatus = !statusVal || item.status === statusVal;
+
+        return matchesSearch && matchesClass && matchesMonth && matchesMode && matchesYear && matchesStatus;
+    });
+
+    // Handle sort operations
+    filteredDataset.sort((a, b) => {
+        const timeA = a.transactionDate || 0;
+        const timeB = b.transactionDate || 0;
+        return dateSortOrder === "latest" ? timeB - timeA : timeA - timeB;
+    });
+
+    currentPage = 1; 
+    renderPaginatedTable();
+}
+
+/* DOM GENERATOR FOR PAGINATED RENDER ROWS */
+function renderPaginatedTable() {
+    const tbody = document.getElementById("masterFeesTable");
+    tbody.innerHTML = "";
+
+    const totalRecords = filteredDataset.length;
+    if (totalRecords === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#9ca3af; padding: 20px;">No matching records found.</td></tr>`;
+        document.getElementById("paginationDisplayInfo").innerText = "Showing 0 to 0 of 0 logs";
+        document.getElementById("prevPageBtn").disabled = true;
+        document.getElementById("nextPageBtn").disabled = true;
+        return;
+    }
+
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+    const paginatedSlice = filteredDataset.slice(startIndex, endIndex);
+
+    paginatedSlice.forEach(row => {
+        const formattedDate = row.transactionDate ? new Date(row.transactionDate).toLocaleDateString('en-IN') : "N/A";
+        tbody.innerHTML += `
+            <tr>
+                <td><strong style="color:var(--primary); font-family:monospace;">${row.receiptNo || '-'}</strong></td>
+                <td><span style="color:#64748b; font-family: monospace; font-weight:600;">${row.studentId}</span></td>
+                <td><strong>${row.studentName || 'N/A'}</strong></td>
+                <td>Class ${row.class} (${row.academicYear})</td>
+                <td>${row.month}</td>
+                <td><strong>₹${Number(row.amount).toLocaleString('en-IN')}</strong></td>
+                <td><span style="font-size:13px; font-weight:500;">${row.paymentMode}</span></td>
+                <td><span class="status ${row.status}">${row.status}</span></td>
+                <td class="no-pdf-print">
+                    <div class="action-btn-group">
+                        <button class="table-btn btn-receipt" onclick="actionPrintReceipt('${row.paymentId}', false)">📄 Receipt</button>
+                        <button class="table-btn btn-edit" onclick="openPaymentModal('edit', '${row.paymentId}')">✏️ Edit</button>
+                        <button class="table-btn btn-delete" onclick="actionDeletePayment('${row.paymentId}')">🗑️ Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("paginationDisplayInfo").innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} logs`;
+    document.getElementById("prevPageBtn").disabled = currentPage === 1;
+    document.getElementById("nextPageBtn").disabled = endIndex >= totalRecords;
+}
+
+function changePaginationPage(direction) {
+    currentPage += direction;
+    renderPaginatedTable();
+}
+
+/* TRANSACTION FORM STATE MANAGER */
+function openPaymentModal(mode, paymentId = null) {
+    const form = document.getElementById("feeForm");
+    form.reset();
+    
+    if (mode === 'create') {
+        document.getElementById("modalActionTitle").innerText = "Process Fee Payment";
+        document.getElementById("editPaymentId").value = "";
+        document.getElementById("editReceiptNo").value = "";
+        document.getElementById("modalStudentId").disabled = false;
+        document.getElementById("modalSubmitButton").innerText = "Post Transaction";
+    } else if (mode === 'edit' && paymentId) {
+        document.getElementById("modalActionTitle").innerText = "Modify Transaction Record";
+        document.getElementById("modalStudentId").disabled = true;
+        document.getElementById("modalSubmitButton").innerText = "Save Update Modifications";
         
-        return matchesSearch && matchesClass && matchesStatus;
-    });
-
-    filtered.sort((a, b) => {
-        const indexA = strategicMonthsMap[a.term.toLowerCase()] || 0;
-        const indexB = strategicMonthsMap[b.term.toLowerCase()] || 0;
-        return dateSortOrder === "latest" ? indexB - indexA : indexA - indexB;
-    });
-
-    renderTable(filtered);
-}
-
-function downloadLedgerPDF() {
-    const element = document.getElementById('pdfReportContainer');
-    const options = {
-        margin:       [10, 10, 10, 10],
-        filename:     `Fee_Ledger_${new Date().toISOString().slice(0,10)}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
-    html2pdf().set(options).from(element).save();
-}
-
-function openModal() {
+        const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
+        if (target) {
+            document.getElementById("editPaymentId").value = target.paymentId;
+            document.getElementById("editReceiptNo").value = target.receiptNo || "";
+            document.getElementById("modalStudentId").value = target.studentId;
+            document.getElementById("modalYear").value = target.academicYear;
+            document.getElementById("modalMonth").value = target.month;
+            document.getElementById("modalAmount").value = target.amount;
+            document.getElementById("modalStatus").value = target.status;
+            document.getElementById("modalPaymentMode").value = target.paymentMode;
+            document.getElementById("modalRemarks").value = target.remarks || "";
+        }
+    }
     document.getElementById("feeModal").style.display = "flex";
 }
-
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById("feeModal");
-    if (e.target === modal) {
-        closeModal();
-    }
-});
 
 function closeModal() {
     document.getElementById("feeModal").style.display = "none";
     document.getElementById("feeForm").reset();
 }
 
-function saveFeePayment(e) {
+/* TRANSACTION SAVE FLOWS USING REALTIME INTEGRITY VERIFICATION */
+async function handleFormSubmission(e) {
     e.preventDefault();
+    showSpinner();
 
+    const paymentId = document.getElementById("editPaymentId").value;
     const studentId = document.getElementById("modalStudentId").value.trim();
+    const year = document.getElementById("modalYear").value;
     const month = document.getElementById("modalMonth").value;
     const amount = Number(document.getElementById("modalAmount").value);
     const status = document.getElementById("modalStatus").value;
+    const mode = document.getElementById("modalPaymentMode").value;
+    const remarks = document.getElementById("modalRemarks").value.trim();
 
-    db.ref("students/" + studentId).once("value")
-    .then(snapshot => {
+    // Input Validations
+    if (!studentId || amount < 0) {
+        hideSpinner();
+        showToast("Invalid data payload attributes validation failed.", "error");
+        return;
+    }
 
-        if (!snapshot.exists()) {
-            alert("Student not found.");
+    try {
+        // Step 1: Verify that student exists before writing the transaction
+        const studentSnapshot = await db.ref(`students/${studentId}`).once("value");
+        if (!studentSnapshot.exists()) {
+            hideSpinner();
+            showToast("Transaction Rejected: Student record not found.", "error");
             return;
         }
 
-        const student = snapshot.val();
+        const studentProfile = studentSnapshot.val();
+        const studentName = studentProfile.name || "Unknown Student";
+        const studentClass = studentProfile.class || "N/A";
 
-        const payment = {
+        // Step 2: Prevent duplicate entries across active tracking branches if building a new payment
+        if (!paymentId) {
+            const duplicateCheck = masterCashPaymentsDataset.find(p => 
+                p.studentId === studentId && 
+                p.month === month && 
+                p.academicYear === year
+            );
+            
+            if (duplicateCheck) {
+                const overwrite = confirm(`A transaction record for ${studentName} already exists for ${month} (${year}). Overwrite?`);
+                if (!overwrite) {
+                    hideSpinner();
+                    return;
+                }
+                // If user accepts overwrite, assign the existing payment ID to replace it smoothly
+                document.getElementById("editPaymentId").value = duplicateCheck.paymentId;
+                document.getElementById("editReceiptNo").value = duplicateCheck.receiptNo;
+            }
+        }
+
+        const activePaymentId = document.getElementById("editPaymentId").value || db.ref().child("cashPayments").push().key;
+        let assignedReceiptNo = document.getElementById("editReceiptNo").value;
+
+        // Step 3: Atomic Receipt Number generation logic
+        if (!assignedReceiptNo) {
+            const currentCounterRef = db.ref("metaProperties/receiptCounter");
+            const counterTransaction = await currentCounterRef.transaction(current => (current || 0) + 1);
+            const serialNumber = counterTransaction.snapshot.val();
+            assignedReceiptNo = "R" + String(serialNumber).padStart(6, '0');
+        }
+
+        const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator";
+
+        const transactionDataNode = {
             studentId: studentId,
-            studentName: student.name || "",
-            class: student.class || "",
+            studentName: studentName,
+            class: studentClass,
             month: month,
             amount: amount,
             status: status,
-            paymentMode: "Cash",
-            receiptNo: "R" + Date.now(),
-            collectedBy: localStorage.getItem("teacherName") || "Admin",
-            transactionDate: firebase.database.ServerValue.TIMESTAMP,
-            academicYear: "2026-27"
+            paymentMode: mode,
+            receiptNo: assignedReceiptNo,
+            academicYear: year,
+            collectedBy: currentUserEmail,
+            transactionDate: paymentId ? (masterCashPaymentsDataset.find(p => p.paymentId === paymentId)?.transactionDate || firebase.database.ServerValue.TIMESTAMP) : firebase.database.ServerValue.TIMESTAMP,
+            remarks: remarks
         };
 
-        const paymentRef = db.ref("cashPayments").push();
+        // Step 4: Multi-node database synchronization update batch
+        const atomicBatchedUpdates = {};
+        atomicBatchedUpdates[`/cashPayments/${activePaymentId}`] = transactionDataNode;
+        atomicBatchedUpdates[`/students/${studentId}/fees/${month}`] = {
+            amount: amount,
+            status: status,
+            paymentIdLink: activePaymentId
+        };
 
-        return paymentRef.set(payment).then(() => {
-
-            return db.ref("students/" + studentId + "/fees/" + month).update({
-                amount: amount,
-                status: status,
-                receiptNo: payment.receiptNo,
-                paymentId: paymentRef.key
-            });
-
-        });
-
-    })
-    .then(() => {
-        alert("Payment saved successfully.");
+        await db.ref().update(atomicBatchedUpdates);
+        
         closeModal();
-    })
-    .catch(err => {
-        alert(err.message);
-    });
+        showToast(`Transaction ${assignedReceiptNo} posted successfully!`);
+    } catch (err) {
+        showToast("Atomic batch writing sequence failure: " + err.message, "error");
+    } finally {
+        hideSpinner();
     }
-
-function logout(){
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("erpRole");
-    localStorage.removeItem("teacherId");
-    localStorage.removeItem("teacherName");
-    window.location.href = "index.html";
 }
 
-window.onload = loadFeesLedger;
+/* DELETION FLOW WITH ATOMIC TRANSACTION DISPATCH CLEANERS */
+async function actionDeletePayment(paymentId) {
+    const confirmation = confirm("Are you sure you want to permanently delete this payment transaction? This cannot be undone.");
+    if (!confirmation) return;
+
+    showSpinner();
+    try {
+        const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
+        if (!target) throw new Error("Target transaction key record structural verification failed.");
+
+        const purgeBatchedUpdates = {};
+        purgeBatchedUpdates[`/cashPayments/${paymentId}`] = null;
+        purgeBatchedUpdates[`/students/${target.studentId}/fees/${target.month}`] = null;
+
+        await db.ref().update(purgeBatchedUpdates);
+        showToast("Transaction entry purged successfully.");
+    } catch (e) {
+        showToast("Purge execution failure: " + e.message, "error");
+    } finally {
+        hideSpinner();
+    }
+}
+
+/* REALTIME RECEIPT HTML LAYOUT GENERATOR AND CONTEXT PRINTER */
+function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
+    const record = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
+    if (!record) {
+        showToast("Unable to isolate active receipt generation logs.", "error");
+        return;
+    }
+
+    const tDate = record.transactionDate ? new Date(record.transactionDate).toLocaleString('en-IN') : "N/A";
+    const receiptTemplateHTML = `
+        <div style="font-family:'Poppins', sans-serif; padding: 25px; border: 2px solid #111827; border-radius:12px; max-width:600px; margin:0 auto;">
+            <div class="receipt-title">EXCELSIOR ACADEMY</div>
+            <div class="receipt-subtitle">Official Fee Collection Acknowledgment Slip</div>
+            <hr style="border: 0; border-top: 1px dashed #000; margin-bottom:15px;">
+            <div class="receipt-grid">
+                <div><strong>Receipt No:</strong> ${record.receiptNo || 'N/A'}</div>
+                <div><strong>Date / Time:</strong> ${tDate}</div>
+                <div><strong>Student ID:</strong> ${record.studentId}</div>
+                <div><strong>Student Name:</strong> ${record.studentName}</div>
+                <div><strong>Class Stream:</strong> Class ${record.class}</div>
+                <div><strong>Academic Year:</strong> ${record.academicYear}</div>
+            </div>
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th>Billing Cycle Component Description</th>
+                        <th>Status</th>
+                        <th>Net Total Paid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Tuition and Term Maintenance Fees Allocation (${record.month})</td>
+                        <td style="text-transform:uppercase; font-weight:600;">${record.status}</td>
+                        <td><strong>₹${Number(record.amount).toLocaleString('en-IN')}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="font-size:13px; margin-bottom: 20px;">
+                <strong>Payment Mode:</strong> ${record.paymentMode}<br>
+                <strong>Remarks / Audit Reference:</strong> ${record.remarks || 'None'}
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:13px;">
+                <div>Logged By: <em>${record.collectedBy || 'Cashier'}</em></div>
+                <div style="border-top:1px solid #000; width:150px; text-align:center; padding-top:5px;">Authorized Signatory</div>
+            </div>
+        </div>
+    `;
+
+    const printTargetNode = document.getElementById("printableReceipt");
+    printTargetNode.innerHTML = receiptTemplateHTML;
+
+    if (triggerDirectDownload) {
+        const options = {
+            margin:       [10, 10, 10, 10],
+            filename:     `Receipt_${record.receiptNo || 'FX'}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(options).from(printTargetNode).save();
+    } else {
+        window.print();
+    }
+}
+
+/* REPORT EXPORT MANAGEMENT CONTROLLERS */
+function downloadLedgerPDF() {
+    showSpinner();
+    
+    // Temporarily add a class to body to hide actions column securely during processing stream
+    const actionElements = document.querySelectorAll('.no-pdf-print');
+    actionElements.forEach(el => el.style.display = 'none');
+
+    const element = document.getElementById('pdfReportContainer');
+    const options = {
+        margin:       [8, 8, 8, 8],
+        filename:     `Central_Fee_Ledger_${new Date().toISOString().slice(0,10)}.pdf`,
+        image:        { type: 'jpeg', quality: 0.99 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    
+    html2pdf().set(options).from(element).save().then(() => {
+        // Re-display actions column seamlessly
+        actionElements.forEach(el => el.style.display = '');
+        hideSpinner();
+    }).catch(err => {
+        actionElements.forEach(el => el.style.display = '');
+        hideSpinner();
+        showToast("PDF Compile Processing Fault: " + err.message, "error");
+    });
+}
+
+function exportToExcel() {
+    if (filteredDataset.length === 0) {
+        showToast("No active data array elements targeting available context rows.", "error");
+        return;
+    }
+
+    const flatExcelRows = filteredDataset.map(item => ({
+        "Receipt Number": item.receiptNo || "N/A",
+        "Student ID/Mobile": item.studentId,
+        "Student Name": item.studentName,
+        "Class": item.class,
+        "Academic Year": item.academicYear,
+        "Fee Month": item.month,
+        "Amount Paid (INR)": item.amount,
+        "Payment Mode": item.paymentMode,
+        "Status": item.status,
+        "Collected By User": item.collectedBy,
+        "Transaction Date": item.transactionDate ? new Date(item.transactionDate).toLocaleString('en-IN') : "N/A",
+        "Remarks": item.remarks || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(flatExcelRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Ledger");
+    XLSX.writeFile(workbook, `ERP_Fee_Ledger_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast("Excel ledger tracking data generated successfully.");
+}
+
+function logout(){
+    localStorage.clear();
+    window.location.href = "login.html";
+}
+
+// Global dismiss action hook mapping closures onto standard model dialog layouts
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById("feeModal");
+    if (e.target === modal) closeModal();
+});
+
+window.onload = initializeRealtimeLedger;
 </script>
 
 </body>
