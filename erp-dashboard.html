@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ERP - Fees Management & Ledger</title>
+<title>ERP Corporate - Financial Ledger Suite</title>
 
 <script>
 const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -12,758 +12,837 @@ if(isLoggedIn !== "true"){
 }
 </script>
 
-<!-- Core Dependencies -->
+<!-- Enterprise Core Dependencies -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Corporate Typography & Iconography -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 :root {
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --success: #10b981;
-    --success-hover: #059669;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
-    --warning: #f59e0b;
-    --dark-bg: #111827;
-    --light-bg: #f3f4f6;
-    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --primary: #1E3A5F;
+    --primary-hover: #152942;
+    --secondary: #334155;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --bg-main: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --border-color: #E2E8F0;
+    --text-primary: #111827;
+    --text-muted: #64748B;
+    --sidebar-width: 260px;
+    --topbar-height: 70px;
 }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins', sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
 }
 
-body{
-    background: var(--light-bg);
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* APP WRAPPER LAYOUT */
+.app-wrapper {
     display: flex;
-    flex-direction: column;
+    width: 100%;
     min-height: 100vh;
 }
 
-/* MOBILE NAV BAR */
-.mobile-header {
-    display: none;
-    background: var(--dark-bg);
+/* FIXED NAVIGATION SIDEBAR */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: #0F172A;
+    color: #F8FAFC;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.2s ease;
+}
+
+.sidebar-brand {
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.sidebar-brand img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.sidebar-brand .title-block h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #FFFFFF;
+}
+
+.sidebar-brand .title-block p {
+    font-size: 11px;
+    color: #94A3B8;
+}
+
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 12px;
+}
+
+.menu-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    padding: 12px 12px 6px;
+    font-weight: 600;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #94A3B8;
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    transition: all 0.15s ease;
+}
+
+.sidebar-menu a:hover {
+    color: #FFFFFF;
+    background-color: rgba(255,255,255,0.04);
+}
+
+.sidebar-menu a.active {
+    color: #FFFFFF;
+    background-color: var(--primary);
+}
+
+/* CORE MAIN CONTAINER CONTAINER */
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.2s ease, width 0.2s ease;
+}
+
+/* TOP ACCOUNTING CONTROL BAR */
+.topbar {
+    height: var(--topbar-height);
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+}
+
+.topbar-context h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.topbar-context p {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.topbar-meta-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.meta-info-pill {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.meta-info-pill span {
+    color: var(--text-muted);
+}
+
+.icon-trigger-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--secondary);
+    cursor: pointer;
+    position: relative;
+    padding: 4px;
+}
+
+/* FINANCIAL DASHBOARD METRIC GRID */
+.workspace-wrapper {
+    padding: 30px;
+    flex: 1;
+}
+
+.kpi-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.kpi-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.kpi-card-details h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.kpi-card-details h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.kpi-trend {
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.kpi-trend.up { color: var(--success); }
+.kpi-trend.neutral { color: var(--text-muted); }
+
+.kpi-icon-wrapper {
+    background-color: var(--bg-main);
+    color: var(--secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.kpi-card.collected-active h2 { color: var(--success); }
+.kpi-card.outstanding-active h2 { color: var(--warning); }
+
+/* PROFESSIONAL ACTION ACTION PANEL BUTTONS */
+.action-ribbon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-corporate {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    background-color: white;
+}
+
+.btn-corporate-primary {
+    background-color: var(--primary);
     color: white;
-    padding: 15px 20px;
+}
+.btn-corporate-primary:hover { background-color: var(--primary-hover); }
+
+.btn-corporate-success {
+    background-color: var(--success);
+    color: white;
+}
+.btn-corporate-success:hover { background-color: #12823B; }
+
+.btn-corporate-secondary {
+    background-color: white;
+    border-color: var(--border-color);
+    color: var(--secondary);
+}
+.btn-corporate-secondary:hover { background-color: var(--bg-main); }
+
+.btn-corporate-danger {
+    background-color: var(--danger);
+    color: white;
+}
+.btn-corporate-danger:hover { background-color: #B91C1C; }
+
+/* ENTERPRISE SEARCH & FILTER CONTROLS GRID */
+.search-control-panel {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.control-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.control-input-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.form-control-field {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: #FFFFFF;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.form-control-field:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.08);
+}
+
+/* HIGH INFORMATION DENSITY AUDIT REGISTER TABLE */
+.ledger-container-block {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ledger-block-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ledger-block-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.table-scroll-frame {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.corporate-ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.corporate-ledger-table th {
+    background-color: var(--bg-main);
+    color: var(--secondary);
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.corporate-ledger-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.corporate-ledger-table tbody tr:nth-child(even) {
+    background-color: rgba(248, 250, 252, 0.5);
+}
+
+.corporate-ledger-table tbody tr:hover {
+    background-color: #F1F5F9;
+}
+
+/* ACCOUNTING STATUS BADGES */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-status.paid {
+    background-color: #DCFCE7;
+    color: #166534;
+    border: 1px solid #BBF7D0;
+}
+
+.badge-status.unpaid {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+/* ACTION ITEM BUTTON COMPONENT SLICES */
+.table-inline-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-table-action {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--secondary);
+    transition: all 0.1s;
+}
+
+.btn-table-action:hover {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.btn-table-action.delete-row:hover {
+    background-color: #FEE2E2;
+    color: var(--danger);
+    border-color: #FECACA;
+}
+
+/* PAGINATION INFRASTRUCTURE COMPONENT */
+.ledger-pagination-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    background-color: var(--bg-main);
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-metrics-text {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* TRANSACTION ARCHITECTURE ACCOUNTING VOUCHER MODAL */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.voucher-modal-canvas {
+    background-color: var(--bg-card);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 750px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.voucher-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.voucher-modal-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-modal-trigger {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.voucher-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.voucher-form-section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.voucher-form-layout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.span-all-columns {
+    grid-column: span 2;
+}
+
+.voucher-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* APP ENGINE GLOBAL LOADING OVERLAY */
+.spinner-overlay {
+    display: none;
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background-color: rgba(255,255,255,0.8);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-element {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: corporateSpin 0.75s linear infinite;
+}
+
+@keyframes corporateSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ENTERPRISE ALERT TOAST NOTIFICATION STACK */
+.notification-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 320px;
+}
+
+.toast {
+    padding: 14px 18px;
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: corporateSlideIn 0.2s forwards;
+}
+.toast.toast-success { background-color: var(--success); }
+.toast.toast-error { background-color: var(--danger); }
+.toast.toast-info { background-color: var(--primary); }
+
+@keyframes corporateSlideIn {
+    from { transform: translateX(110%); }
+    to { transform: translateX(0); }
+}
+
+/* RESPONSIVE HEADERS FOR MOBILE MANAGEMENT DRAWER SYSTEM */
+.mobile-header-bar {
+    display: none;
+    background-color: #0F172A;
+    color: white;
+    padding: 16px 24px;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
     z-index: 101;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-.hamburger {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    background: transparent;
+.drawer-trigger-btn {
+    background: none;
     border: none;
-}
-
-.hamburger span {
-    display: block;
-    width: 25px;
-    height: 3px;
-    background: white;
-    border-radius: 2px;
-    transition: 0.3s;
-}
-
-/* SIDEBAR SYSTEM WRAPPER */
-.app-container {
-    display: flex;
-    flex: 1;
-    width: 100%;
-}
-
-.sidebar{
-    width: 260px;
-    background: var(--dark-bg);
     color: white;
-    padding: 20px;
-    position: fixed;
-    height: 100%;
-    overflow-y: auto;
-    z-index: 100;
-    transition: transform 0.3s ease;
-}
-
-.logo{
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.logo img{
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid var(--primary);
-}
-
-.logo h2{
-    margin-top: 12px;
-    font-size: 24px;
-}
-
-.logo p{
-    font-size: 13px;
-    opacity: .7;
-}
-
-.menu{
-    margin-top: 20px;
-}
-
-.menu a{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-    text-decoration: none;
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    transition: .3s;
-    font-size: 15px;
-}
-
-.menu a:hover{ background: var(--primary); }
-.menu a.active{ background: var(--primary); }
-
-/* MAIN CONTENT */
-.main{
-    margin-left: 260px;
-    width: calc(100% - 260px);
-    padding: 25px;
-    transition: all 0.3s ease;
-}
-
-/* TOPBAR */
-.topbar{
-    background: white;
-    padding: 20px 25px;
-    border-radius: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--card-shadow);
-}
-
-.topbar h1{
-    font-size: 28px;
-    color: var(--dark-bg);
-}
-
-.topbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-/* BUTTONS */
-.btn-primary {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 11px 22px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: 0.2s ease;
-}
-.btn-primary:hover { background: var(--primary-hover); }
-
-.btn-success {
-    background: var(--success);
-    color: white;
-    border: none;
-    padding: 11px 22px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: 0.2s ease;
-}
-.btn-success:hover { background: var(--success-hover); }
-
-.btn-excel {
-    background: #1f2937;
-    color: white;
-    border: none;
-    padding: 11px 22px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: 0.2s ease;
-}
-.btn-excel:hover { background: #111827; }
-
-.logout-btn{
-    background: var(--danger);
-    color: white;
-    border: none;
-    padding: 11px 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s ease;
-}
-.logout-btn:hover{ background: var(--danger-hover); }
-
-/* FINANCIAL CARDS */
-.cards{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-top: 25px;
-}
-
-.card{
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card:hover{
-    transform: translateY(-5px);
-}
-
-.card h3{
-    color: #6b7280;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 10px;
-}
-
-.card h2{
-    color: var(--dark-bg);
-    font-size: 32px;
-    font-weight: 700;
-}
-
-.card.collected h2 { color: var(--success); }
-.card.pending h2 { color: var(--warning); }
-
-/* UTILITY BAR (SEARCH & FILTERS) */
-.utils-bar {
-    margin-top: 30px;
-    background: white;
-    padding: 20px;
-    border-radius: 18px;
-    box-shadow: var(--card-shadow);
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    align-items: center;
-}
-
-.search-input, .filter-select {
-    padding: 11px 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    font-size: 14px;
-    outline: none;
-    background: #f9fafb;
-    width: 100%;
-    transition: all 0.2s;
-}
-.search-input:focus, .filter-select:focus {
-    border-color: var(--primary);
-    background: white;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-/* DATA TABLES */
-.table-section{
-    margin-top: 25px;
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: var(--card-shadow);
-}
-
-.table-section h2{
-    margin-bottom: 20px;
-    color: var(--dark-bg);
     font-size: 20px;
-    font-weight: 600;
-}
-
-.table-responsive {
-    overflow-x: auto;
-    width: 100%;
-}
-
-table{
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-table th{
-    background: #f8fafc;
-    color: #4b5563;
-    padding: 16px;
-    font-size: 13px;
-    font-weight: 600;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-table td{
-    padding: 16px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-    font-size: 14px;
-}
-
-table tr:hover {
-    background: #f8fafc;
-}
-
-/* ACTION BUTTONS IN TABLE */
-.action-btn-group {
-    display: flex;
-    gap: 8px;
-}
-.table-btn {
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 500;
     cursor: pointer;
-    border: none;
-    transition: 0.2s;
-}
-.btn-edit { background: #dbeafe; color: #1e40af; }
-.btn-edit:hover { background: #bfdbfe; }
-.btn-delete { background: #fee2e2; color: #991b1b; }
-.btn-delete:hover { background: #fecaca; }
-.btn-receipt { background: #fef3c7; color: #92400e; }
-.btn-receipt:hover { background: #fde68a; }
-
-/* STATUS BADGES */
-.status {
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    display: inline-block;
-}
-.status.paid { background: #dcfce7; color: #15803d; }
-.status.unpaid { background: #fee2e2; color: #b91c1c; }
-
-/* PAGINATION CONTROLS */
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #e5e7eb;
-}
-.pagination-info {
-    font-size: 14px;
-    color: #6b7280;
-}
-.pagination-btns {
-    display: flex;
-    gap: 8px;
-}
-.page-btn {
-    padding: 8px 14px;
-    border: 1px solid #e5e7eb;
-    background: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
-}
-.page-btn:hover:not(:disabled) {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
-/* MODAL SYSTEM */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 24px;
-    width: 90%;
-    max-width: 520px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-    position: relative;
-    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.modal-header h2 { font-size: 22px; color: var(--dark-bg); font-weight: 600; }
-.close-modal { font-size: 24px; cursor: pointer; color: #9ca3af; transition: color 0.2s; }
-.close-modal:hover { color: var(--dark-bg); }
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-.full-width {
-    grid-column: span 2;
-}
-
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 13px;
-    color: #4b5563;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    outline: none;
-    font-size: 14px;
-    background: #f9fafb;
-    transition: all 0.2s;
-}
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    border-color: var(--primary);
-    background: white;
-}
-
-/* CUSTOM NOTIFICATIONS */
-.notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.toast {
-    padding: 14px 24px;
-    border-radius: 12px;
-    color: white;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    animation: slideIn 0.3s forwards;
-}
-.toast.toast-success { background: var(--success); }
-.toast.toast-error { background: var(--danger); }
-.toast.toast-info { background: var(--primary); }
-
-@keyframes slideIn {
-    from { transform: translateX(120%); }
-    to { transform: translateX(0); }
-}
-
-/* GLOBAL SPINNER */
-.spinner-overlay {
-    display: none;
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
-    background: rgba(255,255,255,0.7);
-    z-index: 3000;
-    justify-content: center;
-    align-items: center;
-}
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f4f6;
-    border-top: 5px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* RECEIPT PRINTING STYLES */
+/* PRINT-SPECIFIC INVOICE STYLING OVERRIDES */
 @media print {
     body * { visibility: hidden; }
     #printableReceipt, #printableReceipt * { visibility: visible; }
     #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; }
+    .no-pdf-print { display: none !important; }
 }
 
 #printableReceipt {
     display: none;
-    padding: 30px;
-    border: 1px solid #e5e7eb;
-    background: white;
-    color: #000;
+    background: #FFFFFF;
+    color: #000000;
 }
-.receipt-title { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 5px; }
-.receipt-subtitle { font-size: 14px; text-align: center; margin-bottom: 20px; color: #4b5563; }
-.receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 14px;}
-.receipt-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; }
-.receipt-table th, .receipt-table td { border: 1px solid #000; padding: 10px; text-align: left; }
 
-/* RESPONSIVE LAYOUT */
-@media(max-width:992px){
-    .mobile-header { display: flex; }
+/* LAYOUT RESPONSIVE ADAPTABILITY RULES */
+@media(max-width: 992px) {
+    .mobile-header-bar { display: flex; }
     .sidebar {
         transform: translateX(-100%);
-        top: 60px;
-        height: calc(100% - 60px);
+        top: 57px;
+        height: calc(100% - 57px);
     }
     .sidebar.open { transform: translateX(0); }
-    .main {
+    .main-content {
         margin-left: 0;
         width: 100%;
-        padding: 15px;
     }
-    .topbar {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-    .topbar-actions { width: 100%; justify-content: space-between; }
+    .topbar { display: none; }
+    .search-control-panel { grid-template-columns: 1fr; }
+    .voucher-form-layout-grid { grid-template-columns: 1fr; }
+    .span-all-columns { grid-column: span 1; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- Spinner Overlay -->
+<!-- App Master Micro Spinner -->
 <div class="spinner-overlay" id="loadingSpinner">
-    <div class="spinner"></div>
+    <div class="spinner-element"></div>
 </div>
 
-<!-- Toast Container -->
+<!-- Notification Overlay Engine Target -->
 <div class="notification-container" id="toastContainer"></div>
 
-<div class="mobile-header">
-    <div style="font-weight:600; font-size:18px;">ERP Control Panel</div>
-    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
-        <span></span>
-        <span></span>
-        <span></span>
+<!-- Mobile Drawer Navigation Bridge Header -->
+<div class="mobile-header-bar">
+    <div style="font-weight:700; font-size:14px; letter-spacing:0.5px;">ERP ACCOUNTING SUITE</div>
+    <button class="drawer-trigger-btn" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
     </button>
 </div>
 
-<div class="app-container">
+<div class="app-wrapper">
 
+    <!-- Primary Control Hub Navigation Sidebar Panel -->
     <div class="sidebar" id="appSidebar">
-        <div class="logo">
-            <img src="logo.jpeg" alt="Logo" onerror="this.src='https://via.placeholder.com/90'">
-            <h2>ERP</h2>
-            <p>School Management</p>
+        <div class="sidebar-brand">
+            <img src="logo.jpeg" alt="ERP Logo" onerror="this.src='https://via.placeholder.com/32/1e3a5f/ffffff?text=ERP'">
+            <div class="title-block">
+                <h2>SAI DRS KIDS SCHOOL</h2>
+                <p>Accounting Core Suite</p>
+            </div>
         </div>
 
-        <div class="menu">
-            <a href="dashboard.html">🏠 <span>Dashboard</span></a>
-            <a href="students.html">🎓 <span>Students</span></a>
-            <a href="#" class="active">💰 <span>Fees</span></a>
-            <a href="payroll.html">💵 <span>Payroll</span></a>
-            <a href="reports.html">📊 <span>Reports</span></a>
-            <a href="master-setup.html">📊 <span>setup</span></a>
-            <a href="defaulters.html">📊 <span>defaulter</span></a>
+        <div class="sidebar-menu">
+            <div class="menu-section-label">General Ledger</div>
+            <a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Control</span></a>
+            <a href="#" class="active"><i class="fa-solid fa-receipt"></i> <span>Fee Register Accounts</span></a>
+            <a href="students.html"><i class="fa-solid fa-address-book"></i> <span>Student Subsidiary Ledger</span></a>
+            <a href="defaulters.html"><i class="fa-solid fa-triangle-exclamation"></i> <span>Accounts Receivable</span></a>
+            
+            <div class="menu-section-label">Operations & Payroll</div>
+            <a href="payroll.html"><i class="fa-solid fa-money-check-dollar"></i> <span>Payroll Disbursements</span></a>
+            <a href="reports.html"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Financial Statements</span></a>
+            <a href="master-setup.html"><i class="fa-solid fa-gears"></i> <span>System Master Config</span></a>
         </div>
     </div>
 
-    <div class="main">
+    <!-- Central Interactive Workspace Matrix Canvas -->
+    <div class="main-content">
+        
+        <!-- Corporate Structural Context Metric Topbar Header -->
         <div class="topbar">
-            <h1>Accounts & Fees Ledger</h1>
-            <div class="topbar-actions">
-                <button class="btn-excel" onclick="exportToExcel()">📊 Export Excel</button>
-                <button class="btn-success" onclick="downloadLedgerPDF()">📥 Download Ledger PDF</button>
-                <button class="btn-primary" onclick="openPaymentModal('create')">➕ Collect New Fee</button>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+            <div class="topbar-context">
+                <h1>Accounts & Fees Ledger</h1>
+                <p>Centralized Receipt Book Transactions & Multi-channel Audits</p>
             </div>
-        </div>
-
-        <div class="cards">
-            <div class="card collected">
-                <h3>Total Collected</h3>
-                <h2 id="totalCollected">₹0</h2>
-            </div>
-            <div class="card pending">
-                <h3>Total Outstanding</h3>
-                <h2 id="totalOutstanding">₹0</h2>
-            </div>
-            <div class="card">
-                <h3>Total Transactions</h3>
-                <h2 id="totalTransactions">0</h2>
-            </div>
-        </div>
-
-        <div class="utils-bar">
-            <input type="text" id="feeSearch" class="search-input" placeholder="Search Name, Mobile, Adm No, Receipt..." oninput="filterAndPaginateData()">
             
-            <select id="classFilter" class="filter-select" onchange="filterAndPaginateData()">
-                <option value="">All Classes</option>
-                <option value="1">Class 1</option>
-                <option value="2">Class 2</option>
-                <option value="3">Class 3</option>
-                <option value="4">Class 4</option>
-                <option value="5">Class 5</option>
-                <option value="6">Class 6</option>
-                <option value="7">Class 7</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-                <option value="10">Class 10</option>
-            </select>
-            
-            <select id="monthFilter" class="filter-select" onchange="filterAndPaginateData()">
-                <option value="">All Months</option>
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-            </select>
-
-            <select id="modeFilter" class="filter-select" onchange="filterAndPaginateData()">
-                <option value="">All Modes</option>
-                <option value="Cash">Cash</option>
-                <option value="UPI">UPI</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Cheque">Cheque</option>
-            </select>
-
-            <select id="yearFilter" class="filter-select" onchange="filterAndPaginateData()">
-                <option value="">All Academic Years</option>
-                <option value="2025-2026">2025-2026</option>
-                <option value="2026-2027">2026-2027</option>
-            </select>
-
-            <select id="statusFilter" class="filter-select" onchange="filterAndPaginateData()">
-                <option value="">All Statuses</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-            </select>
-
-            <select id="dateSortFilter" class="filter-select" onchange="filterAndPaginateData()">
-                <option value="latest">Latest First</option>
-                <option value="oldest">Oldest First</option>
-            </select>
+            <div class="topbar-meta-actions">
+                <div class="meta-info-pill">
+                    <span>F.Y.</span> <strong>2026-2027</strong>
+                </div>
+                <div class="meta-info-pill">
+                    <i class="fa-solid fa-user-tie"></i> <strong id="topbarUserEmail">Admin</strong>
+                </div>
+                <button class="icon-trigger-btn" title="System Alerts">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+                <button class="icon-trigger-btn" title="Global Variables Config">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="table-section" id="pdfReportContainer">
-            <h2>Central Fee Collection Register Ledger</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Receipt No</th>
-                            <th>Student ID</th>
-                            <th>Name</th>
-                            <th>Class (Year)</th>
-                            <th>Term / Month</th>
-                            <th>Amount</th>
-                            <th>Mode</th>
-                            <th>Status</th>
-                            <th class="no-pdf-print">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="masterFeesTable">
-                        <tr><td colspan="9" style="text-align:center; color:#9ca3af;">Loading log entries...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="workspace-wrapper">
 
-            <!-- Pagination Wrapper -->
-            <div class="pagination-container no-pdf-print">
-                <div class="pagination-info" id="paginationDisplayInfo">Showing 0 to 0 of 0 logs</div>
-                <div class="pagination-btns">
-                    <button class="page-btn" id="prevPageBtn" onclick="changePaginationPage(-1)">Previous</button>
-                    <button class="page-btn" id="nextPageBtn" onclick="changePaginationPage(1)">Next</button>
+            <!-- Real-time Financial Reporting Analytics Status Grid -->
+            <div class="kpi-dashboard-grid">
+                <div class="kpi-card collected-active">
+                    <div class="kpi-card-details">
+                        <h3>Total Receipts Realized</h3>
+                        <h2 id="totalCollected">₹0.00</h2>
+                        <div class="kpi-trend up"><i class="fa-solid fa-circle-up"></i> Net Cash Flow</div>
+                    </div>
+                    <div class="kpi-icon-wrapper"><i class="fa-solid fa-vault"></i></div>
+                </div>
+                <div class="kpi-card outstanding-active">
+                    <div class="kpi-card-details">
+                        <h3>Outstanding Receivables</h3>
+                        <h2 id="totalOutstanding">₹0.00</h2>
+                        <div class="kpi-trend"><i class="fa-solid fa-clock"></i> Pending Settlement</div>
+                    </div>
+                    <div class="kpi-icon-wrapper"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-card-details">
+                        <h3>Voucher Counter</h3>
+                        <h2 id="totalTransactions">0</h2>
+                        <div class="kpi-trend neutral">Processed Items</div>
+                    </div>
+                    <div class="kpi-icon-wrapper"><i class="fa-solid fa-folder-open"></i></div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- Transaction Modal -->
-<div class="modal" id="feeModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalActionTitle">Process Fee Payment</h2>
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-        </div>
-        <form id="feeForm" onsubmit="handleFormSubmission(event)">
-            <input type="hidden" id="editPaymentId">
-            <input type="hidden" id="editReceiptNo">
-            
-            <div class="form-group">
-                <label for="modalStudentId">Student Key (Mobile / Admission ID) *</label>
-                <input type="text" id="modalStudentId" required placeholder="e.g. 9876543210">
+            <!-- Global Actions Context Controls Row Panel -->
+            <div class="action-ribbon">
+                <div class="btn-group">
+                    <button class="btn-corporate btn-corporate-primary" onclick="openPaymentModal('create')">
+                        <i class="fa-solid fa-file-circle-plus"></i> Collect New Fee Voucher
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-corporate btn-corporate-secondary" onclick="exportToExcel()">
+                        <i class="fa-solid fa-file-excel"></i> Export Selected (.XLSX)
+                    </button>
+                    <button class="btn-corporate btn-corporate-secondary" onclick="downloadLedgerPDF()">
+                        <i class="fa-solid fa-file-pdf"></i> Compile System PDF Report
+                    </button>
+                    <button class="btn-corporate btn-corporate-danger" onclick="logout()">
+                        <i class="fa-solid fa-power-off"></i> Terminate Session
+                    </button>
+                </div>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="modalYear">Academic Year *</label>
-                    <select id="modalYear" required>
-                        <option value="2025-2026">2025-2026</option>
-                        <option value="2026-2027" selected>2026-2027</option>
+            <!-- Multi-channel Parameter Analytical Audit Filter Panel -->
+            <div class="search-control-panel">
+                <div class="control-input-group">
+                    <label>Identity / Receipt Lookup</label>
+                    <input type="text" id="feeSearch" class="form-control-field" placeholder="Search ID, Name, Receipt..." oninput="filterAndPaginateData()">
+                </div>
+                
+                <div class="control-input-group">
+                    <label>Class Segment</label>
+                    <select id="classFilter" class="form-control-field" onchange="filterAndPaginateData()">
+                        <option value="">All Classes (Unfiltered)</option>
+                        <option value="Playgroup">Playgroup</option>
+                        <option value="Nursery">Nursery</option>
+                        <option value="LKG">LKG</option>
+                        <option value="UKG">UKG</option>
+                        <option value="1">Class 1</option>
+                        <option value="2">Class 2</option>
+                        <option value="3">Class 3</option>
+                        <option value="4">Class 4</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="modalMonth">Billing Term / Month *</label>
-                    <select id="modalMonth" required>
+                
+                <div class="control-input-group">
+                    <label>Allocation Month</label>
+                    <select id="monthFilter" class="form-control-field" onchange="filterAndPaginateData()">
+                        <option value="">All Months</option>
                         <option value="January">January</option>
                         <option value="February">February</option>
                         <option value="March">March</option>
@@ -778,47 +857,181 @@ table tr:hover {
                         <option value="December">December</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="modalAmount">Payment Amount (₹) *</label>
-                    <input type="number" id="modalAmount" min="0" step="0.01" required placeholder="0.00">
+                <div class="control-input-group">
+                    <label>Cash/Bank Ledger</label>
+                    <select id="modeFilter" class="form-control-field" onchange="filterAndPaginateData()">
+                        <option value="">All Modes</option>
+                        <option value="Cash">Cash Account</option>
+                        <option value="UPI">UPI Electronic Clearing</option>
+                        <option value="Bank Transfer">Bank Transfer / NEFT</option>
+                        <option value="Cheque">Cheque Settlement Pool</option>
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label for="modalStatus">Payment Status *</label>
-                    <select id="modalStatus" required>
-                        <option value="paid">Paid</option>
-                        <option value="unpaid">Unpaid</option>
+
+                <div class="control-input-group">
+                    <label>Financial Year</label>
+                    <select id="yearFilter" class="form-control-field" onchange="filterAndPaginateData()">
+                        <option value="">All Years</option>
+                        <option value="2025-2026">2025-2026</option>
+                        <option value="2026-2027">2026-2027</option>
+                    </select>
+                </div>
+
+                <div class="control-input-group">
+                    <label>Realization Status</label>
+                    <select id="statusFilter" class="form-control-field" onchange="filterAndPaginateData()">
+                        <option value="">All Statuses</option>
+                        <option value="paid">Paid / Cleared</option>
+                        <option value="unpaid">Unpaid / Accrued</option>
+                    </select>
+                </div>
+
+                <div class="control-input-group">
+                    <label>Chronological Sort</label>
+                    <select id="dateSortFilter" class="form-control-field" onchange="filterAndPaginateData()">
+                        <option value="latest">Latest First</option>
+                        <option value="oldest">Oldest First</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="modalPaymentMode">Payment Method / Mode *</label>
-                <select id="modalPaymentMode" required>
-                    <option value="Cash">Cash</option>
-                    <option value="UPI">UPI</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cheque">Cheque</option>
-                </select>
-            </div>
+            <!-- Central High Density Transaction Register Module Container -->
+            <div class="ledger-container-block" id="pdfReportContainer">
+                <div class="ledger-block-header">
+                    <h2>Central Fee Collection Register Ledger</h2>
+                    <div class="meta-info-pill no-pdf-print" style="font-size:11px;">System Live Context Sync</div>
+                </div>
+                
+                <div class="table-scroll-frame">
+                    <table class="corporate-ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Receipt No</th>
+                                <th>Admission ID</th>
+                                <th>Student Full Name</th>
+                                <th>Classification Group</th>
+                                <th>Accounting Month</th>
+                                <th style="text-align: right;">Amount Face (₹)</th>
+                                <th>Asset Clearing Mode</th>
+                                <th>Ledger Status</th>
+                                <th class="no-pdf-print" style="text-align: center; width: 120px;">Audits & Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody id="masterFeesTable">
+                            <tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 30px;"><i class="fa-solid fa-spinner fa-spin"></i> Instantiating dynamic distributed memory cells...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="form-group full-width">
-                <label for="modalRemarks">Remarks / Notes</label>
-                <textarea id="modalRemarks" rows="2" placeholder="Optional transaction details..."></textarea>
+                <!-- Pagination Footer Navigation Block Component -->
+                <div class="ledger-pagination-bar no-pdf-print">
+                    <div class="pagination-metrics-text" id="paginationDisplayInfo">Showing logs 0-0 of 0</div>
+                    <div class="btn-group">
+                        <button class="btn-corporate btn-corporate-secondary" id="prevPageBtn" onclick="changePaginationPage(-1)" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                        <button class="btn-corporate btn-corporate-secondary" id="nextPageBtn" onclick="changePaginationPage(1)" style="padding: 6px 12px; font-size: 12px;">Next <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;" id="modalSubmitButton">Post Transaction</button>
+<!-- Transaction Architecture Enterprise Voucher Entry Modal Form Overlay -->
+<div class="modal-overlay" id="feeModal">
+    <div class="voucher-modal-canvas">
+        <div class="voucher-modal-header">
+            <h2 id="modalActionTitle"><i class="fa-solid fa-file-invoice"></i> Post Financial Revenue Receipt Voucher</h2>
+            <button class="close-modal-trigger" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="feeForm" onsubmit="handleFormSubmission(event)">
+            <input type="hidden" id="editPaymentId">
+            <input type="hidden" id="editReceiptNo">
+            
+            <div class="voucher-modal-body">
+                
+                <!-- Section 1: Customer Profile Context Metadata Mapping -->
+                <div class="voucher-form-section-title">I. Customer / Student Mapping Profile</div>
+                <div class="voucher-form-layout-grid">
+                    <div class="control-input-group span-all-columns">
+                        <label for="modalStudentId">Student Key Mapping Reference (Admission ID / Mobile) *</label>
+                        <input type="text" id="modalStudentId" class="form-control-field" required placeholder="e.g. Enter valid master database mapping key reference...">
+                    </div>
+                </div>
+
+                <!-- Section 2: Fiscal Year Period & Accrual Matrix Allocation Parameters -->
+                <div class="voucher-form-section-title">II. Fiscal Period Allocation Parameters</div>
+                <div class="voucher-form-layout-grid">
+                    <div class="control-input-group">
+                        <label for="modalYear">Target Academic Financial Year *</label>
+                        <select id="modalYear" class="form-control-field" required>
+                            <option value="2025-2026">2025-2026</option>
+                            <option value="2026-2027" selected>2026-2027</option>
+                        </select>
+                    </div>
+                    <div class="control-input-group">
+                        <label for="modalMonth">Revenue Cycle Allocation Month *</label>
+                        <select id="modalMonth" class="form-control-field" required>
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 3: Value Transaction Realization Config Slices -->
+                <div class="voucher-form-section-title">III. Asset Valuation & Realization Strategy</div>
+                <div class="voucher-form-layout-grid">
+                    <div class="control-input-group">
+                        <label for="modalAmount">Face Payment Value (₹ Net Amount) *</label>
+                        <input type="number" id="modalAmount" class="form-control-field" min="0" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="control-input-group">
+                        <label for="modalStatus">Clearing Realization Status *</label>
+                        <select id="modalStatus" class="form-control-field" required>
+                            <option value="paid">Paid / Cleared Value</option>
+                            <option value="unpaid">Unpaid / Deferred Receivable</option>
+                        </select>
+                    </div>
+                    <div class="control-input-group span-all-columns">
+                        <label for="modalPaymentMode">Target Asset Ledger Pool *</label>
+                        <select id="modalPaymentMode" class="form-control-field" required>
+                            <option value="Cash">Cash Account Balance</option>
+                            <option value="UPI">UPI Electronic Liquid Pool</option>
+                            <option value="Bank Transfer">Bank Transfer Vault Clearance</option>
+                            <option value="Cheque">Cheque / Clearing House Queue</option>
+                        </select>
+                    </div>
+                    <div class="control-input-group span-all-columns">
+                        <label for="modalRemarks">Transaction Narration / Audit Notes</label>
+                        <textarea id="modalRemarks" class="form-control-field" rows="2" placeholder="Provide formal transaction narration trail or clearing reference notes here..."></textarea>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="voucher-modal-footer">
+                <button type="button" class="btn-corporate btn-corporate-secondary" onclick="closeModal()">Discard Entry</button>
+                <button type="submit" class="btn-corporate btn-corporate-primary" id="modalSubmitButton">Commit Ledger Transaction</button>
+            </div>
         </form>
     </div>
 </div>
 
-<!-- Static Sandbox Render Target for Printing Receipts -->
+<!-- Static Corporate Voucher Sandbox Target Container for Printing -->
 <div id="printableReceipt"></div>
 
 <script>
-/* FIREBASE CONNECTION PROFILES */
+/* CORE REALTIME DISTRIBUTED CONNECTION INSTANTIATION PROFILE */
 firebase.initializeApp({
     apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
     authDomain: "students-6e271.firebaseapp.com",
@@ -831,7 +1044,7 @@ let masterCashPaymentsDataset = [];
 let filteredDataset = [];
 let fallbackModeActive = false;
 
-/* PAGINATION CONFIGURATION VALUES */
+/* SUBSIDIARY INTERNAL CLIENT CONTROLS AND MEMORY CELL STATE SETTINGS */
 let currentPage = 1;
 const recordsPerPage = 10;
 
@@ -839,25 +1052,34 @@ function toggleSidebar() {
     document.getElementById("appSidebar").classList.toggle("open");
 }
 
-/* LOADING OVERLAY SPINNER IMPLEMENTATIONS */
+/* APP ENGINE SCREEN RENDERING SPINNER METHODS */
 function showSpinner() { document.getElementById("loadingSpinner").style.display = "flex"; }
 function hideSpinner() { document.getElementById("loadingSpinner").style.display = "none"; }
 
-/* TOAST ALERT BANNER MANAGER */
+/* TOAST ALERT OVERLAY MESSAGE QUEUE MANAGER */
 function showToast(message, type = "success") {
     const container = document.getElementById("toastContainer");
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
-    toast.innerText = message;
+    
+    let baseIcon = '<i class="fa-solid fa-circle-check"></i> ';
+    if (type === 'error') baseIcon = '<i class="fa-solid fa-triangle-exclamation"></i> ';
+    if (type === 'info') baseIcon = '<i class="fa-solid fa-circle-info"></i> ';
+    
+    toast.innerHTML = baseIcon + '<span>' + message + '</span>';
     container.appendChild(toast);
     setTimeout(() => { toast.remove(); }, 4000);
 }
 
-/* REAL-TIME DUAL-MODE SCHEMA ENGINE WITH AUTO FALLBACK INTERCEPTOR */
+/* SCHEMA SWITCH ROUTING ENGINE INTERCEPTOR */
 function initializeRealtimeLedger() {
     showSpinner();
     
-    // First, verify whether the cashPayments node is initialized and contains metrics
+    // Fallback parsing context check initialization routines
+    const cachedUser = localStorage.getItem("userEmail") || "System Accountant";
+    const userDisplayNode = document.getElementById("topbarUserEmail");
+    if(userDisplayNode) userDisplayNode.innerText = cachedUser;
+
     db.ref("cashPayments").on("value", snapshot => {
         const paymentsData = snapshot.val();
         
@@ -865,7 +1087,6 @@ function initializeRealtimeLedger() {
             fallbackModeActive = false;
             processCashPaymentsData(paymentsData);
         } else {
-            // "cashPayments" node is missing or dead; divert execution pipeline to structural legacy sync
             fallbackModeActive = true;
             fallbackToLegacySchema();
         }
@@ -875,7 +1096,7 @@ function initializeRealtimeLedger() {
     });
 }
 
-/* SCENARIO A: LOAD FROM MODERN PRIMARY CASH PAYMENTS ROOT */
+/* CONTROLLER STRATEGY A: PRIMARY LIVE LEDGER DATA HARVEST ROUTINES */
 function processCashPaymentsData(paymentsData) {
     masterCashPaymentsDataset = [];
     let runningCollected = 0;
@@ -898,10 +1119,10 @@ function processCashPaymentsData(paymentsData) {
     hideSpinner();
 }
 
-/* SCENARIO B: FALLBACK ENGINE HARVESTING VIRTUAL RECORDS FROM EMBEDDED PATHS */
+/* CONTROLLER STRATEGY B: NESTED SUBSIDIARY ACCOUNT TREE TRANSLATOR HOOKS */
 function fallbackToLegacySchema() {
     db.ref("students").on("value", snapshot => {
-        if (!fallbackModeActive) return; // Prevent loop collisions if fallback was disabled downstream
+        if (!fallbackModeActive) return;
 
         masterCashPaymentsDataset = [];
         let runningCollected = 0;
@@ -929,10 +1150,9 @@ function fallbackToLegacySchema() {
                         }
                         syntheticCounter++;
 
-                        // Build an on-the-fly virtual transaction row matching standard properties
                         masterCashPaymentsDataset.push({
                             paymentId: txn.paymentIdLink || `legacy_${studentKey}_${monthKey}`,
-                            receiptNo: txn.receiptNo || "LEGACY",
+                            receiptNo: txn.receiptNo || "LEGACY_VCH",
                             studentId: studentKey,
                             studentName: data.name || studentKey,
                             class: data.class || "N/A",
@@ -941,9 +1161,9 @@ function fallbackToLegacySchema() {
                             amount: amt,
                             paymentMode: txn.paymentMode || "Cash",
                             status: currentStatus,
-                            collectedBy: txn.collectedBy || "System Migration",
-                            transactionDate: txn.transactionDate || 1741132800000, // Safe runtime fallback epoch
-                            remarks: txn.remarks || "Legacy System Record"
+                            collectedBy: txn.collectedBy || "System Migration Engine",
+                            transactionDate: txn.transactionDate || 1741132800000,
+                            remarks: txn.remarks || "Legacy Auto-Translated Entry Row"
                         });
                     });
                 }
@@ -960,12 +1180,12 @@ function fallbackToLegacySchema() {
 }
 
 function updateDashboardUI(collected, outstanding, totalCount) {
-    document.getElementById("totalCollected").innerText = "₹" + collected.toLocaleString('en-IN');
-    document.getElementById("totalOutstanding").innerText = "₹" + outstanding.toLocaleString('en-IN');
+    document.getElementById("totalCollected").innerText = "₹" + collected.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById("totalOutstanding").innerText = "₹" + outstanding.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById("totalTransactions").innerText = totalCount;
 }
 
-/* DYNAMIC MULTI-PARAMETER SEARCH AND FILTER PIPELINE */
+/* COMPREHENSIVE SUB-SYSTEM QUERY ENGINE PATTERN FILTERS */
 function filterAndPaginateData() {
     const searchVal = document.getElementById("feeSearch").value.toLowerCase().trim();
     const classVal = document.getElementById("classFilter").value;
@@ -990,7 +1210,6 @@ function filterAndPaginateData() {
         return matchesSearch && matchesClass && matchesMonth && matchesMode && matchesYear && matchesStatus;
     });
 
-    // Handle sort operations
     filteredDataset.sort((a, b) => {
         const timeA = a.transactionDate || 0;
         const timeB = b.transactionDate || 0;
@@ -1001,15 +1220,15 @@ function filterAndPaginateData() {
     renderPaginatedTable();
 }
 
-/* DOM GENERATOR FOR PAGINATED RENDER ROWS */
+/* HIGH DENSITY RECORD REGISTRATION INTERACTIVE DOM BUILDER */
 function renderPaginatedTable() {
     const tbody = document.getElementById("masterFeesTable");
     tbody.innerHTML = "";
 
     const totalRecords = filteredDataset.length;
     if (totalRecords === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#9ca3af; padding: 20px;">No matching records found.</td></tr>`;
-        document.getElementById("paginationDisplayInfo").innerText = "Showing 0 to 0 of 0 logs";
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 40px; font-weight: 500;">No qualified register entries isolated under current parameters.</td></tr>`;
+        document.getElementById("paginationDisplayInfo").innerText = "Showing logs 0 to 0 of 0";
         document.getElementById("prevPageBtn").disabled = true;
         document.getElementById("nextPageBtn").disabled = true;
         return;
@@ -1022,26 +1241,26 @@ function renderPaginatedTable() {
     paginatedSlice.forEach(row => {
         tbody.innerHTML += `
             <tr>
-                <td><strong style="color:var(--primary); font-family:monospace;">${row.receiptNo || '-'}</strong></td>
-                <td><span style="color:#64748b; font-family: monospace; font-weight:600;">${row.studentId}</span></td>
-                <td><strong>${row.studentName || 'N/A'}</strong></td>
-                <td>Class ${row.class} (${row.academicYear})</td>
-                <td>${row.month}</td>
-                <td><strong>₹${Number(row.amount).toLocaleString('en-IN')}</strong></td>
-                <td><span style="font-size:13px; font-weight:500;">${row.paymentMode}</span></td>
-                <td><span class="status ${row.status}">${row.status}</span></td>
+                <td><strong style="color: var(--primary); font-family: monospace; font-size: 13px;">${row.receiptNo || '-'}</strong></td>
+                <td><span style="color: var(--text-muted); font-family: monospace; font-weight: 600;">${row.studentId}</span></td>
+                <td><strong style="color: var(--text-primary); font-weight: 600;">${row.studentName || 'N/A'}</strong></td>
+                <td>Group ${row.class} <span style="color: var(--text-muted); font-size: 11px;">(${row.academicYear})</span></td>
+                <td><span style="font-weight: 500;">${row.month}</span></td>
+                <td style="text-align: right; font-weight: 700; color: #0F172A;">₹${Number(row.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td><span style="font-size: 12px; font-weight: 500; color: var(--secondary);"><i class="fa-solid fa-building-columns"></i> ${row.paymentMode}</span></td>
+                <td><span class="badge-status ${row.status}">${row.status}</span></td>
                 <td class="no-pdf-print">
-                    <div class="action-btn-group">
-                        <button class="table-btn btn-receipt" onclick="actionPrintReceipt('${row.paymentId}', false)">📄 Receipt</button>
-                        <button class="table-btn btn-edit" onclick="openPaymentModal('edit', '${row.paymentId}')">✏️ Edit</button>
-                        <button class="table-btn btn-delete" onclick="actionDeletePayment('${row.paymentId}')">🗑️ Delete</button>
+                    <div class="table-inline-actions">
+                        <button class="btn-table-action" onclick="actionPrintReceipt('${row.paymentId}', false)" title="Print Formal Corporate Invoice Slip"><i class="fa-solid fa-print"></i></button>
+                        <button class="btn-table-action" onclick="openPaymentModal('edit', '${row.paymentId}')" title="Modify Transaction Audit Fields"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn-table-action delete-row" onclick="actionDeletePayment('${row.paymentId}')" title="Purge Record Safely From Balances"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
                 </td>
             </tr>
         `;
     });
 
-    document.getElementById("paginationDisplayInfo").innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} logs`;
+    document.getElementById("paginationDisplayInfo").innerText = `Showing entries ${startIndex + 1} to ${endIndex} of ${totalRecords}`;
     document.getElementById("prevPageBtn").disabled = currentPage === 1;
     document.getElementById("nextPageBtn").disabled = endIndex >= totalRecords;
 }
@@ -1051,21 +1270,21 @@ function changePaginationPage(direction) {
     renderPaginatedTable();
 }
 
-/* TRANSACTION FORM STATE MANAGER */
+/* TRANSACTION ARCHITECTURE ACCOUNTING VOUCHER FRAME WORKERS */
 function openPaymentModal(mode, paymentId = null) {
     const form = document.getElementById("feeForm");
     form.reset();
     
     if (mode === 'create') {
-        document.getElementById("modalActionTitle").innerText = "Process Fee Payment";
+        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> Process Financial Revenue Receipt Voucher';
         document.getElementById("editPaymentId").value = "";
         document.getElementById("editReceiptNo").value = "";
         document.getElementById("modalStudentId").disabled = false;
-        document.getElementById("modalSubmitButton").innerText = "Post Transaction";
+        document.getElementById("modalSubmitButton").innerText = "Commit Ledger Transaction";
     } else if (mode === 'edit' && paymentId) {
-        document.getElementById("modalActionTitle").innerText = "Modify Transaction Record";
+        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-pen"></i> Amortize / Modify Existing Voucher Record';
         document.getElementById("modalStudentId").disabled = true;
-        document.getElementById("modalSubmitButton").innerText = "Save Update Modifications";
+        document.getElementById("modalSubmitButton").innerText = "Save Authorized Modifications";
         
         const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
         if (target) {
@@ -1088,7 +1307,7 @@ function closeModal() {
     document.getElementById("feeForm").reset();
 }
 
-/* TRANSACTION DUAL-WRITE STRATEGY TO PRESERVE SCHEMA MIRRORING */
+/* BATCED DISTRIBUTED ATOMIC MUTATION PIPELINES */
 async function handleFormSubmission(e) {
     e.preventDefault();
     showSpinner();
@@ -1104,24 +1323,22 @@ async function handleFormSubmission(e) {
 
     if (!studentId || amount < 0) {
         hideSpinner();
-        showToast("Invalid data payload attributes validation failed.", "error");
+        showToast("Voucher submission rejected: Invalid value dimensions inside asset payload fields.", "error");
         return;
     }
 
     try {
-        // Step 1: Securely verify existence of student profile node
         const studentSnapshot = await db.ref(`students/${studentId}`).once("value");
         if (!studentSnapshot.exists()) {
             hideSpinner();
-            showToast("Transaction Rejected: Student record not found.", "error");
+            showToast("Validation Exception: Student structural identity mapping not found.", "error");
             return;
         }
 
         const studentProfile = studentSnapshot.val();
-        const studentName = studentProfile.name || "Unknown Student";
+        const studentName = studentProfile.name || "Unknown Subsidiary Ledger";
         const studentClass = studentProfile.class || "N/A";
 
-        // Step 2: Look up collisions inside memory dataset array elements
         if (!paymentId) {
             const duplicateCheck = masterCashPaymentsDataset.find(p => 
                 p.studentId === studentId && 
@@ -1130,7 +1347,7 @@ async function handleFormSubmission(e) {
             );
             
             if (duplicateCheck) {
-                const overwrite = confirm(`A transaction record for ${studentName} already exists for ${month} (${year}). Overwrite?`);
+                const overwrite = confirm(`A financial allocation for ${studentName} already exists for period ${month} (${year}). Overwrite active row?`);
                 if (!overwrite) {
                     hideSpinner();
                     return;
@@ -1143,15 +1360,14 @@ async function handleFormSubmission(e) {
         const activePaymentId = document.getElementById("editPaymentId").value || db.ref().child("cashPayments").push().key;
         let assignedReceiptNo = document.getElementById("editReceiptNo").value;
 
-        // Step 3: Run safe distributed counters for receipt tracking logs
-        if (!assignedReceiptNo || assignedReceiptNo === "LEGACY") {
+        if (!assignedReceiptNo || assignedReceiptNo === "LEGACY_VCH" || assignedReceiptNo === "LEGACY") {
             const currentCounterRef = db.ref("metaProperties/receiptCounter");
             const counterTransaction = await currentCounterRef.transaction(current => (current || 0) + 1);
             const serialNumber = counterTransaction.snapshot.val();
-            assignedReceiptNo = "R" + String(serialNumber).padStart(6, '0');
+            assignedReceiptNo = "VCH-" + String(serialNumber).padStart(6, '0');
         }
 
-        const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator";
+        const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator Tool";
         const targetTimestamp = paymentId ? (masterCashPaymentsDataset.find(p => p.paymentId === paymentId)?.transactionDate || firebase.database.ServerValue.TIMESTAMP) : firebase.database.ServerValue.TIMESTAMP;
 
         const transactionDataNode = {
@@ -1169,7 +1385,6 @@ async function handleFormSubmission(e) {
             remarks: remarks
         };
 
-        // Step 4: Atomic Dual-Write Update to preserve structural mirroring
         const atomicBatchedUpdates = {};
         atomicBatchedUpdates[`/cashPayments/${activePaymentId}`] = transactionDataNode;
         atomicBatchedUpdates[`/students/${studentId}/fees/${month}`] = {
@@ -1187,82 +1402,105 @@ async function handleFormSubmission(e) {
         await db.ref().update(atomicBatchedUpdates);
         
         closeModal();
-        showToast(`Transaction ${assignedReceiptNo} posted successfully!`);
+        showToast(`Transaction Voucher ${assignedReceiptNo} successfully written to master data frames.`);
     } catch (err) {
-        showToast("Atomic batch writing sequence failure: " + err.message, "error");
+        showToast("Atomic batch mutation error: " + err.message, "error");
     } finally {
         hideSpinner();
     }
 }
 
-/* DELETION FLOW WITH ATOMIC TRANSACTION DISPATCH CLEANERS */
+/* TRANSACTION PURGE INLINE ROUTINES */
 async function actionDeletePayment(paymentId) {
-    const confirmation = confirm("Are you sure you want to permanently delete this payment transaction? This cannot be undone.");
+    const confirmation = confirm("CRITICAL AUDIT NOTICE: Are you certain you want to permanently purge this financial entry? Balances will dynamically recompute.");
     if (!confirmation) return;
 
     showSpinner();
     try {
         const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
-        if (!target) throw new Error("Target transaction key record structural verification failed.");
+        if (!target) throw new Error("Target ledger node context tracking failed.");
 
         const purgeBatchedUpdates = {};
         purgeBatchedUpdates[`/cashPayments/${paymentId}`] = null;
         purgeBatchedUpdates[`/students/${target.studentId}/fees/${target.month}`] = null;
 
         await db.ref().update(purgeBatchedUpdates);
-        showToast("Transaction entry purged successfully.");
+        showToast("Voucher record purged from balance indices successfully.");
     } catch (e) {
-        showToast("Purge execution failure: " + e.message, "error");
+        showToast("Purge execution failed: " + e.message, "error");
     } finally {
         hideSpinner();
     }
 }
 
-/* REALTIME RECEIPT HTML LAYOUT GENERATOR AND CONTEXT PRINTER */
+/* HIGH GRAPHICS CORPORATE FISCAL INVOICE PRINT RECONCILER */
 function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
     const record = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
     if (!record) {
-        showToast("Unable to isolate active receipt generation logs.", "error");
+        showToast("Unable to isolate record pointer for invoice formatting.", "error");
         return;
     }
 
-    const tDate = record.transactionDate && typeof record.transactionDate === 'number' ? new Date(record.transactionDate).toLocaleString('en-IN') : "N/A";
+    const tDate = record.transactionDate && typeof record.transactionDate === 'number' ? new Date(record.transactionDate).toLocaleString('en-IN') : "Live Balance Runtime Verification";
     const receiptTemplateHTML = `
-        <div style="font-family:'Poppins', sans-serif; padding: 25px; border: 2px solid #111827; border-radius:12px; max-width:600px; margin:0 auto;">
-            <div class="receipt-title">EXCELSIOR ACADEMY</div>
-            <div class="receipt-subtitle">Official Fee Collection Acknowledgment Slip</div>
-            <hr style="border: 0; border-top: 1px dashed #000; margin-bottom:15px;">
-            <div class="receipt-grid">
-                <div><strong>Receipt No:</strong> ${record.receiptNo || 'N/A'}</div>
-                <div><strong>Date / Time:</strong> ${tDate}</div>
-                <div><strong>Student ID:</strong> ${record.studentId}</div>
-                <div><strong>Student Name:</strong> ${record.studentName}</div>
-                <div><strong>Class Stream:</strong> Class ${record.class}</div>
-                <div><strong>Academic Year:</strong> ${record.academicYear}</div>
+        <div style="font-family:'Inter', sans-serif; padding: 40px; border: 1px solid #111827; max-width:720px; margin:0 auto; background-color:#FFFFFF; color:#111827;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px;">
+                <div>
+                    <h1 style="font-size:22px; font-weight:700; color:#1E3A5F; margin-bottom:4px;">SAI DRS KIDS SCHOOL</h1>
+                    <p style="font-size:12px; color:#475569; line-height:1.4;">Guwahati, Assam, India<br>Corporate Accounts Operations Office</p>
+                </div>
+                <div style="text-align:right;">
+                    <h2 style="font-size:16px; font-weight:700; color:#0F172A; margin-bottom:4px;">REVENUE RECEIPT VOUCHER</h2>
+                    <p style="font-size:12px; font-family:monospace; color:#475569;">${record.receiptNo || 'N/A'}</p>
+                </div>
             </div>
-            <table class="receipt-table">
+            
+            <hr style="border:0; border-top:1px solid #E2E8F0; margin-bottom:24px;">
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; font-size:13px; margin-bottom:30px; line-height:1.6;">
+                <div>
+                    <span style="color:#64748B; font-weight:500; text-transform:uppercase; font-size:11px; display:block; margin-bottom:2px;">Debited Subsidiary Account</span>
+                    <strong>${record.studentName}</strong><br>
+                    ID/Ref: <span style="font-family:monospace;">${record.studentId}</span><br>
+                    Classification Level: Class ${record.class}
+                </div>
+                <div style="text-align:right;">
+                    <span style="color:#64748B; font-weight:500; text-transform:uppercase; font-size:11px; display:block; margin-bottom:2px;">Voucher Audits</span>
+                    Posting Period: <strong>${record.month} (${record.academicYear})</strong><br>
+                    Realization Stamp: <span style="font-family:monospace;">${tDate}</span><br>
+                    Clearing Target Pool: ${record.paymentMode}
+                </div>
+            </div>
+
+            <table style="width:100%; border-collapse:collapse; margin-bottom:30px; font-size:13px;">
                 <thead>
-                    <tr>
-                        <th>Billing Cycle Component Description</th>
-                        <th>Status</th>
-                        <th>Net Total Paid</th>
+                    <tr style="background-color:#F8FAFC;">
+                        <th style="border:1px solid #E2E8F0; padding:12px; text-align:left; color:#334155;">Ledger Allocation Line Item Description</th>
+                        <th style="border:1px solid #E2E8F0; padding:12px; text-align:center; color:#334155; width:120px;">Voucher Status</th>
+                        <th style="border:1px solid #E2E8F0; padding:12px; text-align:right; color:#334155; width:150px;">Realized Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Tuition and Term Maintenance Fees Allocation (${record.month})</td>
-                        <td style="text-transform:uppercase; font-weight:600;">${record.status}</td>
-                        <td><strong>₹${Number(record.amount).toLocaleString('en-IN')}</strong></td>
+                        <td style="border:1px solid #E2E8F0; padding:14px; color:#111827;">Institutional Tuition Fees and Dynamic Accruals Allocation Row Entry</td>
+                        <td style="border:1px solid #E2E8F0; padding:14px; text-align:center; text-transform:uppercase; font-weight:700; color:#16A34A;">${record.status}</td>
+                        <td style="border:1px solid #E2E8F0; padding:14px; text-align:right; font-weight:700; color:#0F172A;">₹${Number(record.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                    <tr style="background-color:#F8FAFC;">
+                        <td colspan="2" style="border:1px solid #E2E8F0; padding:12px; text-align:right; font-weight:600; color:#334155;">Net Aggregate Balance Realized (INR):</td>
+                        <td style="border:1px solid #E2E8F0; padding:12px; text-align:right; font-weight:700; color:#1E3A5F; font-size:14px;">₹${Number(record.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     </tr>
                 </tbody>
             </table>
-            <div style="font-size:13px; margin-bottom: 20px;">
-                <strong>Payment Mode:</strong> ${record.paymentMode}<br>
-                <strong>Remarks / Audit Reference:</strong> ${record.remarks || 'None'}
+
+            <div style="font-size:12px; color:#475569; margin-bottom:40px; line-height:1.5; background-color:#F8FAFC; padding:16px; border-radius:4px;">
+                <strong>Voucher Narration/Remarks:</strong> ${record.remarks || 'No explicit narration trail documented by handling accountant.'}<br>
+                <span style="font-size:11px; color:#94A3B8; margin-top:6px; display:block;">Authorization Security Audit User Email Context: ${record.collectedBy || 'Corporate Operator'}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:13px;">
-                <div>Logged By: <em>${record.collectedBy || 'Cashier'}</em></div>
-                <div style="border-top:1px solid #000; width:150px; text-align:center; padding-top:5px;">Authorized Signatory</div>
+
+            <div style="display:flex; justify-content:space-between; margin-top:60px; font-size:12px;">
+                <div style="border-top:1px solid #94A3B8; width:180px; text-align:center; padding-top:8px; color:#475569;">Internal Review Accountant</div>
+                <div style="border-top:1px solid #94A3B8; width:180px; text-align:center; padding-top:8px; color:#1E3A5F; font-weight:600;">Authorized Controller Signatory</div>
             </div>
         </div>
     `;
@@ -1273,7 +1511,7 @@ function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
     if (triggerDirectDownload) {
         const options = {
             margin:       [10, 10, 10, 10],
-            filename:     `Receipt_${record.receiptNo || 'FX'}.pdf`,
+            filename:     `Corporate_Voucher_${record.receiptNo || 'FX'}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -1284,7 +1522,7 @@ function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
     }
 }
 
-/* REPORT EXPORT MANAGEMENT CONTROLLERS */
+/* HIGH COMPILATION OUTPUT FORMAT CONVERTER HANDLERS */
 function downloadLedgerPDF() {
     showSpinner();
     
@@ -1294,7 +1532,7 @@ function downloadLedgerPDF() {
     const element = document.getElementById('pdfReportContainer');
     const options = {
         margin:       [8, 8, 8, 8],
-        filename:     `Central_Fee_Ledger_${new Date().toISOString().slice(0,10)}.pdf`,
+        filename:     `Corporate_Fee_Ledger_Export_${new Date().toISOString().slice(0,10)}.pdf`,
         image:        { type: 'jpeg', quality: 0.99 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
@@ -1303,39 +1541,40 @@ function downloadLedgerPDF() {
     html2pdf().set(options).from(element).save().then(() => {
         actionElements.forEach(el => el.style.display = '');
         hideSpinner();
+        showToast("PDF balance sheet matrix compiled successfully.");
     }).catch(err => {
         actionElements.forEach(el => el.style.display = '');
         hideSpinner();
-        showToast("PDF Compile Processing Fault: " + err.message, "error");
+        showToast("PDF rendering tracking failure: " + err.message, "error");
     });
 }
 
 function exportToExcel() {
     if (filteredDataset.length === 0) {
-        showToast("No active data array elements targeting available context rows.", "error");
+        showToast("Export operation cancelled: Array content grid isolation contains 0 entries.", "error");
         return;
     }
 
     const flatExcelRows = filteredDataset.map(item => ({
-        "Receipt Number": item.receiptNo || "N/A",
-        "Student ID/Mobile": item.studentId,
-        "Student Name": item.studentName,
-        "Class": item.class,
-        "Academic Year": item.academicYear,
-        "Fee Month": item.month,
-        "Amount Paid (INR)": item.amount,
-        "Payment Mode": item.paymentMode,
-        "Status": item.status,
-        "Collected By User": item.collectedBy,
-        "Transaction Date": item.transactionDate && typeof item.transactionDate === 'number' ? new Date(item.transactionDate).toLocaleString('en-IN') : "N/A",
-        "Remarks": item.remarks || ""
+        "Voucher/Receipt Number": item.receiptNo || "N/A",
+        "Student Ledger ID Mapping": item.studentId,
+        "Customer Entity Name": item.studentName,
+        "Class Structural Tier": item.class,
+        "Fiscal Year Allocation": item.academicYear,
+        "Revenue Accounting Month": item.month,
+        "Net Realized Amount (INR)": item.amount,
+        "Asset Target Clearing Ledger": item.paymentMode,
+        "Voucher Realization Status": item.status,
+        "Authorized Auditor User": item.collectedBy,
+        "System Chronological Stamp": item.transactionDate && typeof item.transactionDate === 'number' ? new Date(item.transactionDate).toLocaleString('en-IN') : "N/A",
+        "Voucher Narration Trail": item.remarks || ""
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(flatExcelRows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Ledger");
-    XLSX.writeFile(workbook, `ERP_Fee_Ledger_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
-    showToast("Excel ledger tracking data generated successfully.");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Ledger Accounts");
+    XLSX.writeFile(workbook, `ERP_Corporate_Ledger_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast("Microsoft Excel accounting sheet structure written out successfully.");
 }
 
 function logout(){
