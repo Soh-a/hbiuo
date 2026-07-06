@@ -17,6 +17,8 @@ if(isLoggedIn !== "true"){
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- LineIcons for Password Visibility & Edit Icons -->
+<link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
 
 <style>
 :root {
@@ -25,6 +27,7 @@ if(isLoggedIn !== "true"){
     --dark-bg: #111827;
     --light-bg: #f3f4f6;
     --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --success: #16a34a;
 }
 
 *{
@@ -41,7 +44,6 @@ body{
     min-height: 100vh;
 }
 
-/* FULL-WIDTH MAIN WORKSPACE */
 .main{
     width: 100%;
     max-width: 1400px;
@@ -89,6 +91,7 @@ body{
 .stat-card {
     background: white;
     padding: 22px;
+    border-radius: 166px;
     border-radius: 16px;
     box-shadow: var(--card-shadow);
 }
@@ -176,48 +179,96 @@ body{
     background: #f8fafc;
 }
 
-/* UTILITY LABELS AND SENSITIVE BLOCKS */
+/* SECURE TOOGLE BADGES & CONTROLS */
 .credential-badge {
     background: #f1f5f9;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 6px;
     font-family: 'Courier New', Courier, monospace;
     font-weight: 600;
     color: #0f172a;
     border: 1px solid #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
+.secure-toggle-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+}
+.secure-toggle-btn:hover { color: var(--primary); }
+
 .fee-badge {
-    color: #16a34a;
+    color: var(--success);
     font-weight: 600;
 }
 
-/* RESPONSIVE LAYOUT BREAKPOINTS */
+/* INLINE FORM EDITORS STYLE */
+.inline-edit-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+}
+.inline-edit-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.action-btn-group {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    transition: 0.15s ease;
+}
+
+.btn-modify { background: #e0f2fe; color: #0369a1; }
+.btn-modify:hover { background: #bae6fd; }
+
+.btn-save { background: #dcfce7; color: #15803d; }
+.btn-save:hover { background: #bbf7d0; }
+
+.btn-cancel { background: #f1f5f9; color: #475569; }
+.btn-cancel:hover { background: #e2e8f0; }
+
+/* ROW EDITING HIGHLIGHT */
+.editing-row {
+    background-color: #f0fdf4 !important;
+}
+
 @media(max-width:768px){
-    .main {
-        padding: 15px;
-    }
-    .topbar {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-    .logout-btn {
-        width: 100%;
-        text-align: center;
-    }
+    .main { padding: 15px; }
+    .topbar { flex-direction: column; gap: 15px; align-items: flex-start; }
+    .logout-btn { width: 100%; text-align: center; }
 }
 </style>
 </head>
 <body>
 
 <div class="app-container">
-
     <div class="main">
         <div class="topbar">
             <div>
                 <h1>Student Directory</h1>
-                <p style="color: #6b7280; font-size: 14px; margin-top: 2px;">Comprehensive master listing including profile credentials</p>
+                <p style="color: #6b7280; font-size: 14px; margin-top: 2px;">Comprehensive master listing with profile access credentials and modifier console</p>
             </div>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
@@ -228,30 +279,27 @@ body{
                 <h2 id="cntTotal">0</h2>
             </div>
             <div class="stat-card">
-                <h3>High School Enrolled (9-10)</h3>
-                <h2 id="cntSenior">0</h2>
+                <h3>Pre-Primary Enrolled (PG - UKG)</h3>
+                <h2 id="cntPrePrimary">0</h2>
             </div>
             <div class="stat-card">
-                <h3>Primary Enrolled (1-5)</h3>
+                <h3>Primary Enrolled (Class 1 - 4)</h3>
                 <h2 id="cntPrimary">0</h2>
             </div>
         </div>
 
         <div class="utils-bar">
-            <input type="text" id="directorySearch" class="search-input" placeholder="Search by name, roll number, or username/mobile..." oninput="filterDirectoryTable()">
+            <input type="text" id="directorySearch" class="search-input" placeholder="Search by name, roll number, key or mobile..." oninput="filterDirectoryTable()">
             
             <select id="directoryClassFilter" class="filter-select" onchange="filterDirectoryTable()">
                 <option value="">All Classes</option>
+                <option value="Playgroup">Playgroup</option>
+                <option value="LKG">LKG</option>
+                <option value="UKG">UKG</option>
                 <option value="1">Class 1</option>
                 <option value="2">Class 2</option>
                 <option value="3">Class 3</option>
                 <option value="4">Class 4</option>
-                <option value="5">Class 5</option>
-                <option value="6">Class 6</option>
-                <option value="7">Class 7</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-                <option value="10">Class 10</option>
             </select>
         </div>
 
@@ -268,15 +316,15 @@ body{
                             <th>Username / Mobile</th>
                             <th>Password (Raw)</th>
                             <th>Base Monthly Fee</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="directoryTableBody">
-                        <tr><td colspan="7" style="text-align:center; color:#9ca3af;">Streaming database collections data...</td></tr>
+                        <tr><td colspan="8" style="text-align:center; color:#9ca3af;">Streaming database collections data...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -291,15 +339,19 @@ firebase.initializeApp({
 
 const db = firebase.database();
 let completeDirectoryDataset = [];
+let editingRowKey = null; // Tracks currently active inline editor row
 
-/* TRACK AND STREAM ALL FIELDS UNDER STUDENTS PARENT NODE */
+/* RUNTIME TRACKERS FOR VISIBILITY STATES */
+let hiddenKeysState = {};
+let hiddenPasswordsState = {};
+
 function syncStudentDirectoryData() {
     db.ref("students").on("value", snapshot => {
         const studentProfiles = snapshot.val();
         completeDirectoryDataset = [];
 
         let totalRecords = 0;
-        let seniorCount = 0;
+        let prePrimaryCount = 0;
         let primaryCount = 0;
 
         if (studentProfiles) {
@@ -308,10 +360,14 @@ function syncStudentDirectoryData() {
                 if (!profile || typeof profile !== 'object') return;
 
                 totalRecords++;
-                const currentClassNum = parseInt(profile.class) || 0;
+                const cls = String(profile.class || "").trim().toLowerCase();
                 
-                if(currentClassNum >= 9 && currentClassNum <= 10) seniorCount++;
-                if(currentClassNum >= 1 && currentClassNum <= 5) primaryCount++;
+                if(cls === "playgroup" || cls === "lkg" || cls === "ukg") {
+                    prePrimaryCount++;
+                } else {
+                    const classNum = parseInt(cls) || 0;
+                    if(classNum >= 1 && classNum <= 4) primaryCount++;
+                }
 
                 completeDirectoryDataset.push({
                     firebaseKey: keyId,
@@ -326,7 +382,7 @@ function syncStudentDirectoryData() {
         }
 
         document.getElementById("cntTotal").innerText = totalRecords;
-        document.getElementById("cntSenior").innerText = seniorCount;
+        document.getElementById("cntPrePrimary").innerText = prePrimaryCount;
         document.getElementById("cntPrimary").innerText = primaryCount;
 
         filterDirectoryTable();
@@ -335,28 +391,137 @@ function syncStudentDirectoryData() {
     });
 }
 
-/* RENDER ROWS TO SCREEN VIEW DOM ELEMENT */
 function renderDirectoryGrid(dataset) {
     const tbody = document.getElementById("directoryTableBody");
     tbody.innerHTML = "";
 
     if (dataset.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#9ca3af; padding:25px;">No corresponding structural records matching your input metrics were located.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#9ca3af; padding:25px;">No corresponding structural records matching your input metrics were located.</td></tr>`;
         return;
     }
 
     dataset.forEach(student => {
-        tbody.innerHTML += `
-            <tr>
-                <td><small style="color:#64748b; font-weight:500;">${student.firebaseKey}</small></td>
-                <td><strong>${student.name}</strong></td>
-                <td>Class ${student.class}</td>
-                <td>#${student.roll}</td>
-                <td><span class="credential-badge">${student.mobile}</span></td>
-                <td><span class="credential-badge" style="background:#fff3f2; color:#c2410c; border-color:#fed7aa;">${student.password}</span></td>
-                <td><span class="fee-badge">₹${student.monthlyFee.toLocaleString()}</span></td>
-            </tr>
-        `;
+        const isEditing = (editingRowKey === student.firebaseKey);
+        
+        // Setup hidden visibility mapping tracking states
+        if (hiddenKeysState[student.firebaseKey] === undefined) hiddenKeysState[student.firebaseKey] = true;
+        if (hiddenPasswordsState[student.firebaseKey] === undefined) hiddenPasswordsState[student.firebaseKey] = true;
+
+        const maskedKey = hiddenKeysState[student.firebaseKey] ? `••••${student.firebaseKey.slice(-4)}` : student.firebaseKey;
+        const maskedPassword = hiddenPasswordsState[student.firebaseKey] ? "••••••••" : student.password;
+        
+        const keyEyeIcon = hiddenKeysState[student.firebaseKey] ? "lni lni-eye" : "lni lni-eye-minus";
+        const passEyeIcon = hiddenPasswordsState[student.firebaseKey] ? "lni lni-eye" : "lni lni-eye-minus";
+
+        if (isEditing) {
+            // RENDER INLINE INPUT FIELDS ROW
+            tbody.innerHTML += `
+                <tr class="editing-row">
+                    <td><small style="color:#64748b; font-weight:600;">${student.firebaseKey}</small></td>
+                    <td><input type="text" id="edit_name_${student.firebaseKey}" class="inline-edit-input" value="${student.name}"></td>
+                    <td>
+                        <select id="edit_class_${student.firebaseKey}" class="inline-edit-input">
+                            <option value="Playgroup" ${student.class === 'Playgroup' ? 'selected' : ''}>Playgroup</option>
+                            <option value="LKG" ${student.class === 'LKG' ? 'selected' : ''}>LKG</option>
+                            <option value="UKG" ${student.class === 'UKG' ? 'selected' : ''}>UKG</option>
+                            <option value="1" ${student.class === '1' ? 'selected' : ''}>Class 1</option>
+                            <option value="2" ${student.class === '2' ? 'selected' : ''}>Class 2</option>
+                            <option value="3" ${student.class === '3' ? 'selected' : ''}>Class 3</option>
+                            <option value="4" ${student.class === '4' ? 'selected' : ''}>Class 4</option>
+                        </select>
+                    </td>
+                    <td><input type="text" id="edit_roll_${student.firebaseKey}" class="inline-edit-input" value="${student.roll}"></td>
+                    <td><input type="text" id="edit_mobile_${student.firebaseKey}" class="inline-edit-input" value="${student.mobile}"></td>
+                    <td><input type="text" id="edit_password_${student.firebaseKey}" class="inline-edit-input" value="${student.password}" style="font-family:'Courier New'; font-weight:600;"></td>
+                    <td><input type="number" id="edit_fee_${student.firebaseKey}" class="inline-edit-input" value="${student.monthlyFee}"></td>
+                    <td style="text-align: center;">
+                        <div class="action-btn-group">
+                            <button class="btn-action btn-save" onclick="saveInlineRow('${student.firebaseKey}')">Save</button>
+                            <button class="btn-action btn-cancel" onclick="cancelInlineRow()">Cancel</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        } else {
+            // RENDER STANDARD DATA VIEW ROW
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <small style="color:#64748b; font-weight:500; font-family:'Courier New';">${maskedKey}</small>
+                        <button class="secure-toggle-btn" onclick="toggleKeyVisibility('${student.firebaseKey}')"><i class="${keyEyeIcon}"></i></button>
+                    </td>
+                    <td><strong>${student.name}</strong></td>
+                    <td>${student.class.startsWith('Class') || ['Playgroup','LKG','UKG'].includes(student.class) ? student.class : 'Class ' + student.class}</td>
+                    <td>#${student.roll}</td>
+                    <td><span class="credential-badge">${student.mobile}</span></td>
+                    <td>
+                        <span class="credential-badge" style="background:#fff3f2; color:#c2410c; border-color:#fed7aa;">
+                            ${maskedPassword}
+                        </span>
+                        <button class="secure-toggle-btn" onclick="togglePasswordVisibility('${student.firebaseKey}')"><i class="${passEyeIcon}"></i></button>
+                    </td>
+                    <td><span class="fee-badge">₹${student.monthlyFee.toLocaleString()}</span></td>
+                    <td style="text-align: center;">
+                        <button class="btn-action btn-modify" onclick="enterInlineEditMode('${student.firebaseKey}')">Modify</button>
+                    </td>
+                </tr>
+            `;
+        }
+    });
+}
+
+/* INTERFACE VIEW MANIPULATION CONTROLLERS */
+function toggleKeyVisibility(key) {
+    hiddenKeysState[key] = !hiddenKeysState[key];
+    filterDirectoryTable();
+}
+
+function togglePasswordVisibility(key) {
+    hiddenPasswordsState[key] = !hiddenPasswordsState[key];
+    filterDirectoryTable();
+}
+
+function enterInlineEditMode(key) {
+    editingRowKey = key;
+    filterDirectoryTable();
+}
+
+function cancelInlineRow() {
+    editingRowKey = null;
+    filterDirectoryTable();
+}
+
+/* DATABASE SYNC WRITER EXTENSION */
+function saveInlineRow(key) {
+    const updatedName = document.getElementById(`edit_name_${key}`).value.trim();
+    const updatedClass = document.getElementById(`edit_class_${key}`).value;
+    const updatedRoll = document.getElementById(`edit_roll_${key}`).value.trim();
+    const updatedMobile = document.getElementById(`edit_mobile_${key}`).value.trim();
+    const updatedPassword = document.getElementById(`edit_password_${key}`).value.trim();
+    const updatedFee = Number(document.getElementById(`edit_fee_${key}`).value) || 0;
+
+    if(!updatedName || !updatedMobile || !updatedPassword) {
+        alert("Name, Mobile/Username and Password parameters are mandatory entries.");
+        return;
+    }
+
+    // Prepare structure to push right back to Firebase Realtime Database
+    const updatePayload = {
+        name: updatedName,
+        class: updatedClass,
+        roll: updatedRoll,
+        mobile: updatedMobile,
+        password: updatedPassword,
+        monthlyfee: updatedFee
+    };
+
+    db.ref("students/" + key).update(updatePayload, error => {
+        if(error) {
+            alert("Error running upstream payload: " + error.message);
+        } else {
+            editingRowKey = null; // clear active layout editor state
+            // UI auto-reloads clean automatically due to the active listener .on("value")
+        }
     });
 }
 
@@ -366,7 +531,7 @@ function filterDirectoryTable() {
     const classSelection = document.getElementById("directoryClassFilter").value;
 
     const computedList = completeDirectoryDataset.filter(record => {
-        const matchesClass = classSelection === "" || String(record.class) === String(classSelection);
+        const matchesClass = classSelection === "" || String(record.class).toLowerCase() === String(classSelection).toLowerCase();
         
         const matchesSearch = record.name.toLowerCase().includes(searchString) || 
                               record.firebaseKey.toLowerCase().includes(searchString) || 
