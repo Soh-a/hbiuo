@@ -30,18 +30,27 @@ let filteredRecords = [];
 ========================= */
 async function loadData(){
   allRecords = [];
-  const snapshot = await get(ref(db, "/"));
-  if(!snapshot.exists()) return;
+  
+  // FIXED: Pointing path reference explicitly to target the "/students" parent structure
+  const snapshot = await get(ref(db, "/students"));
+  if(!snapshot.exists()) {
+    renderTable();
+    return;
+  }
 
   const students = snapshot.val();
 
   Object.entries(students).forEach(([studentId, student]) => {
+    // Safety fallback if a structural child node is empty or malformed
+    if(!student || typeof student !== 'object') return;
     if(!student.fees) return;
 
     Object.entries(student.fees).forEach(([month, fee]) => {
+      if(!fee) return;
+      
       allRecords.push({
         studentId,
-        name: student.name,
+        name: student.name || "N/A",
         month,
         status: fee.status || "unpaid",
         fine: fee.fine || 0
@@ -75,7 +84,7 @@ function renderTable(){
   tableBody.innerHTML = "";
 
   if(!filteredRecords.length){
-    tableBody.innerHTML = `<tr><td colspan="5">No records found</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#9ca3af; padding:20px;">No records found</td></tr>`;
     return;
   }
 
@@ -83,12 +92,14 @@ function renderTable(){
     tableBody.insertAdjacentHTML("beforeend", `
       <tr>
         <td>${r.studentId}</td>
-        <td>${r.name}</td>
+        <td><strong>${r.name}</strong></td>
         <td>${r.month}</td>
-        <td class="${r.status === "paid" ? "badge-paid" : "badge-unpaid"}">
-          ${r.status.toUpperCase()}
+        <td>
+          <span class="${r.status === "paid" ? "badge-paid" : "badge-unpaid"}">
+            ${r.status.toUpperCase()}
+          </span>
         </td>
-        <td>₹${r.fine}</td>
+        <td>₹${Number(r.fine).toLocaleString()}</td>
       </tr>
     `);
   });
@@ -103,12 +114,13 @@ function downloadCSV(){
     return;
   }
 
-  let csv = "Student ID,Name,Month,Status,Fine\n";
+  // Wrapped elements in quotes to handle any unexpected comma characters safely inside student names
+  let csv = '"Student ID","Name","Month","Status","Fine"\n';
   filteredRecords.forEach(r => {
-    csv += `${r.studentId},${r.name},${r.month},${r.status},${r.fine}\n`;
+    csv += `"${r.studentId}","${r.name}","${r.month}","${r.status.toUpperCase()}",${r.fine}\n`;
   });
 
-  const blob = new Blob([csv], {type:"text/csv"});
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = "fee-status-report.csv";
