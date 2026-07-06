@@ -3,20 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ERP - Financial & Collection Reports</title>
+<title>ERP - Financial Management Reports</title>
 
+<!-- Session Guard -->
 <script>
-// Session Guard
-const isLoggedIn = localStorage.getItem("isLoggedIn");
-if(isLoggedIn !== "true"){
-    window.location.href = "login.html";
-}
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if(isLoggedIn !== "true"){
+        window.location.href = "login.html";
+    }
 </script>
 
+<!-- Google Fonts & External Libraries -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- jsPDF and AutoTable plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
 :root {
@@ -25,127 +29,120 @@ if(isLoggedIn !== "true"){
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --dark-bg: #111827;
+    --dark-bg: #1f2937;
     --light-bg: #f3f4f6;
     --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
-body{
+body {
     background: var(--light-bg);
+    color: var(--dark-bg);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
 }
 
-body, html {
+.main {
     width: 100%;
-}
-
-/* CONTAINER WORKSPACE */
-.app-container {
-    display: flex;
-    flex: 1;
-    width: 100%;
-}
-
-/* FULL-WIDTH MAIN WORKSPACE */
-.main{
-    width: 100%;
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 30px 20px;
-    transition: all 0.3s ease;
 }
 
-/* TOPBAR styling */
-.topbar{
+/* TOPBAR */
+.topbar {
     background: white;
     padding: 20px 25px;
-    border-radius: 18px;
+    border-radius: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
 }
 
-.topbar h1{
-    font-size: 28px;
-    color: var(--dark-bg);
+.topbar h1 {
+    font-size: 26px;
+    color: #111827;
+    font-weight: 700;
+}
+
+.topbar p {
+    color: #6b7280;
+    font-size: 14px;
 }
 
 .topbar-actions {
     display: flex;
-    align-items: center;
     gap: 12px;
 }
 
-.btn-print {
-    background: #4b5563;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: 0.2s;
-}
-
-.btn-print:hover { background: #374151; }
-
-.logout-btn{
-    background: var(--danger);
-    color: white;
-    border: none;
+.btn {
     padding: 10px 18px;
     border-radius: 10px;
-    cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.logout-btn:hover{ background: #dc2626; }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-secondary { background: #4b5563; color: white; }
+.btn-secondary:hover { background: #374151; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #dc2626; }
 
-/* REVENUE DASHBOARD CARDS */
+/* DASHBOARD CARDS */
 .report-grid-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-top: 25px;
+    margin-bottom: 25px;
 }
 
 .analytics-card {
     background: white;
-    padding: 25px;
-    border-radius: 20px;
+    padding: 22px;
+    border-radius: 16px;
     box-shadow: var(--card-shadow);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    border-left: 5px solid transparent;
 }
+
+.card-collected { border-left-color: var(--success); }
+.card-outstanding { border-left-color: var(--warning); }
+.card-invoices { border-left-color: var(--primary); }
+.card-rate { border-left-color: #8b5cf6; }
+.card-pending { border-left-color: #ec4899; }
 
 .analytics-card h3 {
     color: #6b7280;
-    font-size: 14px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .analytics-card h2 {
-    font-size: 32px;
-    color: var(--dark-bg);
+    font-size: 28px;
+    color: #111827;
     font-weight: 700;
 }
 
 .analytics-card .meta-indicator {
-    margin-top: 10px;
+    margin-top: 6px;
     font-size: 13px;
     font-weight: 500;
 }
@@ -154,57 +151,81 @@ body, html {
 .text-warning { color: var(--warning); }
 .text-primary { color: var(--primary); }
 
-/* CONTENT WRAPPER SPLIT BLOCKS */
+/* CONTROLS CLUSTER */
+.controls-panel {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex: 1;
+}
+
+.search-input {
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    max-width: 280px;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus { border-color: var(--primary); }
+
+.report-select {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f9fafb;
+    outline: none;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.report-select:focus { border-color: var(--primary); }
+
+/* SECTIONS WRAPPER */
 .report-sections {
     display: grid;
     grid-template-columns: 1fr;
     gap: 25px;
-    margin-top: 30px;
 }
 
 @media(min-width: 1200px) {
-    .report-sections {
-        grid-template-columns: 2fr 1fr;
-    }
+    .report-sections { grid-template-columns: 2.2fr 1fr; }
 }
 
 .report-panel {
     background: white;
     padding: 25px;
-    border-radius: 20px;
+    border-radius: 16px;
     box-shadow: var(--card-shadow);
 }
 
 .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 12px;
 }
 
 .panel-header h2 {
-    font-size: 20px;
-    color: var(--dark-bg);
+    font-size: 18px;
+    color: #111827;
     font-weight: 600;
-}
-
-/* FILTERS BLOCK INSIDE PANEL */
-.filter-cluster {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.report-select {
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 13px;
-    background: #f9fafb;
-    outline: none;
-    cursor: pointer;
 }
 
 /* TABLES STYLING */
@@ -222,24 +243,22 @@ body, html {
 .modern-table th {
     background: #f8fafc;
     color: #4b5563;
-    padding: 14px;
+    padding: 14px 16px;
     font-size: 13px;
     font-weight: 600;
     border-bottom: 2px solid #e2e8f0;
 }
 
 .modern-table td {
-    padding: 14px;
+    padding: 14px 16px;
     border-bottom: 1px solid #f1f5f9;
     color: #334155;
-    font-size: 14px;
+    font-size: 13px;
 }
 
-.modern-table tr:hover {
-    background: #f8fafc;
-}
+.modern-table tr:hover { background: #f8fafc; }
 
-/* MICRO BADGES */
+/* REUSABLE MICRO BADGES */
 .badge {
     padding: 4px 10px;
     border-radius: 12px;
@@ -250,152 +269,185 @@ body, html {
 .badge.paid { background: #dcfce7; color: #15803d; }
 .badge.unpaid { background: #fee2e2; color: #b91c1c; }
 
-/* RESPONSIVE LAYOUT BREAKPOINTS */
-@media(max-width:768px){
-    .main {
-        padding: 15px;
-    }
-    .topbar {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
+/* MULTI-MEDIA / PRINT BREAKPOINTS */
+@media(max-width: 768px) {
+    .topbar { flex-direction: column; gap: 15px; align-items: flex-start; }
     .topbar-actions { width: 100%; justify-content: space-between; }
+    .controls-panel { flex-direction: column; align-items: stretch; }
+    .search-input { max-width: 100%; }
 }
 
 @media print {
-    .topbar-actions, .filter-cluster, .btn-print {
-        display: none !important;
-    }
-    .main {
-        width: 100% !important;
-        padding: 0 !important;
-    }
-    .report-panel {
-        box-shadow: none !important;
-        border: 1px solid #e5e7eb !important;
-    }
+    .topbar-actions, .controls-panel, .btn { display: none !important; }
+    body { background: white; }
+    .main { padding: 0; }
+    .report-panel { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
 }
 </style>
 </head>
 <body>
 
-<div class="app-container">
-
-    <div class="main">
-        <div class="topbar">
-            <div>
-                <h1>Management Reports</h1>
-                <p style="color: #6b7280; font-size: 14px; margin-top: 2px;">Real-time balance sheet audits and revenue analysis</p>
-            </div>
-            <div class="topbar-actions">
-                <button class="btn-print" onclick="window.print()">🖨️ Print Report</button>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
+<div class="main">
+    <!-- Topbar Banner Workspace -->
+    <div class="topbar">
+        <div>
+            <h1>School ERP Management Reports</h1>
+            <p>Real-time institutional balance sheets, invoice mapping, and revenue analysis logs.</p>
         </div>
-
-        <div class="report-grid-summary">
-            <div class="analytics-card">
-                <h3>Gross Revenue Collected</h3>
-                <h2 id="grossCollected" class="text-success">₹0</h2>
-                <div class="meta-indicator text-success" id="collectionRate">Rate: 0%</div>
-            </div>
-            <div class="analytics-card">
-                <h3>Total Outstanding Arrears</h3>
-                <h2 id="grossOutstanding" class="text-warning">₹0</h2>
-                <div class="meta-indicator text-warning" id="pendingDefaulters">Defaulters Logged</div>
-            </div>
-            <div class="analytics-card">
-                <h3>Total System Invoices</h3>
-                <h2 id="invoiceCounter" class="text-primary">0</h2>
-                <div class="meta-indicator" style="color:#6b7280;">Billed Term Items</div>
-            </div>
+        <div class="topbar-actions">
+            <button class="btn btn-primary" onclick="exportDataToPDF()">📄 Download PDF</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
         </div>
+    </div>
 
-        <div class="report-sections">
+    <!-- Live Performance Metrics Cards Grid -->
+    <div class="report-grid-summary">
+        <div class="analytics-card card-collected">
+            <h3>Gross Revenue Collected</h3>
+            <h2 id="grossCollected">₹0</h2>
+            <div class="meta-indicator text-success">Deposited Funds</div>
+        </div>
+        <div class="analytics-card card-outstanding">
+            <h3>Total Outstanding Revenue</h3>
+            <h2 id="grossOutstanding">₹0</h2>
+            <div class="meta-indicator text-warning">Arrears Deficit</div>
+        </div>
+        <div class="analytics-card card-invoices">
+            <h3>Total Invoices</h3>
+            <h2 id="invoiceCounter">0</h2>
+            <div class="meta-indicator text-primary">System Log Items</div>
+        </div>
+        <div class="analytics-card card-rate">
+            <h3>Collection Rate</h3>
+            <h2 id="collectionRate">0%</h2>
+            <div class="meta-indicator" style="color:#8b5cf6;">Yield Matrix Weight</div>
+        </div>
+        <div class="analytics-card card-pending">
+            <h3>Pending Invoices</h3>
+            <h2 id="pendingDefaulters">0</h2>
+            <div class="meta-indicator" style="color:#ec4899;">Delinquent Logged</div>
+        </div>
+    </div>
+
+    <!-- Control Filters Row -->
+    <div class="controls-panel">
+        <div class="search-filter-group">
+            <input type="text" id="repSearch" class="search-input" placeholder="Search Student Name or ID..." oninput="processLocalDatasetFilter()">
             
-            <div class="report-panel">
-                <div class="panel-header">
-                    <h2>Master Transaction Audit Log</h2>
-                    <div class="filter-cluster">
-                        <select id="repClass" class="report-select" onchange="processLocalDatasetFilter()">
-                            <option value="">All Classes</option>
-                            <option value="1">Class 1</option>
-                            <option value="2">Class 2</option>
-                            <option value="3">Class 3</option>
-                            <option value="4">Class 4</option>
-                            <option value="5">Class 5</option>
-                            <option value="6">Class 6</option>
-                            <option value="7">Class 7</option>
-                            <option value="8">Class 8</option>
-                            <option value="9">Class 9</option>
-                            <option value="10">Class 10</option>
-                        </select>
-                        <select id="repStatus" class="report-select" onchange="processLocalDatasetFilter()">
-                            <option value="">All Statuses</option>
-                            <option value="paid">Paid Only</option>
-                            <option value="unpaid">Unpaid Only</option>
-                        </select>
-                    </div>
-                </div>
+            <select id="repClass" class="report-select" onchange="processLocalDatasetFilter()">
+                <option value="">All Classes</option>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                <option value="3">Class 3</option>
+                <option value="4">Class 4</option>
+                <option value="5">Class 5</option>
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10">Class 10</option>
+            </select>
 
-                <div class="table-container">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Student Name</th>
-                                <th>Class</th>
-                                <th>Billing Month</th>
-                                <th>Total Bill (₹)</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportsLogTable">
-                            <tr><td colspan="6" style="text-align:center; color:#9ca3af;">Assembling dynamic data metrics...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <select id="repStatus" class="report-select" onchange="processLocalDatasetFilter()">
+                <option value="">All Statuses</option>
+                <option value="paid">Paid Only</option>
+                <option value="unpaid">Unpaid Only</option>
+            </select>
 
-            <div class="report-panel">
-                <div class="panel-header">
-                    <h2>Class Revenue Summary</h2>
-                </div>
-                <div class="table-container">
-                    <table class="modern-table" style="font-size: 13px;">
-                        <thead>
-                            <tr>
-                                <th>Class</th>
-                                <th>Collected</th>
-                                <th>Pending</th>
-                            </tr>
-                        </thead>
-                        <tbody id="classDistributionTable">
-                            <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Awaiting matrix maps...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+            <select id="repMonth" class="report-select" onchange="processLocalDatasetFilter()">
+                <option value="">All Months</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+            </select>
         </div>
+    </div>
+
+    <!-- Double Column Dynamic Split Matrix Boards -->
+    <div class="report-sections">
+        
+        <!-- Left Column: Primary Ledger Audit Table -->
+        <div class="report-panel">
+            <div class="panel-header">
+                <h2>Master Transaction Audit Log</h2>
+            </div>
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Billing Month</th>
+                            <th>Monthly Fee</th>
+                            <th>Fine</th>
+                            <th>Total Bill</th>
+                            <th>Payment Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsLogTable">
+                        <tr><td colspan="8" style="text-align:center; color:#9ca3af; padding: 25px;">Assembling dynamic data metrics...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column: Secondary Summary Table -->
+        <div class="report-panel">
+            <div class="panel-header">
+                <h2>Class Revenue Summary</h2>
+            </div>
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Collected</th>
+                            <th>Pending</th>
+                            <th>Invoices</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classDistributionTable">
+                        <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding: 25px;">Awaiting matrix maps...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <script>
-/* FIREBASE CONNECTION CONFIGURATION */
-firebase.initializeApp({
+/* FIREBASE CONFIGURATION INFRASTRUCTURE */
+const firebaseConfig = {
     apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
     authDomain: "students-6e271.firebaseapp.com",
     databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
     projectId: "students-6e271"
-});
+};
 
+// Initialize connection safely
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
-let localReportsCache = [];
 
-/* DATA EXTROLLER AND COMPILER FOR SYSTEM METRICS */
-function initManagementReportsReport() {
+// State Memory Cache
+let localReportsCache = [];
+let localClassSummaryCache = {};
+
+/* MASTER CONTEXT DATA REALTIME LISTENER OVERSEER */
+function initManagementReportsEngine() {
     db.ref("students").on("value", snapshot => {
         const studentsData = snapshot.val();
         
@@ -406,9 +458,10 @@ function initManagementReportsReport() {
         
         localReportsCache = [];
         
-        let classRevenueMatrix = {};
-        for(let i=1; i<=10; i++) {
-            classRevenueMatrix[i] = { collected: 0, pending: 0 };
+        // Zero-fill Class Data Distribution Struct Maps
+        localClassSummaryCache = {};
+        for(let i = 1; i <= 10; i++) {
+            localClassSummaryCache[i] = { collected: 0, pending: 0, count: 0 };
         }
 
         if (studentsData) {
@@ -432,22 +485,27 @@ function initManagementReportsReport() {
 
                         if (parsedStatus === "paid") {
                             grossCollected += totalCalculatedBill;
-                            if(classRevenueMatrix[studentClass]) {
-                                classRevenueMatrix[studentClass].collected += totalCalculatedBill;
+                            if(localClassSummaryCache[studentClass]) {
+                                localClassSummaryCache[studentClass].collected += totalCalculatedBill;
+                                localClassSummaryCache[studentClass].count++;
                             }
                         } else {
                             grossOutstanding += totalCalculatedBill;
                             unpaidDefaultersCount++;
-                            if(classRevenueMatrix[studentClass]) {
-                                classRevenueMatrix[studentClass].pending += totalCalculatedBill;
+                            if(localClassSummaryCache[studentClass]) {
+                                localClassSummaryCache[studentClass].pending += totalCalculatedBill;
+                                localClassSummaryCache[studentClass].count++;
                             }
                         }
 
+                        // Data Object Layer Array Population
                         localReportsCache.push({
                             id: studentId,
                             name: student.name || studentId,
                             class: studentClass || "-",
                             month: month,
+                            monthlyfee: baseFee,
+                            fine: fineValue,
                             amount: totalCalculatedBill,
                             status: parsedStatus
                         });
@@ -456,30 +514,30 @@ function initManagementReportsReport() {
             });
         }
 
-        document.getElementById("grossCollected").innerText = "₹" + grossCollected.toLocaleString();
-        document.getElementById("grossOutstanding").innerText = "₹" + grossOutstanding.toLocaleString();
+        // Metrics Interface Updates
+        document.getElementById("grossCollected").innerText = "₹" + grossCollected.toLocaleString('en-IN');
+        document.getElementById("grossOutstanding").innerText = "₹" + grossOutstanding.toLocaleString('en-IN');
         document.getElementById("invoiceCounter").innerText = invoiceCounter;
+        document.getElementById("pendingDefaulters").innerText = unpaidDefaultersCount;
 
         const totalExpected = grossCollected + grossOutstanding;
         const computedRate = totalExpected > 0 ? ((grossCollected / totalExpected) * 100).toFixed(1) : 0;
-        
-        document.getElementById("collectionRate").innerText = `Collection Rate: ${computedRate}%`;
-        document.getElementById("pendingDefaulters").innerText = `${unpaidDefaultersCount} Delinquent Invoices`;
+        document.getElementById("collectionRate").innerText = `${computedRate}%`;
 
-        renderClassDistributionMatrixTable(classRevenueMatrix);
+        renderClassDistributionMatrixTable(localClassSummaryCache);
         processLocalDatasetFilter();
     }, error => {
-        console.error("Firebase Database Data Retrieval Failure: ", error);
+        console.error("Firebase Core Sync Fault: ", error);
     });
 }
 
-/* RENDERS MASTER LEDGER AUDIT LOG */
+/* RENDERS MASTER LEDGER AUDIT LOG VIEW */
 function displayMasterLogTable(dataset) {
     const tbody = document.getElementById("reportsLogTable");
     tbody.innerHTML = "";
 
     if (dataset.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#9ca3af; padding:30px;">No transaction files match the selected filter limits.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#9ca3af; padding:30px;">No transaction logs match your criteria filters.</td></tr>`;
         return;
     }
 
@@ -490,48 +548,247 @@ function displayMasterLogTable(dataset) {
                 <td>${item.name}</td>
                 <td>Class ${item.class}</td>
                 <td>${item.month}</td>
-                <td><strong>₹${item.amount.toLocaleString()}</strong></td>
+                <td>₹${item.monthlyfee.toLocaleString('en-IN')}</td>
+                <td>₹${item.fine.toLocaleString('en-IN')}</td>
+                <td><strong>₹${item.amount.toLocaleString('en-IN')}</strong></td>
                 <td><span class="badge ${item.status}">${item.status}</span></td>
             </tr>
         `;
     });
 }
 
-/* RENDERS SIDE BAR CLASS METRICS TABLE */
+/* RENDERS SIDE BAR CLASS METRICS VIEW */
 function renderClassDistributionMatrixTable(matrix) {
     const tbody = document.getElementById("classDistributionTable");
     tbody.innerHTML = "";
 
+    let totalClassCollected = 0;
+    let totalClassPending = 0;
+    let totalClassInvoices = 0;
+
     Object.keys(matrix).forEach(cls => {
         const item = matrix[cls];
-        if(item.collected === 0 && item.pending === 0) return; 
+        if(item.count === 0) return; // Avoid displaying completely empty rows
         
+        totalClassCollected += item.collected;
+        totalClassPending += item.pending;
+        totalClassInvoices += item.count;
+
         tbody.innerHTML += `
             <tr>
                 <td><strong>Class ${cls}</strong></td>
-                <td class="text-success">₹${item.collected.toLocaleString()}</td>
-                <td class="text-warning">₹${item.pending.toLocaleString()}</td>
+                <td class="text-success">₹${item.collected.toLocaleString('en-IN')}</td>
+                <td class="text-warning">₹${item.pending.toLocaleString('en-IN')}</td>
+                <td>${item.count}</td>
             </tr>
         `;
     });
 
     if(tbody.innerHTML === "") {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#9ca3af;">No active class matrix files on record.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:20px;">No active class structures found on database logs.</td></tr>`;
+    } else {
+        // Add Grand Totals Foot Row to Matrix Interface
+        tbody.innerHTML += `
+            <tr style="background:#f1f5f9; font-weight:700; border-top:2px solid #cbd5e1;">
+                <td>Grand Total</td>
+                <td class="text-success">₹${totalClassCollected.toLocaleString('en-IN')}</td>
+                <td class="text-warning">₹${totalClassPending.toLocaleString('en-IN')}</td>
+                <td>${totalClassInvoices}</td>
+            </tr>
+        `;
     }
 }
 
-/* FILTERS DYNAMIC DATA CACHE IN REAL-TIME */
+/* FILTERS LOCAL DATA ARRAY IN REAL-TIME */
 function processLocalDatasetFilter() {
+    const targetQuery = document.getElementById("repSearch").value.toLowerCase().trim();
     const targetClass = document.getElementById("repClass").value;
     const targetStatus = document.getElementById("repStatus").value;
+    const targetMonth = document.getElementById("repMonth").value;
 
     const filteredResult = localReportsCache.filter(record => {
+        const matchSearch = targetQuery === "" || 
+                            record.name.toLowerCase().includes(targetQuery) || 
+                            record.id.toLowerCase().includes(targetQuery);
         const matchClass = targetClass === "" || String(record.class) === String(targetClass);
         const matchStatus = targetStatus === "" || record.status === targetStatus;
-        return matchClass && matchStatus;
+        const matchMonth = targetMonth === "" || record.month.toLowerCase() === targetMonth.toLowerCase();
+        
+        return matchSearch && matchClass && matchStatus && matchMonth;
     });
 
     displayMasterLogTable(filteredResult);
+}
+
+/* JSPDFAUTOTABLE STRATEGIC PDF FILE CREATOR ENGINE */
+function exportDataToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape layout for wide data matrix configurations
+    
+    const today = new Date();
+    const dateFormatted = today.toISOString().split('T')[0];
+    const timestampString = today.toLocaleString();
+
+    // Re-evaluate current metrics matching filters directly from runtime data
+    const activeSearchQuery = document.getElementById("repSearch").value.toLowerCase().trim();
+    const activeClassFilter = document.getElementById("repClass").value;
+    const activeStatusFilter = document.getElementById("repStatus").value;
+    const activeMonthFilter = document.getElementById("repMonth").value;
+
+    const currentlyFilteredDataset = localReportsCache.filter(record => {
+        const matchSearch = activeSearchQuery === "" || record.name.toLowerCase().includes(activeSearchQuery) || record.id.toLowerCase().includes(activeSearchQuery);
+        const matchClass = activeClassFilter === "" || String(record.class) === String(activeClassFilter);
+        const matchStatus = activeStatusFilter === "" || record.status === activeStatusFilter;
+        const matchMonth = activeMonthFilter === "" || record.month.toLowerCase() === activeMonthFilter.toLowerCase();
+        return matchSearch && matchClass && matchStatus && matchMonth;
+    });
+
+    let pdfGrossCollected = 0;
+    let pdfGrossOutstanding = 0;
+    let pdfInvoiceCount = currentlyFilteredDataset.length;
+    let pdfPendingCount = 0;
+
+    let classPdfMatrix = {};
+    for(let i=1; i<=10; i++) classPdfMatrix[i] = { collected: 0, pending: 0, count: 0 };
+
+    currentlyFilteredDataset.forEach(item => {
+        if (item.status === 'paid') {
+            pdfGrossCollected += item.amount;
+            if(classPdfMatrix[item.class]) {
+                classPdfMatrix[item.class].collected += item.amount;
+                classPdfMatrix[item.class].count++;
+            }
+        } else {
+            pdfGrossOutstanding += item.amount;
+            pdfPendingCount++;
+            if(classPdfMatrix[item.class]) {
+                classPdfMatrix[item.class].pending += item.amount;
+                classPdfMatrix[item.class].count++;
+            }
+        }
+    });
+
+    const pdfTotalExpected = pdfGrossCollected + pdfGrossOutstanding;
+    const pdfCollectionRate = pdfTotalExpected > 0 ? ((pdfGrossCollected / pdfTotalExpected) * 100).toFixed(1) : 0;
+
+    // Header Workspace Band Layout Design
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, 297, 24, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("SCHOOL ERP - FINANCIAL & COLLECTION REPORT", 14, 16);
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(10);
+    doc.setFont("Helvetica", "normal");
+    doc.text(`Generated: ${timestampString}`, 220, 32);
+
+    // Dynamic Filter State Status Header Blocks
+    let currentFilterMetaStr = `Filters Applied -> Class: ${activeClassFilter || 'All'}, Status: ${activeStatusFilter || 'All'}, Month: ${activeMonthFilter || 'All'}`;
+    if(activeSearchQuery) currentFilterMetaStr += `, Search: "${activeSearchQuery}"`;
+    doc.text(currentFilterMetaStr, 14, 32);
+
+    // Financial Analysis Summary Table Block Injection
+    doc.autoTable({
+        startY: 36,
+        head: [['Metric Parametric Description', 'Value Assessment Map']],
+        body: [
+            ['Gross Revenue Funds Collected', `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`],
+            ['Total Outstanding Arrears Balance', `INR ${pdfGrossOutstanding.toLocaleString('en-IN')}.00`],
+            ['Total Invoices Under Parameter Limits', `${pdfInvoiceCount} Item Records`],
+            ['Target Balance Collection Rate Percentage', `${pdfCollectionRate}%`],
+            ['Active Defaulter Delinquent Invoices', `${pdfPendingCount} Pending Entries`]
+        ],
+        theme: 'striped',
+        headStyles: { fillBox: true, fillColor: [75, 85, 99], fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
+        margin: { left: 14, right: 14 }
+    });
+
+    // Main Transaction Matrix Logging Array Transformation
+    const auditRows = currentlyFilteredDataset.map(item => [
+        `#${item.id}`,
+        item.name,
+        `Class ${item.class}`,
+        item.month,
+        `INR ${item.monthlyfee.toLocaleString('en-IN')}`,
+        `INR ${item.fine.toLocaleString('en-IN')}`,
+        `INR ${item.amount.toLocaleString('en-IN')}`,
+        item.status.toUpperCase()
+    ]);
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(31, 41, 55);
+    doc.text("1. Master Transaction Audit Ledger Log Data", 14, doc.autoTable.previous.finalY + 12);
+
+    doc.autoTable({
+        startY: doc.autoTable.previous.finalY + 16,
+        head: [['ID', 'Student Name', 'Class Level', 'Billing Period', 'Base Fee', 'Late Fine', 'Total Statement', 'Status Tag']],
+        body: auditRows,
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        margin: { left: 14, right: 14 }
+    });
+
+    // Secondary Class Distribution Summary Table Setup
+    const distributionRows = [];
+    Object.keys(classPdfMatrix).forEach(cls => {
+        const item = classPdfMatrix[cls];
+        if (item.count === 0) return;
+        distributionRows.push([
+            `Class Level ${cls}`,
+            `INR ${item.collected.toLocaleString('en-IN')}.00`,
+            `INR ${item.pending.toLocaleString('en-IN')}.00`,
+            `${item.count} Issued Statements`
+        ]);
+    });
+
+    // Append Matrix Consolidated Summary Grand Total Footer Row to PDF
+    distributionRows.push([
+        'Grand Balance Calculations Total',
+        `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`,
+        `INR ${pdfGrossOutstanding.toLocaleString('en-IN')}.00`,
+        `${pdfInvoiceCount} Master Base Records`
+    ]);
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("2. Class Allocation Matrix Summary Breakdown", 14, doc.autoTable.previous.finalY + 12);
+
+    doc.autoTable({
+        startY: doc.autoTable.previous.finalY + 16,
+        head: [['Class Segment Description', 'Consolidated Collected', 'Consolidated Arrears', 'Invoice Instances']],
+        body: distributionRows,
+        theme: 'grid',
+        headStyles: { fillColor: [29, 78, 216], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 4 },
+        margin: { left: 14, right: 14 },
+        didParseCell: function(data) {
+            // Stylize the last row (Grand Total row) uniquely inside the autotable container
+            if (data.row.index === distributionRows.length - 1) {
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fillColor = [241, 245, 249];
+            }
+        }
+    });
+
+    // Automatic Page Numbering Layout Configuration Footer Layer
+    const pagesTotalCount = doc.internal.getNumberOfPages();
+    for (let j = 1; j <= pagesTotalCount; j++) {
+        doc.setPage(j);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(156, 163, 175);
+        // Page boundary coordinates positioning parameters
+        doc.text("System Notice: Generated securely via automated School ERP Platform Architecture Logs.", 14, 202);
+        doc.text(`Page Data Ledger ${j} of ${pagesTotalCount}`, 250, 202);
+    }
+
+    doc.save(`ERP_Report_${dateFormatted}.pdf`);
 }
 
 function logout(){
@@ -542,7 +799,8 @@ function logout(){
     window.location.href = "index.html";
 }
 
-window.onload = initManagementReportsReport;
+// System Startup Allocation Hook
+window.onload = initManagementReportsEngine;
 </script>
 
 </body>
