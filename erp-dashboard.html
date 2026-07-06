@@ -829,6 +829,7 @@ firebase.initializeApp({
 const db = firebase.database();
 let masterCashPaymentsDataset = [];
 let filteredDataset = [];
+let fallbackModeActive = false;
 
 /* PAGINATION CONFIGURATION VALUES */
 let currentPage = 1;
@@ -852,125 +853,116 @@ function showToast(message, type = "success") {
     setTimeout(() => { toast.remove(); }, 4000);
 }
 
-/* RECURSIVE SYNCHRONIZATION WITH CENTRAL PAYMENT NODES */
-function initializeRealtimeLedger() {
+/* REAL-TIME DUAL-MODE SCHEMA ENGINE WITH AUTO FALLBACK INTERCEPTOR */
 function initializeRealtimeLedger() {
     showSpinner();
-
-    db.ref("cashPayments").once("value").then(cashSnap => {
-
-        // If cashPayments exists, use it
-        if (cashSnap.exists()) {
-
-            db.ref("cashPayments").on("value", snapshot => {
-
-                masterCashPaymentsDataset = [];
-
-                let collected = 0;
-                let outstanding = 0;
-
-                snapshot.forEach(child => {
-
-                    const record = child.val();
-
-                    masterCashPaymentsDataset.push({
-                        paymentId: child.key,
-                        ...record
-                    });
-
-                    const amt = Number(record.amount || 0);
-
-                    if ((record.status || "").toLowerCase() === "paid") {
-                        collected += amt;
-                    } else {
-                        outstanding += amt;
-                    }
-                });
-
-                document.getElementById("totalCollected").innerText =
-                    "₹" + collected.toLocaleString("en-IN");
-
-                document.getElementById("totalOutstanding").innerText =
-                    "₹" + outstanding.toLocaleString("en-IN");
-
-                document.getElementById("totalTransactions").innerText =
-                    masterCashPaymentsDataset.length;
-
-                filterAndPaginateData();
-                hideSpinner();
-
-            });
-
+    
+    // First, verify whether the cashPayments node is initialized and contains metrics
+    db.ref("cashPayments").on("value", snapshot => {
+        const paymentsData = snapshot.val();
+        
+        if (paymentsData && Object.keys(paymentsData).length > 0) {
+            fallbackModeActive = false;
+            processCashPaymentsData(paymentsData);
+        } else {
+            // "cashPayments" node is missing or dead; divert execution pipeline to structural legacy sync
+            fallbackModeActive = true;
+            fallbackToLegacySchema();
         }
-
-        // cashPayments doesn't exist, load old students/fees
-        else {
-
-            db.ref("students").on("value", snapshot => {
-
-                masterCashPaymentsDataset = [];
-
-                let collected = 0;
-                let outstanding = 0;
-
-                snapshot.forEach(studentSnap => {
-
-                    const student = studentSnap.val();
-
-                    if (!student.fees) return;
-
-                    Object.keys(student.fees).forEach(month => {
-
-                        const fee = student.fees[month];
-
-                        const record = {
-                            paymentId: studentSnap.key + "_" + month,
-                            receiptNo: fee.receiptNo || "-",
-                            studentId: studentSnap.key,
-                            studentName: student.name || "",
-                            class: student.class || "",
-                            academicYear: fee.academicYear || "2026-2027",
-                            month: month,
-                            amount: Number(fee.amount || 0),
-                            paymentMode: fee.paymentMode || "Cash",
-                            status: fee.status || "unpaid",
-                            collectedBy: fee.collectedBy || "",
-                            transactionDate: fee.transactionDate || 0,
-                            remarks: fee.remarks || ""
-                        };
-
-                        masterCashPaymentsDataset.push(record);
-
-                        if (record.status.toLowerCase() === "paid") {
-                            collected += record.amount;
-                        } else {
-                            outstanding += record.amount;
-                        }
-
-                    });
-
-                });
-
-                document.getElementById("totalCollected").innerText =
-                    "₹" + collected.toLocaleString("en-IN");
-
-                document.getElementById("totalOutstanding").innerText =
-                    "₹" + outstanding.toLocaleString("en-IN");
-
-                document.getElementById("totalTransactions").innerText =
-                    masterCashPaymentsDataset.length;
-
-                filterAndPaginateData();
-                hideSpinner();
-
-            });
-
-        }
-
-    }).catch(err => {
+    }, error => {
         hideSpinner();
-        showToast(err.message, "error");
+        showToast("Database tracking synchronization failure: " + error.message, "error");
     });
+}
+
+/* SCENARIO A: LOAD FROM MODERN PRIMARY CASH PAYMENTS ROOT */
+function processCashPaymentsData(paymentsData) {
+    masterCashPaymentsDataset = [];
+    let runningCollected = 0;
+    let runningOutstanding = 0;
+
+    Object.keys(paymentsData).forEach(payId => {
+        const record = paymentsData[payId];
+        masterCashPaymentsDataset.push({ paymentId: payId, ...record });
+        
+        const amt = Number(record.amount || 0);
+        if (record.status === "paid") {
+            runningCollected += amt;
+        } else {
+            runningOutstanding += amt;
+        }
+    });
+    
+    updateDashboardUI(runningCollected, runningOutstanding, masterCashPaymentsDataset.length);
+    filterAndPaginateData();
+    hideSpinner();
+}
+
+/* SCENARIO B: FALLBACK ENGINE HARVESTING VIRTUAL RECORDS FROM EMBEDDED PATHS */
+function fallbackToLegacySchema() {
+    db.ref("students").on("value", snapshot => {
+        if (!fallbackModeActive) return; // Prevent loop collisions if fallback was disabled downstream
+
+        masterCashPaymentsDataset = [];
+        let runningCollected = 0;
+        let runningOutstanding = 0;
+        let syntheticCounter = 0;
+
+        const studentsData = snapshot.val();
+        if (studentsData) {
+            Object.keys(studentsData).forEach(studentKey => {
+                const data = studentsData[studentKey];
+                if (!data || typeof data !== "object") return;
+
+                if (data.fees && typeof data.fees === "object") {
+                    Object.keys(data.fees).forEach(monthKey => {
+                        const txn = data.fees[monthKey];
+                        if (!txn) return;
+
+                        const amt = Number(txn.amount || data.monthlyfee || 0);
+                        const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
+
+                        if (currentStatus === "paid") {
+                            runningCollected += amt;
+                        } else {
+                            runningOutstanding += amt;
+                        }
+                        syntheticCounter++;
+
+                        // Build an on-the-fly virtual transaction row matching standard properties
+                        masterCashPaymentsDataset.push({
+                            paymentId: txn.paymentIdLink || `legacy_${studentKey}_${monthKey}`,
+                            receiptNo: txn.receiptNo || "LEGACY",
+                            studentId: studentKey,
+                            studentName: data.name || studentKey,
+                            class: data.class || "N/A",
+                            academicYear: txn.academicYear || data.academicYear || "2025-2026",
+                            month: monthKey,
+                            amount: amt,
+                            paymentMode: txn.paymentMode || "Cash",
+                            status: currentStatus,
+                            collectedBy: txn.collectedBy || "System Migration",
+                            transactionDate: txn.transactionDate || 1741132800000, // Safe runtime fallback epoch
+                            remarks: txn.remarks || "Legacy System Record"
+                        });
+                    });
+                }
+            });
+        }
+
+        updateDashboardUI(runningCollected, runningOutstanding, syntheticCounter);
+        filterAndPaginateData();
+        hideSpinner();
+    }, error => {
+        hideSpinner();
+        showToast("Legacy extraction channel exception: " + error.message, "error");
+    });
+}
+
+function updateDashboardUI(collected, outstanding, totalCount) {
+    document.getElementById("totalCollected").innerText = "₹" + collected.toLocaleString('en-IN');
+    document.getElementById("totalOutstanding").innerText = "₹" + outstanding.toLocaleString('en-IN');
+    document.getElementById("totalTransactions").innerText = totalCount;
 }
 
 /* DYNAMIC MULTI-PARAMETER SEARCH AND FILTER PIPELINE */
@@ -1028,7 +1020,6 @@ function renderPaginatedTable() {
     const paginatedSlice = filteredDataset.slice(startIndex, endIndex);
 
     paginatedSlice.forEach(row => {
-        const formattedDate = row.transactionDate ? new Date(row.transactionDate).toLocaleDateString('en-IN') : "N/A";
         tbody.innerHTML += `
             <tr>
                 <td><strong style="color:var(--primary); font-family:monospace;">${row.receiptNo || '-'}</strong></td>
@@ -1097,7 +1088,7 @@ function closeModal() {
     document.getElementById("feeForm").reset();
 }
 
-/* TRANSACTION SAVE FLOWS USING REALTIME INTEGRITY VERIFICATION */
+/* TRANSACTION DUAL-WRITE STRATEGY TO PRESERVE SCHEMA MIRRORING */
 async function handleFormSubmission(e) {
     e.preventDefault();
     showSpinner();
@@ -1111,7 +1102,6 @@ async function handleFormSubmission(e) {
     const mode = document.getElementById("modalPaymentMode").value;
     const remarks = document.getElementById("modalRemarks").value.trim();
 
-    // Input Validations
     if (!studentId || amount < 0) {
         hideSpinner();
         showToast("Invalid data payload attributes validation failed.", "error");
@@ -1119,7 +1109,7 @@ async function handleFormSubmission(e) {
     }
 
     try {
-        // Step 1: Verify that student exists before writing the transaction
+        // Step 1: Securely verify existence of student profile node
         const studentSnapshot = await db.ref(`students/${studentId}`).once("value");
         if (!studentSnapshot.exists()) {
             hideSpinner();
@@ -1131,7 +1121,7 @@ async function handleFormSubmission(e) {
         const studentName = studentProfile.name || "Unknown Student";
         const studentClass = studentProfile.class || "N/A";
 
-        // Step 2: Prevent duplicate entries across active tracking branches if building a new payment
+        // Step 2: Look up collisions inside memory dataset array elements
         if (!paymentId) {
             const duplicateCheck = masterCashPaymentsDataset.find(p => 
                 p.studentId === studentId && 
@@ -1145,7 +1135,6 @@ async function handleFormSubmission(e) {
                     hideSpinner();
                     return;
                 }
-                // If user accepts overwrite, assign the existing payment ID to replace it smoothly
                 document.getElementById("editPaymentId").value = duplicateCheck.paymentId;
                 document.getElementById("editReceiptNo").value = duplicateCheck.receiptNo;
             }
@@ -1154,8 +1143,8 @@ async function handleFormSubmission(e) {
         const activePaymentId = document.getElementById("editPaymentId").value || db.ref().child("cashPayments").push().key;
         let assignedReceiptNo = document.getElementById("editReceiptNo").value;
 
-        // Step 3: Atomic Receipt Number generation logic
-        if (!assignedReceiptNo) {
+        // Step 3: Run safe distributed counters for receipt tracking logs
+        if (!assignedReceiptNo || assignedReceiptNo === "LEGACY") {
             const currentCounterRef = db.ref("metaProperties/receiptCounter");
             const counterTransaction = await currentCounterRef.transaction(current => (current || 0) + 1);
             const serialNumber = counterTransaction.snapshot.val();
@@ -1163,6 +1152,7 @@ async function handleFormSubmission(e) {
         }
 
         const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator";
+        const targetTimestamp = paymentId ? (masterCashPaymentsDataset.find(p => p.paymentId === paymentId)?.transactionDate || firebase.database.ServerValue.TIMESTAMP) : firebase.database.ServerValue.TIMESTAMP;
 
         const transactionDataNode = {
             studentId: studentId,
@@ -1175,17 +1165,23 @@ async function handleFormSubmission(e) {
             receiptNo: assignedReceiptNo,
             academicYear: year,
             collectedBy: currentUserEmail,
-            transactionDate: paymentId ? (masterCashPaymentsDataset.find(p => p.paymentId === paymentId)?.transactionDate || firebase.database.ServerValue.TIMESTAMP) : firebase.database.ServerValue.TIMESTAMP,
+            transactionDate: targetTimestamp,
             remarks: remarks
         };
 
-        // Step 4: Multi-node database synchronization update batch
+        // Step 4: Atomic Dual-Write Update to preserve structural mirroring
         const atomicBatchedUpdates = {};
         atomicBatchedUpdates[`/cashPayments/${activePaymentId}`] = transactionDataNode;
         atomicBatchedUpdates[`/students/${studentId}/fees/${month}`] = {
             amount: amount,
             status: status,
-            paymentIdLink: activePaymentId
+            paymentIdLink: activePaymentId,
+            receiptNo: assignedReceiptNo,
+            paymentMode: mode,
+            academicYear: year,
+            collectedBy: currentUserEmail,
+            remarks: remarks,
+            transactionDate: targetTimestamp
         };
 
         await db.ref().update(atomicBatchedUpdates);
@@ -1230,7 +1226,7 @@ function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
         return;
     }
 
-    const tDate = record.transactionDate ? new Date(record.transactionDate).toLocaleString('en-IN') : "N/A";
+    const tDate = record.transactionDate && typeof record.transactionDate === 'number' ? new Date(record.transactionDate).toLocaleString('en-IN') : "N/A";
     const receiptTemplateHTML = `
         <div style="font-family:'Poppins', sans-serif; padding: 25px; border: 2px solid #111827; border-radius:12px; max-width:600px; margin:0 auto;">
             <div class="receipt-title">EXCELSIOR ACADEMY</div>
@@ -1292,7 +1288,6 @@ function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
 function downloadLedgerPDF() {
     showSpinner();
     
-    // Temporarily add a class to body to hide actions column securely during processing stream
     const actionElements = document.querySelectorAll('.no-pdf-print');
     actionElements.forEach(el => el.style.display = 'none');
 
@@ -1306,7 +1301,6 @@ function downloadLedgerPDF() {
     };
     
     html2pdf().set(options).from(element).save().then(() => {
-        // Re-display actions column seamlessly
         actionElements.forEach(el => el.style.display = '');
         hideSpinner();
     }).catch(err => {
@@ -1333,7 +1327,7 @@ function exportToExcel() {
         "Payment Mode": item.paymentMode,
         "Status": item.status,
         "Collected By User": item.collectedBy,
-        "Transaction Date": item.transactionDate ? new Date(item.transactionDate).toLocaleString('en-IN') : "N/A",
+        "Transaction Date": item.transactionDate && typeof item.transactionDate === 'number' ? new Date(item.transactionDate).toLocaleString('en-IN') : "N/A",
         "Remarks": item.remarks || ""
     }));
 
@@ -1349,7 +1343,6 @@ function logout(){
     window.location.href = "login.html";
 }
 
-// Global dismiss action hook mapping closures onto standard model dialog layouts
 document.addEventListener('click', function(e) {
     const modal = document.getElementById("feeModal");
     if (e.target === modal) closeModal();
