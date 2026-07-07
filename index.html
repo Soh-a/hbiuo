@@ -2,99 +2,255 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ERP Login</title>
+<title>ERP Portal - Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase v8 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f1f5f9;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
 }
-.box{
-  background:#fff;
-  padding:30px;
-  width:340px;
-  border-radius:10px;
-  box-shadow:0 10px 25px rgba(0,0,0,.15);
-}
-h2{text-align:center;color:#1e40af}
 
-/* Role Switch */
-.switch-box{text-align:center;margin:15px 0}
-.switch{
-  position:relative;
-  width:220px;
-  height:44px;
-  background:#e5e7eb;
-  border-radius:30px;
-  cursor:pointer;
-  margin:auto;
+body {
+  background: radial-gradient(circle at 10% 20%, rgba(243, 244, 246, 1) 0%, rgba(229, 231, 235, 1) 90%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
-.slider{
-  position:absolute;
-  width:110px;
-  height:44px;
-  background:#2563eb;
-  border-radius:30px;
-  transition:.3s;
-  left:0;
-}
-.switch span{
-  position:absolute;
-  width:110px;
-  line-height:44px;
-  text-align:center;
-  font-weight:bold;
-  z-index:2;
-}
-#teacherLbl{left:0;color:#fff}
-#dvLbl{right:0;color:#111}
 
-input,button{
-  width:100%;
-  padding:10px;
-  margin-top:12px;
-  font-size:15px;
+.box {
+  background: #ffffff;
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(243, 244, 246, 1);
 }
-button{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  cursor:pointer;
+
+.header-area {
+  text-align: center;
+  margin-bottom: 28px;
 }
-#error{text-align:center;color:red;margin-top:10px}
+
+.logo-icon {
+  background: #2563eb;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+h2 {
+  color: #1e293b;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* Modern Segmented Control Switch */
+.switch-box {
+  margin-bottom: 24px;
+}
+
+.switch {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.slider {
+  position: absolute;
+  width: calc(50% - 4px);
+  height: 40px;
+  background: #ffffff;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  left: 4px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.switch span {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 2;
+  transition: color 0.2s ease;
+  user-select: none;
+}
+
+#teacherLbl { color: #1e293b; }
+#dvLbl { color: #64748b; }
+
+/* Input Groups */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group i.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  font-size: 15px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input::placeholder {
+  color: #94a3b8;
+}
+
+input:focus {
+  background: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+input:focus + i.input-icon {
+  color: #2563eb;
+}
+
+/* Password Toggle Eyeball */
+.password-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.password-toggle:hover {
+  color: #64748b;
+}
+
+/* Action Button */
+button {
+  width: 100%;
+  padding: 14px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Error Alert Frame */
+#error {
+  text-align: center;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: none; /* Shown dynamically */
+}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h2>ERP Login</h2>
+  <div class="header-area">
+    <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+    <h2>ERP Portal</h2>
+    <p class="subtitle">Sign in to manage your workspace</p>
+  </div>
 
   <div class="switch-box">
     <div class="switch" onclick="toggleRole()">
       <div class="slider" id="slider"></div>
-      <span id="teacherLbl">Teacher</span>
-      <span id="dvLbl">DV</span>
+      <span id="teacherLbl">Teacher Portal</span>
+      <span id="dvLbl">DV Access</span>
     </div>
   </div>
 
-  <input type="text" id="username" placeholder="Username">
-  <input type="password" id="password" placeholder="Password">
+  <div class="input-group">
+    <input type="text" id="username" placeholder="Username / Phone">
+    <i class="fa-regular fa-user input-icon"></i>
+  </div>
 
-  <button onclick="login()">Login</button>
+  <div class="input-group">
+    <input type="password" id="password" placeholder="Password">
+    <i class="fa-solid fa-lock input-icon"></i>
+    <i class="fa-regular fa-eye password-toggle" id="togglePassBtn" onclick="togglePasswordVisibility()"></i>
+  </div>
+
+  <button onclick="login()">
+    <span>Secure Login</span>
+    <i class="fa-solid fa-arrow-right"></i>
+  </button>
+  
   <p id="error"></p>
 </div>
 
 <script>
+// Firebase Initialization
 firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
@@ -105,7 +261,22 @@ firebase.initializeApp({
 const db = firebase.database();
 let role = "teacher";
 
-/* Toggle Role */
+/* Clean UX Variant - Password visibility toggle */
+function togglePasswordVisibility() {
+  const passInput = document.getElementById("password");
+  const toggleIcon = document.getElementById("togglePassBtn");
+  if (passInput.type === "password") {
+    passInput.type = "text";
+    toggleIcon.classList.remove("fa-eye");
+    toggleIcon.classList.add("fa-eye-slash");
+  } else {
+    passInput.type = "password";
+    toggleIcon.classList.remove("fa-eye-slash");
+    toggleIcon.classList.add("fa-eye");
+  }
+}
+
+/* Refined Toggle Role with modern transition layouts */
 function toggleRole(){
   const slider = document.getElementById("slider");
   const t = document.getElementById("teacherLbl");
@@ -113,26 +284,36 @@ function toggleRole(){
 
   if(role === "teacher"){
     role = "dv";
-    slider.style.left = "110px";
-    t.style.color = "#111";
-    d.style.color = "#fff";
+    slider.style.left = "calc(50% - 4px)";
+    t.style.color = "#64748b";
+    d.style.color = "#1e293b";
   }else{
     role = "teacher";
-    slider.style.left = "0";
-    d.style.color = "#111";
-    t.style.color = "#fff";
+    slider.style.left = "4px";
+    d.style.color = "#64748b";
+    t.style.color = "#1e293b";
   }
 }
 
-/* LOGIN */
+/* Helper function to present uniform styled error messages */
+function showError(msg) {
+  const errorEl = document.getElementById("error");
+  if(msg) {
+    errorEl.innerText = msg;
+    errorEl.style.display = "block";
+  } else {
+    errorEl.style.display = "none";
+  }
+}
+
+/* LOGIN PROCESS */
 function login(){
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
-  const error = document.getElementById("error");
-  error.innerText = "";
+  showError(""); 
 
   if(!user || !pass){
-    error.innerText = "All fields required";
+    showError("All fields are required.");
     return;
   }
 
@@ -143,7 +324,7 @@ function login(){
       localStorage.setItem("erpRole","dv");
       window.location.href = "erp-dashboard.html";
     }else{
-      error.innerText = "Invalid DV credentials";
+      showError("Invalid DV credentials.");
     }
     return;
   }
@@ -157,7 +338,7 @@ function login(){
 
       if(
         s.phone === user &&
-        s.password === pass &&           // CASE SENSITIVE
+        s.password === pass &&           
         (s.role || "").toLowerCase() === "teacher" &&
         (s.status || "").toLowerCase() === "active"
       ){
@@ -171,8 +352,11 @@ function login(){
     });
 
     if(!success){
-      error.innerText = "Invalid Teacher credentials";
+      showError("Invalid Teacher credentials.");
     }
+  }).catch(err => {
+    showError("Database connection error. Try again.");
+    console.error(err);
   });
 }
 </script>
