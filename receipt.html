@@ -2,261 +2,405 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Advanced Fee Receipt</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Fee Receipt System</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{
-  font-family:Segoe UI;
-  background:#eef2ff;
-}
-.container{
-  max-width:800px;
-  margin:30px auto;
-  background:#fff;
-  padding:25px;
-  border-radius:12px;
-}
-input,button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-}
-button{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-.month-item{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  margin:5px 0;
-}
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #eef2ff;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+  .container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  h2 {
+    margin-top: 0;
+    color: #1e3a8a;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+  }
+  .search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  input:focus {
+    outline: 2px solid #2563eb;
+  }
+  button {
+    padding: 12px 24px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #1d4ed8;
+  }
+  .student-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .student-card div {
+    font-size: 14px;
+  }
+  .student-card strong {
+    color: #475569;
+  }
+  .months-container {
+    margin-top: 20px;
+  }
+  .month-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px;
+    background: #fff;
+    margin-bottom: 20px;
+  }
+  .month-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .month-item:last-child {
+    border-bottom: none;
+  }
+  .month-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    transform: scale(1.2);
+    cursor: pointer;
+  }
+  .month-item label {
+    cursor: pointer;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+  .btn-submit {
+    width: 100%;
+    background: #059669;
+  }
+  .btn-submit:hover {
+    background: #047857;
+  }
+  .error-text {
+    color: #dc2626;
+    font-weight: 500;
+  }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-<h2>School Fee Receipt</h2>
+  <h2>School Fee Receipt System</h2>
+  
+  <div class="search-box">
+    <input id="mobile" type="text" placeholder="Enter Registered Mobile Number" autocomplete="off">
+    <button onclick="fetchStudent()">Search Record</button>
+  </div>
 
-<input id="mobile" placeholder="Enter Mobile Number">
-<button onclick="fetchStudent()">Fetch</button>
-
-<div id="studentInfo"></div>
-<div id="monthsBox"></div>
+  <div id="studentInfo"></div>
+  <div id="monthsBox"></div>
 </div>
 
 <script>
+// 1. FIREBASE CONFIGURATION
+const firebaseConfig = {
+  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
+};
 
-// 🔥 FIREBASE CONFIG
-firebase.initializeApp({
-  apiKey:"AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  databaseURL:"https://students-6e271-default-rtdb.firebaseio.com"
-});
-
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
-let studentData = {};
 
-// ✅ FETCH STUDENT
-function fetchStudent(){
-  const mobile = document.getElementById("mobile").value;
-  studentInfo.innerHTML = "Loading...";
+let currentStudent = null;
+let currentMobile = "";
 
-  db.ref(mobile).once("value",snap=>{
-    if(!snap.exists()){
-      alert("Student not found");
-      studentInfo.innerHTML = "";
-      return;
-    }
+// 2. FETCH STUDENT FROM TARGETED 'students/{mobile}' NODE
+function fetchStudent() {
+  const mobile = document.getElementById("mobile").value.trim();
+  const infoBox = document.getElementById("studentInfo");
+  const monthsBox = document.getElementById("monthsBox");
+  
+  // Reset containers
+  infoBox.innerHTML = "";
+  monthsBox.innerHTML = "";
+  currentStudent = null;
+  currentMobile = "";
 
-    studentData = snap.val();
+  if (!mobile) {
+    alert("Please enter a mobile number.");
+    return;
+  }
 
-    studentInfo.innerHTML = `
-    <b>${studentData.name}</b><br>
-    Class: ${studentData.class}`;
+  infoBox.innerHTML = "<p>Searching database records...</p>";
 
-    showMonths();
-  });
+  db.ref("students/" + mobile).once("value")
+    .then((snap) => {
+      if (!snap.exists()) {
+        infoBox.innerHTML = "<p class='error-text'>Student profile not found.</p>";
+        alert("Student not found");
+        return;
+      }
+
+      currentStudent = snap.val();
+      currentMobile = mobile;
+      
+      // Destructure & safely assign fallbacks
+      const name = currentStudent.name || "N/A";
+      const className = currentStudent.class || "N/A";
+      const admissionNo = currentStudent.admissionNo || "N/A";
+
+      // Render Student Meta Information Card
+      infoBox.innerHTML = `
+        <div class="student-card">
+          <div><strong>Student Name:</strong> ${name}</div>
+          <div><strong>Class/Grade:</strong> ${className}</div>
+          <div><strong>Admission No:</strong> ${admissionNo}</div>
+          <div><strong>Mobile No:</strong> ${mobile}</div>
+        </div>
+      `;
+
+      showMonths();
+    })
+    .catch((err) => {
+      console.error(err);
+      infoBox.innerHTML = "<p class='error-text'>Error authenticating database request.</p>";
+      alert("Error fetching student data.");
+    });
 }
 
-// ✅ SHOW MONTHS
-function showMonths(){
-  let html = "";
+// 3. RENDER ALL PAID MONTHS
+function showMonths() {
+  const monthsBox = document.getElementById("monthsBox");
+  let html = `<div class="months-container">
+                <h3>Select Paid Months for Invoice</h3>
+                <div class="month-list">`;
+  
+  let hasPaidMonths = false;
 
-  for(let m in studentData.fees){
-    if(studentData.fees[m].status==="paid"){
-      html += `
-      <div class="month-item">
-        <input type="checkbox" value="${m}">
-        <span>${m.toUpperCase()}</span>
-      </div>`;
+  if (currentStudent && currentStudent.fees) {
+    for (let month in currentStudent.fees) {
+      if (currentStudent.fees[month] && currentStudent.fees[month].status === "paid") {
+        hasPaidMonths = true;
+        html += `
+          <div class="month-item">
+            <input type="checkbox" id="m-${month}" value="${month}">
+            <label for="m-${month}">${month.toUpperCase()}</label>
+          </div>`;
+      }
     }
   }
 
-  if(html === ""){
-    html = "<p>No paid months found</p>";
+  html += `</div></div>`;
+
+  if (!hasPaidMonths) {
+    monthsBox.innerHTML = "<p>No cleared or paid fee history found for this account.</p>";
+    return;
   }
 
-  html += `<button onclick="generatePDF()">Generate Receipt</button>`;
+  html += `<button class="btn-submit" onclick="generatePDF()">Generate Professional Receipt</button>`;
   monthsBox.innerHTML = html;
 }
 
-// ✅ NUMBER TO WORDS (Indian Format)
-function numberToWords(num){
+// 4. NUMBER TO WORDS CONVERTER (Indian Financial Structure)
+function numberToWords(num) {
   const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
   "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
   const b = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
 
-  if(num < 20) return a[num];
-  if(num < 100) return b[Math.floor(num/10)] + " " + a[num%10];
-  if(num < 1000) return a[Math.floor(num/100)] + " Hundred " + numberToWords(num%100);
-  if(num < 100000) return numberToWords(Math.floor(num/1000)) + " Thousand " + numberToWords(num%1000);
-  if(num < 10000000) return numberToWords(Math.floor(num/100000)) + " Lakh " + numberToWords(num%100000);
-
-  return num;
+  if ((num = num.toString()).length > 9) return 'overflow';
+  let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return ''; 
+  let str = '';
+  str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[Math.floor(n[1]/10)] + ' ' + a[n[1]%10]) + ' Crore ' : '';
+  str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[Math.floor(n[2]/10)] + ' ' + a[n[2]%10]) + ' Lakh ' : '';
+  str += (Number(n[3]) != 0) ? (a[Number(n[3])] || b[Math.floor(n[3]/10)] + ' ' + a[n[3]%10]) + ' Thousand ' : '';
+  str += (Number(n[4]) != 0) ? (a[Number(n[4])] || b[Math.floor(n[4]/10)] + ' ' + a[n[4]%10]) + ' Hundred ' : '';
+  str += (Number(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[Math.floor(n[5]/10)] + ' ' + a[n[5]%10]) : '';
+  return str.trim() ? str.trim() : "Zero";
 }
 
-// ✅ PDF GENERATION
-function generatePDF(){
-  const selected = document.querySelectorAll("input:checked");
-  if(selected.length === 0){
-    alert("Select at least one month");
+// 5. GENERATE CLEAN PROFESSIONAL A4 PDF (Dual Slits: Office + Parent Copy)
+function generatePDF() {
+  const selectedCheckboxes = document.querySelectorAll(".month-list input:checked");
+  if (selectedCheckboxes.length === 0) {
+    alert("Please select at least one paid month to print invoice.");
     return;
   }
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const doc = new jsPDF('p', 'mm', 'a4');
 
-  const receiptNo = "FR/" + Math.floor(Math.random() * 100000);
-  const today = new Date().toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric'
-  });
+  // Gather fallback primary values based on first chosen month node
+  const baseMonthKey = selectedCheckboxes[0].value;
+  const baseMonthData = currentStudent.fees[baseMonthKey] || {};
 
-  const transactionNo = studentData.fees[selected[0].value]?.paymentId || "N/A";
+  const receiptNo = baseMonthData.receiptNo || "N/A";
+  const rawPaymentDate = baseMonthData.paymentDate || "N/A";
+  const paymentMode = baseMonthData.paymentMode || "N/A";
+  const transactionNo = baseMonthData.transactionId || baseMonthData.paymentId || "N/A";
 
-  let total = 0;
+  let totalPaidAmount = 0;
 
-  const feeItems = Array.from(selected).map((cb, index) => {
-    const amt = Number(studentData.fees[cb.value]?.amount || studentData.monthlyfee);
-    total += amt;
+  // Process data lines
+  const finalFeeItems = Array.from(selectedCheckboxes).map((cb, idx) => {
+    const mName = cb.value;
+    const mData = currentStudent.fees[mName] || {};
+    
+    // Fallback contextually to general monthlyfee if nested amount is missing
+    const computedAmt = Number(mData.amount !== undefined ? mData.amount : currentStudent.monthlyfee || 0);
+    totalPaidAmount += computedAmt;
 
-    const monthName = cb.value;
-    const monthShort = monthName.substring(0, 3);
-
-    // ✅ SESSION LOGIC (April 2026 to March 2027)
-    const monthIndex = new Date(monthName + " 1, 2026").getMonth();
-    const yearSuffix = (monthIndex >= 3) ? "26" : "27"; 
-
-    const formattedMonth = monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + yearSuffix;
+    // Academic Year Mapping
+    const monthIndex = new Date(mName + " 1, 2026").getMonth();
+    const formattedYearStr = (monthIndex >= 3) ? "2026" : "2027";
+    const displayMonth = mName.charAt(0).toUpperCase() + mName.slice(1, 3) + "-" + formattedYearStr;
 
     return {
-      sno: index + 1,
-      particulars: "Tuition Fee",
-      month: formattedMonth,
-      amount: amt.toLocaleString('en-IN', { minimumFractionDigits: 2 })
+      sno: idx + 1,
+      particulars: "School Tuition Fee",
+      month: displayMonth,
+      amount: computedAmt
     };
   });
 
-  function drawCopy(startY, title){
+  // Base Function Layout for crisp rendering
+  function drawLayout(startY, layoutTitle) {
     let y = startY;
 
-    // Header
+    // School Info Header
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(15);
     doc.text("SAI DRS KIDS SCHOOL", 105, y, { align: "center" });
 
     y += 5;
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.text("R.G.B Road, Junali, Guwahati - 781024", 105, y, { align: "center" });
-    doc.text("Email: sai.drs.kids.school@gmail.com", 105, y + 4, { align: "center" });
+    doc.text("Email: address@school.edu.in | Support Terminal", 105, y + 4, { align: "center" });
 
     y += 12;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("FEE RECEIPT (2026-2027)", 105, y, { align: "center" });
+    doc.text(`FEE RECEIPT (ACADEMIC YEAR 2026-2027) - [${layoutTitle}]`, 105, y, { align: "center" });
 
+    // Meta Row 1
     y += 8;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text(`Receipt No: ${receiptNo}`, 15, y);
-    doc.text(`Receipt Date: ${today}`, 195, y, { align: "right" });
+    doc.text(`Payment Date: ${rawPaymentDate}`, 195, y, { align: "right" });
 
-    y += 6;
-    doc.text(`Student Name: ${studentData.name.toUpperCase()}`, 15, y);
-    doc.text(`Class: ${studentData.class}`, 195, y, { align: "right" });
+    // Meta Row 2
+    y += 5;
+    doc.text(`Student Name: ${(currentStudent.name || "N/A").toUpperCase()}`, 15, y);
+    doc.text(`Class: ${currentStudent.class || "N/A"}`, 195, y, { align: "right" });
 
+    // Meta Row 3
+    y += 5;
+    doc.text(`Admission No: ${currentStudent.admissionNo || "N/A"}`, 15, y);
+    doc.text(`Mobile: ${currentMobile}`, 195, y, { align: "right" });
 
-
-    // Table
+    // Table Lines Initialization
     y += 4;
     doc.line(15, y, 195, y);
-
     y += 5;
+    doc.setFont("helvetica", "bold");
     doc.text("S.No", 17, y);
-    doc.text("Particulars", 35, y);
-    doc.text("Due Month", 90, y);
-    doc.text("Due Amt.", 140, y);
-    doc.text("Paid Amt.", 195, y, { align: "right" });
-
+    doc.text("Description Particulars", 35, y);
+    doc.text("Session Term", 95, y);
+    doc.text("Paid Amount", 195, y, { align: "right" });
     y += 2;
     doc.line(15, y, 195, y);
 
+    // Iterative data populating
     doc.setFont("helvetica", "normal");
-    feeItems.forEach(item => {
-      y += 7;
+    finalFeeItems.forEach(item => {
+      y += 6;
       doc.text(String(item.sno), 17, y);
       doc.text(item.particulars, 35, y);
-      doc.text(item.month, 90, y);
-      doc.text(item.amount, 140, y);
-      doc.text(item.amount, 195, y, { align: "right" });
+      doc.text(item.month, 95, y);
+      doc.text(item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 }), 195, y, { align: "right" });
     });
 
-    y += 4;
+    y += 3;
     doc.line(15, y, 195, y);
 
-    // Summary - STRIPED STRAY '1' FIX
-    y += 8;
+    // Financial calculations summary block
+    y += 6;
     doc.setFont("helvetica", "bold");
-    const totalStr = total.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-    doc.text("Total Paid Amount:", 15, y);
-    doc.text(`Rs. ${totalStr}`, 195, y, { align: "right" });
+    doc.text("Total Paid Net Balance:", 135, y);
+    doc.text(`INR ${totalPaidAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, y, { align: "right" });
 
     y += 6;
-    doc.setFontSize(8);
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "normal");
-    doc.text(`Amount In Words: INR ${numberToWords(total)} Only`, 15, y);
+    doc.text(`Amount In Words: INR ${numberToWords(totalPaidAmount)} Only`, 15, y);
 
     y += 5;
-    doc.text(`Payment Mode: CASH`, 15, y);
-    doc.text(`Transaction No: ${transactionNo}`, 80, y);
+    doc.text(`Payment Mode: ${paymentMode.toUpperCase()}`, 15, y);
+    doc.text(`Transaction / Reference ID: ${transactionNo}`, 80, y);
 
     y += 8;
-    doc.setFontSize(7);
-    doc.text("Note: Parents are requested to preserve this receipt.", 15, y);
-    y += 3.5;
-    doc.text("Fees once paid will not be refunded.", 15, y);
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "italic");
+    doc.text("Disclaimer: Please review receipt specifications. Discrepancies should be reported immediately.", 15, y);
 
     y += 10;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("Cashier/Manager Signed", 195, y, { align: "right" });
+    doc.setFontSize(9.5);
+    doc.text("Authorized Cashier / Manager Signature", 195, y, { align: "right" });
   }
 
-  // Generate Copies
-  drawCopy(20, "Office Copy");
+  // Draw Twin Document layout distribution for legal proofing
+  drawLayout(20, "Office Copy");
+  
+  // Perforation Cut-off Border line indicator
   doc.setLineDashPattern([2, 2], 0);
   doc.line(10, 148, 200, 148);
   doc.setLineDashPattern([], 0);
-  drawCopy(160, "Parent Copy");
 
-  doc.save(`Receipt_${studentData.name.replace(/\s+/g, '_')}.pdf`);
+  drawLayout(160, "Parent Copy");
+
+  // Fire document print output stream
+  const safeFilename = (currentStudent.name || "Student").replace(/\s+/g, '_');
+  doc.save(`Receipt_${safeFilename}.pdf`);
 }
 </script>
 
