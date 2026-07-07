@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ERP Portal - Login</title>
+<title>ERP Portal - Glass Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Modern Typography & Icons -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -18,87 +20,120 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 body {
-  background: radial-gradient(circle at 10% 20%, rgba(243, 244, 246, 1) 0%, rgba(229, 231, 235, 1) 90%);
+  /* Vibrant abstract gradient backdrop to show off the glassmorphism blur effect */
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #311042 100%);
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px;
+  overflow: hidden;
 }
 
+/* Ambient glow blobs behind glass card */
+body::before, body::after {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 1;
+  opacity: 0.4;
+}
+body::before {
+  background: #3b82f6;
+  top: 15%;
+  left: 20%;
+}
+body::after {
+  background: #d946ef;
+  bottom: 15%;
+  right: 20%;
+}
+
+/* The Glassmorphism Container */
 .box {
-  background: #ffffff;
-  padding: 40px 32px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  padding: 40px 36px;
   width: 100%;
   max-width: 420px;
-  border-radius: 16px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(243, 244, 246, 1);
+  border-radius: 24px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  position: relative;
 }
 
 .header-area {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .logo-icon {
-  background: #2563eb;
-  color: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  color: #60a5fa;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
   margin: 0 auto 16px auto;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 h2 {
-  color: #1e293b;
-  font-size: 24px;
+  color: #ffffff;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .subtitle {
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.55);
   font-size: 14px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
-/* Modern Segmented Control Switch */
+/* Glass Segmented Switch Controller */
 .switch-box {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .switch {
   position: relative;
   width: 100%;
-  height: 48px;
-  background: #f1f5f9;
-  border-radius: 12px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   padding: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .slider {
   position: absolute;
   width: calc(50% - 4px);
-  height: 40px;
-  background: #ffffff;
-  border-radius: 8px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 42px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   left: 4px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .switch span {
@@ -107,108 +142,117 @@ h2 {
   font-weight: 600;
   font-size: 14px;
   z-index: 2;
-  transition: color 0.2s ease;
+  transition: color 0.25s ease;
   user-select: none;
 }
 
-#teacherLbl { color: #1e293b; }
-#dvLbl { color: #64748b; }
+#teacherLbl { color: #ffffff; }
+#dvLbl { color: rgba(255, 255, 255, 0.45); }
 
-/* Input Groups */
+/* Form Fields Layout */
 .input-group {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .input-group i.input-icon {
   position: absolute;
-  left: 16px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.4);
   font-size: 16px;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 input {
   width: 100%;
-  padding: 14px 16px 14px 44px;
+  padding: 15px 18px 15px 48px;
   font-size: 15px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  color: #1e293b;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #ffffff;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 input::placeholder {
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 input:focus {
-  background: #fff;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(96, 165, 251, 0.5);
+  box-shadow: 0 0 0 4px rgba(96, 165, 251, 0.15);
 }
 
 input:focus + i.input-icon {
-  color: #2563eb;
+  color: #60a5fa;
 }
 
-/* Password Toggle Eyeball */
+/* Dynamic Eye Verification Switch */
 .password-toggle {
   position: absolute;
-  right: 16px;
+  right: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: color 0.2s;
+  padding: 4px;
+  font-size: 16px;
+  transition: color 0.2s ease, transform 0.1s ease;
 }
 .password-toggle:hover {
-  color: #64748b;
+  color: #60a5fa;
+}
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.9);
 }
 
-/* Action Button */
+/* Glass Glowing Button */
 button {
   width: 100%;
-  padding: 14px;
-  background: #2563eb;
+  padding: 15px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
-  border: none;
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 600;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 8px;
+  transition: all 0.25s ease;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
 }
 
 button:hover {
-  background: #1d4ed8;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.45);
 }
 
 button:active {
   transform: scale(0.98);
 }
 
-/* Error Alert Frame */
+/* Floating Error Box */
 #error {
   text-align: center;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   font-size: 13px;
   font-weight: 500;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 16px;
-  display: none; /* Shown dynamically */
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 20px;
+  display: none;
+  backdrop-filter: blur(5px);
 }
 </style>
 </head>
@@ -217,40 +261,43 @@ button:active {
 
 <div class="box">
   <div class="header-area">
-    <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+    <div class="logo-icon"><i class="fa-solid fa-fingerprint"></i></div>
     <h2>ERP Portal</h2>
-    <p class="subtitle">Sign in to manage your workspace</p>
+    <p class="subtitle">Secure administrative interface gateway</p>
   </div>
 
+  <!-- Role Control Slider Switch -->
   <div class="switch-box">
     <div class="switch" onclick="toggleRole()">
       <div class="slider" id="slider"></div>
       <span id="teacherLbl">Teacher Portal</span>
-      <span id="dvLbl">DV Access</span>
+      <span id="dvLbl">DV System</span>
     </div>
   </div>
 
+  <!-- Identity Node Input -->
   <div class="input-group">
-    <input type="text" id="username" placeholder="Username / Phone">
-    <i class="fa-regular fa-user input-icon"></i>
+    <input type="text" id="username" placeholder="Username or Contact ID">
+    <i class="fa-regular fa-envelope input-icon"></i>
   </div>
 
+  <!-- Passphrase Module with Interactive Visibility Token -->
   <div class="input-group">
-    <input type="password" id="password" placeholder="Password">
-    <i class="fa-solid fa-lock input-icon"></i>
+    <input type="password" id="password" placeholder="Access Password">
+    <i class="fa-solid fa-shield-blank input-icon"></i>
     <i class="fa-regular fa-eye password-toggle" id="togglePassBtn" onclick="togglePasswordVisibility()"></i>
   </div>
 
   <button onclick="login()">
-    <span>Secure Login</span>
-    <i class="fa-solid fa-arrow-right"></i>
+    <span>Authenticate Execution</span>
+    <i class="fa-solid fa-arrow-right-to-bracket"></i>
   </button>
   
   <p id="error"></p>
 </div>
 
 <script>
-// Firebase Initialization
+// Firebase Initialization Framework Connection
 firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
@@ -261,10 +308,11 @@ firebase.initializeApp({
 const db = firebase.database();
 let role = "teacher";
 
-/* Clean UX Variant - Password visibility toggle */
+/* Clean UX Variant - Password state toggle element handler */
 function togglePasswordVisibility() {
   const passInput = document.getElementById("password");
   const toggleIcon = document.getElementById("togglePassBtn");
+  
   if (passInput.type === "password") {
     passInput.type = "text";
     toggleIcon.classList.remove("fa-eye");
@@ -276,7 +324,7 @@ function togglePasswordVisibility() {
   }
 }
 
-/* Refined Toggle Role with modern transition layouts */
+/* Sliding role selection script logic */
 function toggleRole(){
   const slider = document.getElementById("slider");
   const t = document.getElementById("teacherLbl");
@@ -285,17 +333,17 @@ function toggleRole(){
   if(role === "teacher"){
     role = "dv";
     slider.style.left = "calc(50% - 4px)";
-    t.style.color = "#64748b";
-    d.style.color = "#1e293b";
+    t.style.color = "rgba(255, 255, 255, 0.45)";
+    d.style.color = "#ffffff";
   }else{
     role = "teacher";
     slider.style.left = "4px";
-    d.style.color = "#64748b";
-    t.style.color = "#1e293b";
+    d.style.color = "rgba(255, 255, 255, 0.45)";
+    t.style.color = "#ffffff";
   }
 }
 
-/* Helper function to present uniform styled error messages */
+/* Present dynamic notifications inside context alert box frame */
 function showError(msg) {
   const errorEl = document.getElementById("error");
   if(msg) {
@@ -306,30 +354,30 @@ function showError(msg) {
   }
 }
 
-/* LOGIN PROCESS */
+/* SECURE LOGIN RUNTIME CORE */
 function login(){
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
   showError(""); 
 
   if(!user || !pass){
-    showError("All fields are required.");
+    showError("Required validation credentials missing.");
     return;
   }
 
-  /* ===== DV LOGIN ===== */
+  /* ===== DV LOGIN GATEWAY ===== */
   if(role === "dv"){
     if(user === "6002425951" && pass === "sai_drs"){
       localStorage.setItem("isLoggedIn","true");
       localStorage.setItem("erpRole","dv");
       window.location.href = "erp-dashboard.html";
     }else{
-      showError("Invalid DV credentials.");
+      showError("Invalid access permission signature for DV.");
     }
     return;
   }
 
-  /* ===== TEACHER LOGIN ===== */
+  /* ===== TEACHER LOGIN DATA VALIDATION ===== */
   db.ref("staff").once("value").then(snapshot=>{
     let success = false;
 
@@ -352,10 +400,10 @@ function login(){
     });
 
     if(!success){
-      showError("Invalid Teacher credentials.");
+      showError("Identity processing match failure.");
     }
   }).catch(err => {
-    showError("Database connection error. Try again.");
+    showError("Security connection timeout. Retry stack initialization.");
     console.error(err);
   });
 }
