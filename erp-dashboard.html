@@ -828,14 +828,14 @@ body {
                     <label>Class Segment</label>
                     <select id="classFilter" class="form-control-field" onchange="filterAndPaginateData()">
                         <option value="">All Classes (Unfiltered)</option>
-                        <option value="Playgroup">Playgroup</option>
-                        <option value="Nursery">Nursery</option>
-                        <option value="LKG">LKG</option>
-                        <option value="UKG">UKG</option>
+                        <option value="IK-1">IK-1</option>
+                        <option value="IK-2">IK-2</option>
+                        <option value="IK-3">IK-3</option>
                         <option value="1">Class 1</option>
                         <option value="2">Class 2</option>
                         <option value="3">Class 3</option>
                         <option value="4">Class 4</option>
+                        <option value="5">Class 5</option>
                     </select>
                 </div>
                 
@@ -1075,7 +1075,6 @@ function showToast(message, type = "success") {
 function initializeRealtimeLedger() {
     showSpinner();
     
-    // Fallback parsing context check initialization routines
     const cachedUser = localStorage.getItem("userEmail") || "System Accountant";
     const userDisplayNode = document.getElementById("topbarUserEmail");
     if(userDisplayNode) userDisplayNode.innerText = cachedUser;
@@ -1244,7 +1243,7 @@ function renderPaginatedTable() {
                 <td><strong style="color: var(--primary); font-family: monospace; font-size: 13px;">${row.receiptNo || '-'}</strong></td>
                 <td><span style="color: var(--text-muted); font-family: monospace; font-weight: 600;">${row.studentId}</span></td>
                 <td><strong style="color: var(--text-primary); font-weight: 600;">${row.studentName || 'N/A'}</strong></td>
-                <td>Group ${row.class} <span style="color: var(--text-muted); font-size: 11px;">(${row.academicYear})</span></td>
+                <td>Class ${row.class} <span style="color: var(--text-muted); font-size: 11px;">(${row.academicYear})</span></td>
                 <td><span style="font-weight: 500;">${row.month}</span></td>
                 <td style="text-align: right; font-weight: 700; color: #0F172A;">₹${Number(row.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                 <td><span style="font-size: 12px; font-weight: 500; color: var(--secondary);"><i class="fa-solid fa-building-columns"></i> ${row.paymentMode}</span></td>
