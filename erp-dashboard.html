@@ -8,7 +8,7 @@
 <script>
 const isLoggedIn = localStorage.getItem("isLoggedIn");
 if(isLoggedIn !== "true"){
-    window.location.href = "login.html";
+    window.location.href = "index.html";
 }
 </script>
 
@@ -1190,7 +1190,6 @@ function renderPaginatedTable() {
                 <td><span class="badge-status ${row.status}">${row.status}</span></td>
                 <td class="no-pdf-print">
                     <div class="table-inline-actions">
-                        <button class="btn-table-action" onclick="actionPrintReceipt('${row.paymentId}', false)" title="Print Formal Corporate Invoice Slip"><i class="fa-solid fa-print"></i></button>
                         <button class="btn-table-action" onclick="openPaymentModal('edit', '${row.paymentId}')" title="Modify Transaction Audit Fields"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn-table-action delete-row" onclick="actionDeletePayment('${row.paymentId}')" title="Purge Record Safely From Balances"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
@@ -1522,3 +1521,4 @@ window.onload = initializeRealtimeLedger;
 
 </body>
 </html>
+
