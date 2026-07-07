@@ -566,7 +566,6 @@
     </footer>
 
     <script>
-        // Synchronized Database Configuration Mapping Options Context
         const firebaseConfig = {
             apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
             databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
@@ -617,7 +616,7 @@
 
         async function runComputeDashboardAnalytics() {
             try {
-                const globalDataSnapshot = await databaseEngine.ref().once("value");
+                const globalDataSnapshot = await databaseEngine.ref("students").once("value");
                 const systemMasterObject = globalDataSnapshot.val() || {};
                 
                 let countTotalStudents = 0;
@@ -645,7 +644,7 @@
                                 candidateHasActiveFine = true;
                                 summationTotalFineOutstanding += activeFineNumeric;
                                 
-                                if (underlyingFeeStructure.status !== "paid") {
+                                if (underlyingFeeStructure.status === "unpaid") {
                                     summationPendingFines += activeFineNumeric;
                                 }
                             }
@@ -655,8 +654,10 @@
                                     const actionRecordItem = underlyingFeeStructure.fineHistory[historyNodeId];
                                     if (actionRecordItem && actionRecordItem.date) {
                                         const standardHistoryDateStr = new Date(actionRecordItem.date).toLocaleDateString();
-                                        if (standardHistoryDateStr === currentSystemDateString && actionRecordItem.action === "Paid") {
-                                            summationCollectedToday += parseFloat(actionRecordItem.amount || 0);
+                                        if (standardHistoryDateStr === currentSystemDateString && (actionRecordItem.action === "Paid" || actionRecordItem.action === "Applied")) {
+                                            if(underlyingFeeStructure.status === "paid") {
+                                                summationCollectedToday += parseFloat(actionRecordItem.amount || 0);
+                                            }
                                         }
                                     }
                                 });
@@ -781,7 +782,7 @@
             
             try {
                 if (targetMobileSearchQuery !== "") {
-                    const snap = await databaseEngine.ref(targetMobileSearchQuery).once("value");
+                    const snap = await databaseEngine.ref("students/" + targetMobileSearchQuery).once("value");
                     const val = snap.val();
 
                     if (val && val.name) {
@@ -792,7 +793,7 @@
                         displayToast("No records verified current lookup pattern context.", "info");
                     }
                 } else {
-                    const snap = await databaseEngine.ref().once("value");
+                    const snap = await databaseEngine.ref("students").once("value");
                     const rawTree = snap.val() || {};
                     
                     const cleanedCache = {};
@@ -821,7 +822,8 @@
         async function transactionEngineApplyFineProcedure() {
             const amtStr = document.getElementById("fineAmountInput").value.trim();
             const fineAmt = parseFloat(amtStr);
-            const targetMonth = document.getElementById("monthSelect").value;
+            const targetMonthInput = document.getElementById("monthSelect").value;
+            const targetMonthNormalized = targetMonthInput ? targetMonthInput.toLowerCase() : "";
             const operator = document.getElementById("appliedByInput").value.trim() || "System Admin";
 
             if (amtStr === "" || isNaN(fineAmt) || fineAmt <= 0) {
@@ -841,21 +843,22 @@
 
             try {
                 for (const phoneKey of activeSelectionVector) {
-                    const freshSnap = await databaseEngine.ref(phoneKey).once("value");
+                    const freshSnap = await databaseEngine.ref("students/" + phoneKey).once("value");
                     const profile = freshSnap.val();
 
                     if (!profile || !profile.fees) continue;
 
                     for (const mKey of Object.keys(profile.fees)) {
-                        if (targetMonth !== "" && mKey !== targetMonth) continue;
+                        const currentNormalizedMonth = mKey.toLowerCase();
+                        if (targetMonthNormalized !== "" && currentNormalizedMonth !== targetMonthNormalized) continue;
 
                         const feeRecord = profile.fees[mKey];
                         if (!feeRecord || feeRecord.status === "paid") continue;
 
-                        const targetPath = `${phoneKey}/fees/${mKey}`;
-                        await databaseEngine.ref(`${targetPath}/fine`).set(fineAmt);
+                        const targetPath = "students/" + phoneKey + "/fees/" + mKey;
+                        await databaseEngine.ref(targetPath + "/fine").set(fineAmt);
 
-                        const historyRef = databaseEngine.ref(`${targetPath}/fineHistory`).push();
+                        const historyRef = databaseEngine.ref(targetPath + "/fineHistory").push();
                         await historyRef.set({
                             amount: fineAmt,
                             date: now.toLocaleDateString(),
@@ -886,8 +889,9 @@
                 return;
             }
 
-            const targetMonth = document.getElementById("monthSelect").value;
-            const scopeLabel = targetMonth === "" ? "ALL UNPAID MONTHS" : targetMonth;
+            const targetMonthInput = document.getElementById("monthSelect").value;
+            const targetMonthNormalized = targetMonthInput ? targetMonthInput.toLowerCase() : "";
+            const scopeLabel = targetMonthInput === "" ? "ALL UNPAID MONTHS" : targetMonthInput;
             
             if (!confirm(`Confirm Critical System Update: Purge structural fine balance data parameters from ${activeSelectionVector.size} entries across scope [${scopeLabel}]?`)) return;
 
@@ -901,21 +905,22 @@
 
             try {
                 for (const phoneKey of activeSelectionVector) {
-                    const snap = await databaseEngine.ref(phoneKey).once("value");
+                    const snap = await databaseEngine.ref("students/" + phoneKey).once("value");
                     const profile = snap.val();
 
                     if (!profile || !profile.fees) continue;
 
                     for (const mKey of Object.keys(profile.fees)) {
-                        if (targetMonth !== "" && mKey !== targetMonth) continue;
+                        const currentNormalizedMonth = mKey.toLowerCase();
+                        if (targetMonthNormalized !== "" && currentNormalizedMonth !== targetMonthNormalized) continue;
 
                         const feeRecord = profile.fees[mKey];
-                        if (!feeRecord || feeRecord.status === "paid" || !feeRecord.fine) continue;
+                        if (!feeRecord || feeRecord.status === "paid") continue;
 
-                        const targetPath = `${phoneKey}/fees/${mKey}`;
-                        await databaseEngine.ref(`${targetPath}/fine`).set(0);
+                        const targetPath = "students/" + phoneKey + "/fees/" + mKey;
+                        await databaseEngine.ref(targetPath + "/fine").set(0);
 
-                        const historyRef = databaseEngine.ref(`${targetPath}/fineHistory`).push();
+                        const historyRef = databaseEngine.ref(targetPath + "/fineHistory").push();
                         await historyRef.set({
                             amount: 0,
                             date: now.toLocaleDateString(),
@@ -943,7 +948,8 @@
         async function analyticalReportSystemGenerateEvaluationQuery() {
             switchPanelLoadingState("reportingSystemPanel", true);
             
-            const selMonth = document.getElementById("filterMonth").value;
+            const selMonthInput = document.getElementById("filterMonth").value;
+            const selMonthNormalized = selMonthInput ? selMonthInput.toLowerCase() : "";
             const selClass = document.getElementById("filterClass").value;
             const queryStr = document.getElementById("filterStudent").value.trim().toLowerCase();
             const selStatus = document.getElementById("filterStatus").value;
@@ -952,7 +958,7 @@
             tableBody.innerHTML = "";
 
             try {
-                const snap = await databaseEngine.ref().once("value");
+                const snap = await databaseEngine.ref("students").once("value");
                 const dataMap = snap.val() || {};
 
                 let outputHtml = "";
@@ -967,7 +973,8 @@
 
                     if (student.fees) {
                         Object.keys(student.fees).forEach(mKey => {
-                            if (selMonth !== "" && mKey !== selMonth) return;
+                            const currentNormalizedMonth = mKey.toLowerCase();
+                            if (selMonthNormalized !== "" && currentNormalizedMonth !== selMonthNormalized) return;
 
                             const feeNode = student.fees[mKey];
                             if (!feeNode) return;
@@ -990,12 +997,15 @@
                                 }
                             }
 
+                            // Capitalize display month name cleanly for the layout report
+                            const displayMonthName = mKey.charAt(0).toUpperCase() + mKey.slice(1);
+
                             outputHtml += `
                                 <tr>
                                     <td style="color:#fff; font-weight:600;">${student.name}</td>
                                     <td>${phoneKey}</td>
                                     <td>${student.class || "N/A"}</td>
-                                    <td style="color:var(--sky-blue); font-weight:500;">${mKey}</td>
+                                    <td style="color:var(--sky-blue); font-weight:500;">${displayMonthName}</td>
                                     <td style="font-weight:700; color:var(--golden);">₹${currentFine}</td>
                                     <td><span class="status-pill ${statusClass}">${feeNode.status}</span></td>
                                     <td>${logTime}</td>
@@ -1029,7 +1039,7 @@
             let rowsCount = 0;
 
             try {
-                const snap = await databaseEngine.ref().once("value");
+                const snap = await databaseEngine.ref("students").once("value");
                 const dataMap = snap.val() || {};
 
                 Object.keys(dataMap).forEach(phoneKey => {
@@ -1045,17 +1055,18 @@
                             const status = feeNode.status || "unpaid";
                             const cleanName = student.name.replace(/,/g, ' ');
                             const cleanClass = (student.class || "N/A").toString().replace(/,/g, ' ');
+                            const displayMonthName = mKey.charAt(0).toUpperCase() + mKey.slice(1);
 
                             if (feeNode.fineHistory) {
                                 Object.keys(feeNode.fineHistory).forEach(hKey => {
                                     const log = feeNode.fineHistory[hKey];
                                     const ts = `${log.date || ""} ${log.time || ""}`.trim().replace(/,/g, ' ');
                                     const act = log.action || "Applied";
-                                    csvContent += `"${cleanName}","${phoneKey}","${cleanClass}","${mKey}",${fine},"${status}","${ts}","${act}"\n`;
+                                    csvContent += `"${cleanName}","${phoneKey}","${cleanClass}","${displayMonthName}",${fine},"${status}","${ts}","${act}"\n`;
                                     rowsCount++;
                                 });
                             } else {
-                                csvContent += `"${cleanName}","${phoneKey}","${cleanClass}","${mKey}",${fine},"${status}","N/A","No History"\n`;
+                                csvContent += `"${cleanName}","${phoneKey}","${cleanClass}","${displayMonthName}",${fine},"${status}","N/A","No History"\n`;
                                 rowsCount++;
                             }
                         });
