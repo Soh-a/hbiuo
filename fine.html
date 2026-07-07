@@ -132,7 +132,7 @@
             color: #fff;
         }
 
-        /* Main Workspace Split Layout */
+        /* Workspace Layout */
         .workspace {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -156,6 +156,7 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .panel-title {
@@ -170,7 +171,6 @@
             color: #fff;
         }
 
-        /* Form Elements */
         .form-group {
             margin-bottom: 15px;
             position: relative;
@@ -219,7 +219,6 @@
             color: #fff;
         }
 
-        /* Button configurations */
         .btn-group {
             display: flex;
             gap: 10px;
@@ -249,54 +248,16 @@
             transform: none !important;
         }
 
-        .btn-primary {
-            background: var(--sky-blue);
-            color: #fff;
-        }
+        .btn-primary { background: var(--sky-blue); color: #fff; }
+        .btn-primary:hover:not(:disabled) { background: var(--sky-blue-hover); transform: translateY(-2px); }
+        .btn-golden { background: var(--golden); color: #0f172a; }
+        .btn-golden:hover:not(:disabled) { background: var(--golden-hover); transform: translateY(-2px); }
+        .btn-danger { background: var(--error); color: #fff; }
+        .btn-danger:hover:not(:disabled) { background: #dc2626; transform: translateY(-2px); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.15); color: #fff; border: 1px solid var(--glass-border); }
+        .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.25); }
+        .btn-mini { padding: 6px 12px; font-size: 0.8rem; min-width: auto; flex: none; }
 
-        .btn-primary:hover:not(:disabled) {
-            background: var(--sky-blue-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-golden {
-            background: var(--golden);
-            color: #0f172a;
-        }
-
-        .btn-golden:hover:not(:disabled) {
-            background: var(--golden-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: var(--error);
-            color: #fff;
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: #dc2626;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            border: 1px solid var(--glass-border);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .btn-mini {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            min-width: auto;
-            flex: none;
-        }
-
-        /* Selection Control Panel */
         .selection-controls {
             display: flex;
             justify-content: space-between;
@@ -307,7 +268,6 @@
             border-radius: 8px;
         }
 
-        /* Student Listing UI */
         .student-list-container {
             max-height: 420px;
             overflow-y: auto;
@@ -317,21 +277,12 @@
             padding: 5px;
         }
 
-        /* Custom Scrollbar */
         .student-list-container::-webkit-scrollbar,
-        .report-table-wrapper::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
+        .report-table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
         .student-list-container::-webkit-scrollbar-track,
-        .report-table-wrapper::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.1);
-        }
+        .report-table-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         .student-list-container::-webkit-scrollbar-thumb,
-        .report-table-wrapper::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-        }
+        .report-table-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
         .student-card {
             background: rgba(255, 255, 255, 0.06);
@@ -343,75 +294,20 @@
             align-items: flex-start;
             gap: 15px;
             transition: all 0.2s;
-        }
-
-        .student-card:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .student-card.selected {
-            background: rgba(14, 165, 233, 0.15);
-            border-color: rgba(14, 165, 233, 0.4);
-        }
-
-        .student-checkbox-wrapper {
-            padding-top: 3px;
-        }
-
-        .student-checkbox-wrapper input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
             cursor: pointer;
-            accent-color: var(--sky-blue);
         }
 
-        .student-details {
-            flex: 1;
-        }
-
-        .student-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .student-name {
-            font-weight: 600;
-            font-size: 1.05rem;
-            color: #fff;
-        }
-
-        .student-class {
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.15);
-            padding: 2px 8px;
-            border-radius: 12px;
-            color: var(--text-muted);
-        }
-
-        .student-meta {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .student-meta span i {
-            margin-right: 4px;
-            color: var(--sky-blue);
-        }
-
-        .fine-badge {
-            background: rgba(234, 179, 8, 0.15);
-            color: var(--golden);
-            border: 1px solid rgba(234, 179, 8, 0.3);
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
+        .student-card:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); }
+        .student-card.selected { background: rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.4); }
+        .student-checkbox-wrapper { padding-top: 3px; }
+        .student-checkbox-wrapper input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--sky-blue); }
+        .student-details { flex: 1; }
+        .student-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .student-name { font-weight: 600; font-size: 1.05rem; color: #fff; }
+        .student-class { font-size: 0.8rem; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 12px; color: var(--text-muted); }
+        .student-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 15px; flex-wrap: wrap; }
+        .student-meta span i { margin-right: 4px; color: var(--sky-blue); }
+        .fine-badge { background: rgba(234, 179, 8, 0.15); color: var(--golden); border: 1px solid rgba(234, 179, 8, 0.3); padding: 1px 6px; border-radius: 4px; font-weight: 600; }
 
         /* Report Generator Section */
         .report-section {
@@ -423,6 +319,7 @@
             padding: 25px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
             margin-bottom: 25px;
+            position: relative;
         }
 
         .filter-grid {
@@ -432,75 +329,18 @@
             margin-bottom: 20px;
         }
 
-        .report-table-wrapper {
-            overflow-x: auto;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.2);
-            max-height: 350px;
-            margin-top: 15px;
-        }
+        .report-table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); max-height: 350px; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background: rgba(15, 23, 42, 0.6); color: var(--text-light); padding: 12px 15px; font-weight: 600; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        td { padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); white-space: nowrap; }
+        tr:hover td { background: rgba(255,255,255,0.05); color: #fff; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
+        .status-pill { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-pill.paid { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+        .status-pill.unpaid { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
-        th {
-            background: rgba(15, 23, 42, 0.6);
-            color: var(--text-light);
-            padding: 12px 15px;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-        }
-
-        td {
-            padding: 10px 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
-
-        tr:hover td {
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-        }
-
-        .status-pill {
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-pill.paid {
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            border: 1px solid rgba(34, 197, 94, 0.4);
-        }
-
-        .status-pill.unpaid {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-        }
-
-        /* Notifications and System Feedback */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            width: 320px;
-            max-width: 90vw;
-        }
-
+        /* Notifications */
+        .notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; width: 320px; max-width: 90vw; }
         .toast {
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(10px);
@@ -516,83 +356,28 @@
             animation: slideIn 0.3s ease-out forwards;
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(110%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
+        @keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast.success { border-left-color: var(--success); }
         .toast.error { border-left-color: var(--error); }
         .toast.info { border-left-color: var(--sky-blue); }
-
         .toast i { font-size: 1.2rem; }
         .toast.success i { color: var(--success); }
         .toast.error i { color: var(--error); }
         .toast.info i { color: var(--sky-blue); }
 
-        /* Loader Overlay Component */
+        /* Loader Overlay */
         .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            border-radius: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            border-radius: 16px; display: flex; justify-content: center; align-items: center;
+            z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-
-        .panel.loading .loading-overlay,
-        .report-section.loading .loading-overlay {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--golden);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-
-        .empty-state i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            display: block;
-            color: rgba(255,255,255,0.2);
-        }
-
-        footer {
-            text-align: center;
-            padding: 25px;
-            font-size: 0.9rem;
-            color: #fff;
-            opacity: 0.8;
-            letter-spacing: 0.5px;
-            width: 100%;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            margin-top: 30px;
-        }
+        .panel.loading .loading-overlay, .report-section.loading .loading-overlay { opacity: 1; pointer-events: auto; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.1); border-top-color: var(--golden); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-style: italic; }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; color: rgba(255,255,255,0.2); }
+        footer { text-align: center; padding: 25px; font-size: 0.9rem; color: #fff; opacity: 0.8; letter-spacing: 0.5px; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 30px; }
     </style>
 </head>
 <body>
@@ -600,7 +385,6 @@
     <div class="notification-container" id="toastContainer"></div>
 
     <div class="app-container">
-        
         <header>
             <h1><i class="fa-solid fa-scale-balanced"></i> Fine Management Suite</h1>
         </header>
@@ -634,7 +418,6 @@
         </div>
 
         <div class="workspace">
-            
             <div class="panel" id="studentLoaderPanel">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <h2 class="panel-title"><i class="fa-solid fa-users-viewfinder"></i> Lookup & Target Database</h2>
@@ -658,7 +441,7 @@
                 <div class="student-list-container" id="studentListLayout">
                     <div class="empty-state">
                         <i class="fa-solid fa-database"></i>
-                        No operational student data initialized or currently synchronized. Click 'Load' to stream telemetry.
+                        No operational student data initialized. Click 'Load' to stream telemetry.
                     </div>
                 </div>
             </div>
@@ -704,7 +487,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <div class="report-section" id="reportingSystemPanel">
@@ -734,7 +516,7 @@
                     <label for="filterClass">Filter by Class Alignment</label>
                     <select id="filterClass">
                         <option value="">All Classes</option>
-                        </select>
+                    </select>
                 </div>
                 <div>
                     <label for="filterStudent">Filter Student Search Key</label>
@@ -777,7 +559,6 @@
                 </table>
             </div>
         </div>
-
     </div>
 
     <footer>
@@ -785,30 +566,21 @@
     </footer>
 
     <script>
-        /**
-         * Global System Infrastructure Module Context
-         */
-        
-        // Target Database Architecture Initialization Configuration Endpoint
+        // Synchronized Database Configuration Mapping Options Context
         const firebaseConfig = {
             apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
             databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
         };
 
-        // Instantiation of Framework State Safely
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const databaseEngine = firebase.database();
 
-        // High Availability Local State Storage Pipeline Vector
         let localRuntimeCache = {};
         let activeSelectionVector = new Set();
         let aggregatedClassesCache = new Set();
 
-        /**
-         * System Notification System Toast Display Routine
-         */
         function displayToast(messageText, levelFlag = "info") {
             const contextContainer = document.getElementById("toastContainer");
             const toastFrame = document.createElement("div");
@@ -822,7 +594,6 @@
                 <i class="fa-solid ${decorativeIcon}"></i>
                 <div style="flex:1; font-size:0.9rem; font-weight:500;">${messageText}</div>
             `;
-            
             contextContainer.appendChild(toastFrame);
             
             setTimeout(() => {
@@ -831,27 +602,19 @@
             }, 4500);
         }
 
-        /**
-         * Visual Panel Interface Elements Management Pipeline System
-         */
         function switchPanelLoadingState(targetElementId, toggleActiveState = false) {
             const viewPanel = document.getElementById(targetElementId);
             if (!viewPanel) return;
             
             if (toggleActiveState) {
                 viewPanel.classList.add("loading");
-                const interfaceButtons = viewPanel.querySelectorAll("button, input, select");
-                interfaceButtons.forEach(elementItem => elementItem.setAttribute("disabled", "true"));
+                viewPanel.querySelectorAll("button, input, select").forEach(el => el.setAttribute("disabled", "true"));
             } else {
                 viewPanel.classList.remove("loading");
-                const interfaceButtons = viewPanel.querySelectorAll("button, input, select");
-                interfaceButtons.forEach(elementItem => elementItem.removeAttribute("disabled"));
+                viewPanel.querySelectorAll("button, input, select").forEach(el => el.removeAttribute("disabled"));
             }
         }
 
-        /**
-         * Dynamic Runtime Statistical Calculation Engine Routine Dashboard Loader
-         */
         async function runComputeDashboardAnalytics() {
             try {
                 const globalDataSnapshot = await databaseEngine.ref().once("value");
@@ -877,7 +640,6 @@
                             const underlyingFeeStructure = candidateRecord.fees[monthKey];
                             if (!underlyingFeeStructure) return;
 
-                            // Calculate Total Accrued Fine Accumulations
                             const activeFineNumeric = parseFloat(underlyingFeeStructure.fine);
                             if (!isNaN(activeFineNumeric) && activeFineNumeric > 0) {
                                 candidateHasActiveFine = true;
@@ -888,58 +650,34 @@
                                 }
                             }
 
-                            // Audit Logs for Collections Completed Today
                             if (underlyingFeeStructure.fineHistory) {
                                 Object.keys(underlyingFeeStructure.fineHistory).forEach(historyNodeId => {
                                     const actionRecordItem = underlyingFeeStructure.fineHistory[historyNodeId];
                                     if (actionRecordItem && actionRecordItem.date) {
-                                        // Map localized dates structure comparison strings safely
                                         const standardHistoryDateStr = new Date(actionRecordItem.date).toLocaleDateString();
-                                        if (standardHistoryDateStr === currentSystemDateString && actionRecordItem.action === "Applied") {
-                                            // Evaluates dynamic activity parameters for analytical processing tracking
-                                        }
-                                    }
-                                });
-                            }
-                            
-                            // Specific Business Rule: Dynamic evaluation check tracking based on structural state flags
-                            if (underlyingFeeStructure.status === "paid" && underlyingFeeStructure.fineHistory) {
-                                Object.keys(underlyingFeeStructure.fineHistory).forEach(historyNodeId => {
-                                    const recordNodeItem = underlyingFeeStructure.fineHistory[historyNodeId];
-                                    if (recordNodeItem && recordNodeItem.date) {
-                                        const paymentActionDate = new Date(recordNodeItem.date).toLocaleDateString();
-                                        if (paymentActionDate === currentSystemDateString && recordNodeItem.action === "Applied") {
-                                             // Context placeholder for programmatic historical metric matching scope logic rule sets
+                                        if (standardHistoryDateStr === currentSystemDateString && actionRecordItem.action === "Paid") {
+                                            summationCollectedToday += parseFloat(actionRecordItem.amount || 0);
                                         }
                                     }
                                 });
                             }
                         });
                     }
-
-                    if (candidateHasActiveFine) {
-                        countStudentsWithActiveFines++;
-                    }
+                    if (candidateHasActiveFine) countStudentsWithActiveFines++;
                 });
 
-                // Update UI Node Elements Safely
                 document.getElementById("dashTotalStudents").innerText = countTotalStudents;
                 document.getElementById("dashStudentsWithFine").innerText = countStudentsWithActiveFines;
                 document.getElementById("dashTotalFine").innerText = `₹${summationTotalFineOutstanding.toFixed(2)}`;
                 document.getElementById("dashPendingFine").innerText = `₹${summationPendingFines.toFixed(2)}`;
-                
-                // Fetch direct log event summation for reliable execution tracking engine state mapping
-                document.getElementById("dashTodayCollection").innerText = `₹${(summationTotalFineOutstanding - summationPendingFines).toFixed(2)}`;
+                document.getElementById("dashTodayCollection").innerText = `₹${summationCollectedToday.toFixed(2)}`;
 
-            } catch (systemEvaluationError) {
-                console.error("Dashboard calculation analytics processing failed: ", systemEvaluationError);
-                displayToast("Metrics compilation component initialization error.", "error");
+            } catch (err) {
+                console.error(err);
+                displayToast("Metrics compilation system synchronization breakdown.", "error");
             }
         }
 
-        /**
-         * Dynamically update UI Class lists selection options based on structural contents discovered inside Database snapshots
-         */
         function populateDynamicClassFilterDropdown(classLabelString) {
             if (!classLabelString) return;
             const absoluteClassIdentifier = classLabelString.trim();
@@ -954,9 +692,6 @@
             }
         }
 
-        /**
-         * Render Routine Pipeline - Structural Presentation Converter Matrix mapping
-         */
         function renderStudentViewCardsLayout() {
             const structuralDisplayTarget = document.getElementById("studentListLayout");
             const structuralKeysArray = Object.keys(localRuntimeCache);
@@ -965,26 +700,23 @@
                 structuralDisplayTarget.innerHTML = `
                     <div class="empty-state">
                         <i class="fa-solid fa-user-slash"></i>
-                        No data items returned or matched parameters under active filtering target parameters.
+                        No data records found or matching search arguments.
                     </div>
                 `;
                 return;
             }
 
             let rawHtmlAccumulator = "";
-            
             structuralKeysArray.forEach(mobileReferenceKey => {
                 const individualObjectNode = localRuntimeCache[mobileReferenceKey];
                 if (!individualObjectNode || !individualObjectNode.name) return;
 
-                // Aggregate structural details dynamically safely handling fallback parameters
                 populateDynamicClassFilterDropdown(individualObjectNode.class);
                 
                 const verifiedStudentClass = individualObjectNode.class || "N/A";
                 const isSelectedStateClass = activeSelectionVector.has(mobileReferenceKey) ? "selected" : "";
                 const isCheckedAttributeValue = activeSelectionVector.has(mobileReferenceKey) ? "checked" : "";
 
-                // Calculate cumulative fine load for this rendering target card context box framework
                 let accumulatedFineSum = 0;
                 if (individualObjectNode.fees) {
                     Object.keys(individualObjectNode.fees).forEach(m => {
@@ -1017,17 +749,13 @@
             evaluateActiveSelectionDisplayCounters();
         }
 
-        /**
-         * UI Event Bindings Mapper for dynamic selection elements handling interaction safely
-         */
         function bindStudentCardBehavioralEvents() {
-            const DOMCardListArray = document.querySelectorAll(".student-card");
-            DOMCardListArray.forEach(cardNode => {
+            document.querySelectorAll(".student-card").forEach(cardNode => {
                 const underlyingCheckbox = cardNode.querySelector(".student-row-selector");
                 const currentMobileReference = cardNode.getAttribute("data-mobile");
 
-                cardNode.onclick = (clickTargetEvent) => {
-                    if (clickTargetEvent.target.className !== "student-row-selector") {
+                cardNode.onclick = (e) => {
+                    if (e.target.className !== "student-row-selector") {
                         underlyingCheckbox.checked = !underlyingCheckbox.checked;
                     }
                     
@@ -1043,444 +771,345 @@
             });
         }
 
-        /**
-         * Update tracking indicator elements text contents based on sets elements data contents
-         */
         function evaluateActiveSelectionDisplayCounters() {
             document.getElementById("selectedCountDisplay").innerText = `${activeSelectionVector.size} Targets Selected`;
         }
 
-        /**
-         * Network Engine Interface: Request Database records via direct Query parameters stream
-         */
         async function streamStudentDataStoreNetworkContext() {
             switchPanelLoadingState("studentLoaderPanel", true);
             const targetMobileSearchQuery = document.getElementById("searchMobile").value.trim();
             
             try {
                 if (targetMobileSearchQuery !== "") {
-                    // Specific localized individual lookup sequence logic processing pipeline implementation rule
-                    const realTimeDatabaseResponseSnapshot = await databaseEngine.ref(targetMobileSearchQuery).once("value");
-                    const uniqueSingleRecordDatasetValue = realTimeDatabaseResponseSnapshot.val();
+                    const snap = await databaseEngine.ref(targetMobileSearchQuery).once("value");
+                    const val = snap.val();
 
-                    if (uniqueSingleRecordDatasetValue && uniqueSingleRecordDatasetValue.name) {
-                        localRuntimeCache = { [targetMobileSearchQuery]: uniqueSingleRecordDatasetValue };
-                        displayToast("Matched specific student record node entry successfully.", "success");
+                    if (val && val.name) {
+                        localRuntimeCache = { [targetMobileSearchQuery]: val };
+                        displayToast("Matched specific student record node entry.", "success");
                     } else {
                         localRuntimeCache = {};
-                        displayToast("No student records matched specified search argument constraint criteria.", "info");
+                        displayToast("No records verified current lookup pattern context.", "info");
                     }
                 } else {
-                    // Global synchronization block data download sequence pipeline invocation route
-                    const holisticDatabaseFetchSnapshot = await databaseEngine.ref().once("value");
-                    const unmarshalledObjectTree = holisticDatabaseFetchSnapshot.val() || {};
+                    const snap = await databaseEngine.ref().once("value");
+                    const rawTree = snap.val() || {};
                     
-                    // Filter metadata elements safely from structural functional system tables keys mapping structures
-                    const filteredRecordsCache = {};
-                    Object.keys(unmarshalledObjectTree).forEach(keyElement => {
-                        if (unmarshalledObjectTree[keyElement] && typeof unmarshalledObjectTree[keyElement] === 'object' && unmarshalledObjectTree[keyElement].name) {
-                            filteredRecordsCache[keyElement] = unmarshalledObjectTree[keyElement];
+                    const cleanedCache = {};
+                    Object.keys(rawTree).forEach(k => {
+                        if (rawTree[k] && typeof rawTree[k] === 'object' && rawTree[k].name) {
+                            cleanedCache[k] = rawTree[k];
                         }
                     });
 
-                    localRuntimeCache = filteredRecordsCache;
-                    displayToast(`Loaded ${Object.keys(localRuntimeCache).length} operational records from core schema.`, "success");
+                    localRuntimeCache = cleanedCache;
+                    displayToast(`Loaded ${Object.keys(localRuntimeCache).length} active database records.`, "success");
                 }
 
-                // Flush deprecated targets indicators flags vectors references context maps tracking arrays
                 activeSelectionVector.clear();
                 renderStudentViewCardsLayout();
                 await runComputeDashboardAnalytics();
 
-            } catch (databaseTransmissionFailureException) {
-                console.error(databaseTransmissionFailureException);
-                displayToast("Database operational connection unestablished or network timeout occurred.", "error");
+            } catch (err) {
+                console.error(err);
+                displayToast("Database connection stream dropped or rejected.", "error");
             } finally {
                 switchPanelLoadingState("studentLoaderPanel", false);
             }
         }
 
-        /**
-         * Core Transaction Business Rules Processor: Fine Application Routine Operation Pipeline Loop
-         */
         async function transactionEngineApplyFineProcedure() {
-            const parsingAmountInputString = document.getElementById("fineAmountInput").value.trim();
-            const calculatedFineNumericAmount = parseFloat(parsingAmountInputString);
-            const selectedMonthConstraint = document.getElementById("monthSelect").value;
-            const operatorAuthenticationSignature = document.getElementById("appliedByInput").value.trim() || "System Operator";
+            const amtStr = document.getElementById("fineAmountInput").value.trim();
+            const fineAmt = parseFloat(amtStr);
+            const targetMonth = document.getElementById("monthSelect").value;
+            const operator = document.getElementById("appliedByInput").value.trim() || "System Admin";
 
-            // Enforce input validation criteria rules sets precisely matching parameters spec constraints
-            if (parsingAmountInputString === "" || isNaN(calculatedFineNumericAmount) || calculatedFineNumericAmount <= 0) {
-                displayToast("Input structural failure: Fine allocation amount parameters must be non-negative real numbers (> 0).", "error");
+            if (amtStr === "" || isNaN(fineAmt) || fineAmt <= 0) {
+                displayToast("Input failure: Target fine execution context must be a value greater than 0.", "error");
                 return;
             }
             if (activeSelectionVector.size === 0) {
-                displayToast("Transactional processing halt: Selection tracking arrays are uninitialized. Check targets to modify.", "error");
+                displayToast("Execution halted: Structural operational index arrays are empty. Select students.", "error");
                 return;
             }
 
             switchPanelLoadingState("fineActionsPanel", true);
             switchPanelLoadingState("studentLoaderPanel", true);
 
-            let integerCounterProcessedUpdates = 0;
-            let skipConflictEntriesDeduplicatedCount = 0;
-
-            const processingTimestampObject = new Date();
-            const structuredCurrentDateString = processingTimestampObject.toLocaleDateString();
-            const structuredCurrentTimeString = processingTimestampObject.toLocaleTimeString();
+            let mutationsCount = 0;
+            const now = new Date();
 
             try {
-                // Read fresh snapshot directly from real database to prevent unintended race conditions or multi-user cross overwriting anomalies
-                for (const studentMobileKey of activeSelectionVector) {
-                    const freshOnlineFetchSnapshot = await databaseEngine.ref(studentMobileKey).once("value");
-                    const targetStudentMasterRecord = freshOnlineFetchSnapshot.val();
+                for (const phoneKey of activeSelectionVector) {
+                    const freshSnap = await databaseEngine.ref(phoneKey).once("value");
+                    const profile = freshSnap.val();
 
-                    if (!targetStudentMasterRecord || !targetStudentMasterRecord.fees) continue;
+                    if (!profile || !profile.fees) continue;
 
-                    // Iterate structural architecture map targets across fee schedules arrays objects
-                    for (const currentMonthNameKey of Object.keys(targetStudentMasterRecord.fees)) {
-                        
-                        // Apply month condition filter constraints if user context specified one narrow parameter target scope explicitly
-                        if (selectedMonthConstraint !== "" && currentMonthNameKey !== selectedMonthConstraint) continue;
+                    for (const mKey of Object.keys(profile.fees)) {
+                        if (targetMonth !== "" && mKey !== targetMonth) continue;
 
-                        const monthLedgerRecordReference = targetStudentMasterRecord.fees[currentMonthNameKey];
-                        if (!monthLedgerRecordReference) continue;
+                        const feeRecord = profile.fees[mKey];
+                        if (!feeRecord || feeRecord.status === "paid") continue;
 
-                        // STIPULATION RULE: Block updates modifications transformations on accounts possessing structural states flags equal to "paid"
-                        if (monthLedgerRecordReference.status === "paid") continue;
+                        const targetPath = `${phoneKey}/fees/${mKey}`;
+                        await databaseEngine.ref(`${targetPath}/fine`).set(fineAmt);
 
-                        // STIPULATION RULE: Prevent duplicate sequential execution events injection into active database records schemas if value aligns identical
-                        if (parseFloat(monthLedgerRecordReference.fine) === calculatedFineNumericAmount) {
-                            skipConflictEntriesDeduplicatedCount++;
-                            continue;
-                        }
-
-                        // Build individual absolute transaction mutation paths safely keeping surrounding user structural records variables intact
-                        const relationalDatabaseWritePath = `${studentMobileKey}/fees/${currentMonthNameKey}`;
-                        
-                        await databaseEngine.ref(`${relationalDatabaseWritePath}/fine`).set(calculatedFineNumericAmount);
-
-                        // Structural Log Segment Building Instantiation Mapping Logic Routine Sequence
-                        const dynamicHistoryActionNodeReference = databaseEngine.ref(`${relationalDatabaseWritePath}/fineHistory`).push();
-                        await dynamicHistoryActionNodeReference.set({
-                            amount: calculatedFineNumericAmount,
-                            date: structuredCurrentDateString,
-                            time: structuredCurrentTimeString,
-                            appliedBy: operatorAuthenticationSignature,
+                        const historyRef = databaseEngine.ref(`${targetPath}/fineHistory`).push();
+                        await historyRef.set({
+                            amount: fineAmt,
+                            date: now.toLocaleDateString(),
+                            time: now.toLocaleTimeString(),
+                            appliedBy: operator,
                             action: "Applied"
                         });
 
-                        integerCounterProcessedUpdates++;
+                        mutationsCount++;
                     }
                 }
 
-                displayToast(`Processing Cycle Completed. Actions Registered: ${integerCounterProcessedUpdates} mutations executed. [Deduplicated skips: ${skipConflictEntriesDeduplicatedCount}]`, "success");
-                
-                // Re-sync and refresh tracking state views pipelines UI elements elements layers context
+                displayToast(`Processing complete. Executed ${mutationsCount} record operations pipeline updates.`, "success");
                 await streamStudentDataStoreNetworkContext();
 
-            } catch (transactionalProcessingEngineExceptionError) {
-                console.error(transactionalProcessingEngineExceptionError);
-                displayToast("An absolute exceptions event disrupted structural updates routines processing pathways inside the transactional runtime.", "error");
+            } catch (err) {
+                console.error(err);
+                displayToast("Transactional pipeline fault: An explicit execution mapping logic failure occurred.", "error");
             } finally {
                 switchPanelLoadingState("fineActionsPanel", false);
                 switchPanelLoadingState("studentLoaderPanel", false);
             }
         }
 
-        /**
-         * Fine Retraction/Removal Method Strategy Action Flow Core Handler Implementation Routines Loop
-         */
         async function transactionEngineRetractFineProcedure() {
             if (activeSelectionVector.size === 0) {
-                displayToast("Transactional operation cancelled: Select targets before firing extraction process commands routines.", "error");
+                displayToast("Operation cancelled: Operational pipeline target collection is unassigned.", "error");
                 return;
             }
 
-            const targetSelectedMonthOptionValue = document.getElementById("monthSelect").value;
-            const contextMonthOutputStringPlaceholder = targetSelectedMonthOptionValue === "" ? "ALL UNPAID MONTHS" : targetSelectedMonthOptionValue;
+            const targetMonth = document.getElementById("monthSelect").value;
+            const scopeLabel = targetMonth === "" ? "ALL UNPAID MONTHS" : targetMonth;
             
-            const clientVerificationPromptConfirmation = confirm(`Critical Action Warning: Are you confident you want to delete and purge active fines values from ${activeSelectionVector.size} target nodes across the scope constraint alignment: [${contextMonthOutputStringPlaceholder}]?`);
-            if (!clientVerificationPromptConfirmation) return;
+            if (!confirm(`Confirm Critical System Update: Purge structural fine balance data parameters from ${activeSelectionVector.size} entries across scope [${scopeLabel}]?`)) return;
 
-            const administratorIdentitySignString = document.getElementById("appliedByInput").value.trim() || "System Operator";
+            const operator = document.getElementById("appliedByInput").value.trim() || "System Operator";
 
             switchPanelLoadingState("fineActionsPanel", true);
             switchPanelLoadingState("studentLoaderPanel", true);
 
-            let deletionsCounterCount = 0;
-            const chronologicalMomentObject = new Date();
-            const processedDateStamp = chronologicalMomentObject.toLocaleDateString();
-            const processedTimeStamp = chronologicalMomentObject.toLocaleTimeString();
+            let clearedCount = 0;
+            const now = new Date();
 
             try {
-                for (const clientMobileKeyItem of activeSelectionVector) {
-                    const validationFetchSnapshotData = await databaseEngine.ref(clientMobileKeyItem).once("value");
-                    const persistentRecordPayload = validationFetchSnapshotData.val();
+                for (const phoneKey of activeSelectionVector) {
+                    const snap = await databaseEngine.ref(phoneKey).once("value");
+                    const profile = snap.val();
 
-                    if (!persistentRecordPayload || !persistentRecordPayload.fees) continue;
+                    if (!profile || !profile.fees) continue;
 
-                    for (const calculatedMonthStringKey of Object.keys(persistentRecordPayload.fees)) {
-                        if (targetSelectedMonthOptionValue !== "" && calculatedMonthStringKey !== targetSelectedMonthOptionValue) continue;
+                    for (const mKey of Object.keys(profile.fees)) {
+                        if (targetMonth !== "" && mKey !== targetMonth) continue;
 
-                        const contextualFeeObjectItem = persistentRecordPayload.fees[calculatedMonthStringKey];
-                        if (!contextualFeeObjectItem) continue;
+                        const feeRecord = profile.fees[mKey];
+                        if (!feeRecord || feeRecord.status === "paid" || !feeRecord.fine) continue;
 
-                        // Ensure paid records states metrics structures tracking logic constraints stay isolated inviolable safely
-                        if (contextualFeeObjectItem.status === "paid") continue;
-                        
-                        // If no fine exists to be deleted, bypass processing routines updates to optimization speed operations
-                        if (contextualFeeObjectItem.fine === undefined || contextualFeeObjectItem.fine === null || contextualFeeObjectItem.fine === 0) continue;
+                        const targetPath = `${phoneKey}/fees/${mKey}`;
+                        await databaseEngine.ref(`${targetPath}/fine`).set(0);
 
-                        const singleTargetMutationPathKey = `${clientMobileKeyItem}/fees/${calculatedMonthStringKey}`;
-                        
-                        // Zero fine status or delete explicitly based on application runtime paradigm patterns specifications sets mappings definitions
-                        await databaseEngine.ref(`${singleTargetMutationPathKey}/fine`).set(0);
-
-                        // Inject audit traceability logging event metrics sequence blocks entries
-                        const auditRecordCreationReference = databaseEngine.ref(`${singleTargetMutationPathKey}/fineHistory`).push();
-                        await auditRecordCreationReference.set({
+                        const historyRef = databaseEngine.ref(`${targetPath}/fineHistory`).push();
+                        await historyRef.set({
                             amount: 0,
-                            date: processedDateStamp,
-                            time: processedTimeStamp,
-                            appliedBy: administratorIdentitySignString,
+                            date: now.toLocaleDateString(),
+                            time: now.toLocaleTimeString(),
+                            appliedBy: operator,
                             action: "Removed"
                         });
 
-                        deletionsCounterCount++;
+                        clearedCount++;
                     }
                 }
 
-                displayToast(`Retraction Operations Executed. Successfully stripped ${deletionsCounterCount} fine entities records.`, "success");
+                displayToast(`Cleanup matrix execution finished. Revoked fine data rows across ${clearedCount} nodes.`, "success");
                 await streamStudentDataStoreNetworkContext();
 
-            } catch (systemStructuralFaultPurgeException) {
-                console.error(systemStructuralFaultPurgeException);
-                displayToast("Purge script encountered unexpected architectural exceptions execution tracking failures error.", "error");
+            } catch (err) {
+                console.error(err);
+                displayToast("Purge loop process context failed due to infrastructure response exception.", "error");
             } finally {
                 switchPanelLoadingState("fineActionsPanel", false);
                 switchPanelLoadingState("studentLoaderPanel", false);
             }
         }
 
-        /**
-         * Advanced Analytical Ledger Database Pipeline Infrastructure Generation Interface Module Routine
-         */
         async function analyticalReportSystemGenerateEvaluationQuery() {
             switchPanelLoadingState("reportingSystemPanel", true);
             
-            const targetFilterMonth = document.getElementById("filterMonth").value;
-            const targetFilterClass = document.getElementById("filterClass").value;
-            const targetFilterStudent = document.getElementById("filterStudent").value.trim().toLowerCase();
-            const targetFilterStatus = document.getElementById("filterStatus").value;
+            const selMonth = document.getElementById("filterMonth").value;
+            const selClass = document.getElementById("filterClass").value;
+            const queryStr = document.getElementById("filterStudent").value.trim().toLowerCase();
+            const selStatus = document.getElementById("filterStatus").value;
 
-            const structuralReportTableBodyTargetNode = document.getElementById("reportTableBody");
-            structuralReportTableBodyTargetNode.innerHTML = "";
+            const tableBody = document.getElementById("reportTableBody");
+            tableBody.innerHTML = "";
 
             try {
-                // Ensure reports originate directly from live database state metrics data records instances streams pipelines directly
-                const universalTelemetryDatabaseQuerySnapshot = await databaseEngine.ref().once("value");
-                const systemHolisticStructuralObjectMap = universalTelemetryDatabaseQuerySnapshot.val() || {};
+                const snap = await databaseEngine.ref().once("value");
+                const dataMap = snap.val() || {};
 
-                let matchingRowsHTMLAccumulator = "";
-                let integerAggregateMatchedRowsCounter = 0;
+                let outputHtml = "";
+                let matchesCount = 0;
 
-                Object.keys(systemHolisticStructuralObjectMap).forEach(mobileRecordIndexKey => {
-                    const studentPayloadNode = systemHolisticStructuralObjectMap[mobileRecordIndexKey];
-                    if (!studentPayloadNode || typeof studentPayloadNode !== 'object' || !studentPayloadNode.name) return;
+                Object.keys(dataMap).forEach(phoneKey => {
+                    const student = dataMap[phoneKey];
+                    if (!student || typeof student !== 'object' || !student.name) return;
 
-                    // Apply Student Name/Mobile Filter Criteria Masking Constraints Rules Matching Check Routine
-                    const candidateStudentNameLower = studentPayloadNode.name.toLowerCase();
-                    if (targetFilterStudent !== "") {
-                        if (!candidateStudentNameLower.includes(targetFilterStudent) && !mobileRecordIndexKey.includes(targetFilterStudent)) {
-                            return; // Filter failure context tracking parameter skip evaluation jump routine
-                        }
-                    }
+                    if (queryStr !== "" && !student.name.toLowerCase().includes(queryStr) && !phoneKey.includes(queryStr)) return;
+                    if (selClass !== "" && student.class !== selClass) return;
 
-                    // Apply Class Alignment String Parameters Filters Mask Constraints Check Routine
-                    if (targetFilterClass !== "" && studentPayloadNode.class !== targetFilterClass) return;
+                    if (student.fees) {
+                        Object.keys(student.fees).forEach(mKey => {
+                            if (selMonth !== "" && mKey !== selMonth) return;
 
-                    if (studentPayloadNode.fees) {
-                        Object.keys(studentPayloadNode.fees).forEach(monthCalendarKey => {
-                            
-                            // Apply Month Specification Validation Criteria Rule Check Routine
-                            if (targetFilterMonth !== "" && monthCalendarKey !== targetFilterMonth) return;
+                            const feeNode = student.fees[mKey];
+                            if (!feeNode) return;
+                            if (selStatus !== "" && feeNode.status !== selStatus) return;
 
-                            const dataFeesMonthEntityNode = studentPayloadNode.fees[monthCalendarKey];
-                            if (!dataFeesMonthEntityNode) return;
+                            const currentFine = feeNode.fine || 0;
+                            const statusClass = feeNode.status === "paid" ? "paid" : "unpaid";
 
-                            // Apply Account Processing State Architectural Context Masking Validation Criteria Routine Check
-                            if (targetFilterStatus !== "" && dataFeesMonthEntityNode.status !== targetFilterStatus) return;
+                            let logTime = "N/A";
+                            let logAction = "No Logs Found";
 
-                            const localizedActiveFineValue = dataFeesMonthEntityNode.fine !== undefined ? dataFeesMonthEntityNode.fine : 0;
-                            const contextStatusPillClass = dataFeesMonthEntityNode.status === "paid" ? "paid" : "unpaid";
-
-                            // Capture latest log history record trace if structural entries blocks mapping sets exist
-                            let latestActionTimestampCell = "N/A";
-                            let latestActionFlagIndicator = "No Action Tracked";
-
-                            if (dataFeesMonthEntityNode.fineHistory) {
-                                const systemHistoryArrayKeys = Object.keys(dataFeesMonthEntityNode.fineHistory);
-                                if (systemHistoryArrayKeys.length > 0) {
-                                    // Extract tail entry item cleanly matching real logical processing sequencing rules vectors flow
-                                    const targetedLogID = systemHistoryArrayKeys[systemHistoryArrayKeys.length - 1];
-                                    const ultimateHistoricalLogRecordNode = dataFeesMonthEntityNode.fineHistory[targetedLogID];
-                                    if (ultimateHistoricalLogRecordNode) {
-                                        latestActionTimestampCell = `${ultimateHistoricalLogRecordNode.date || ""} ${ultimateHistoricalLogRecordNode.time || ""}`.trim();
-                                        latestActionFlagIndicator = ultimateHistoricalLogRecordNode.action || "Undefined Action Flag";
+                            if (feeNode.fineHistory) {
+                                const logKeys = Object.keys(feeNode.fineHistory);
+                                if (logKeys.length > 0) {
+                                    const lastLog = feeNode.fineHistory[logKeys[logKeys.length - 1]];
+                                    if (lastLog) {
+                                        logTime = `${lastLog.date || ""} ${lastLog.time || ""}`.trim();
+                                        logAction = lastLog.action || "Unknown";
                                     }
                                 }
                             }
 
-                            matchingRowsHTMLAccumulator += `
+                            outputHtml += `
                                 <tr>
-                                    <td style="color:#fff; font-weight:600;">${studentPayloadNode.name}</td>
-                                    <td>${mobileRecordIndexKey}</td>
-                                    <td>${studentPayloadNode.class || "N/A"}</td>
-                                    <td style="color:var(--sky-blue); font-weight:500;">${monthCalendarKey}</td>
-                                    <td style="font-weight:700; color:var(--golden);">₹${localizedActiveFineValue}</td>
-                                    <td><span class="status-pill ${contextStatusPillClass}">${dataFeesMonthEntityNode.status}</span></td>
-                                    <td>${latestActionTimestampCell}</td>
-                                    <td>${latestActionFlagIndicator}</td>
+                                    <td style="color:#fff; font-weight:600;">${student.name}</td>
+                                    <td>${phoneKey}</td>
+                                    <td>${student.class || "N/A"}</td>
+                                    <td style="color:var(--sky-blue); font-weight:500;">${mKey}</td>
+                                    <td style="font-weight:700; color:var(--golden);">₹${currentFine}</td>
+                                    <td><span class="status-pill ${statusClass}">${feeNode.status}</span></td>
+                                    <td>${logTime}</td>
+                                    <td>${logAction}</td>
                                 </tr>
                             `;
-                            integerAggregateMatchedRowsCounter++;
+                            matchesCount++;
                         });
                     }
                 });
 
-                if (integerAggregateMatchedRowsCounter === 0) {
-                    structuralReportTableBodyTargetNode.innerHTML = `<tr><td colspan="8" class="empty-state">No recorded entities verified the query expression settings filter logic structure matrix rules.</td></tr>`;
-                    displayToast("Query optimization successfully compiled execution trace. Zero records returned.", "info");
+                if (matchesCount === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="empty-state">No matching parameters validated inside active ledger filter fields.</td></tr>`;
+                    displayToast("Query returned zero matching database logs rows.", "info");
                 } else {
-                    structuralReportTableBodyTargetNode.innerHTML = matchingRowsHTMLAccumulator;
-                    displayToast(`Query Execution Compiled. Aggregated ${integerAggregateMatchedRowsCounter} logical records trace entries successfully matching constraints filters.`, "success");
+                    tableBody.innerHTML = outputHtml;
+                    displayToast(`Query successful. Generated ${matchesCount} ledger report trace records lines.`, "success");
                 }
 
-            } catch (reportGenerationProcessException) {
-                console.error(reportGenerationProcessException);
-                displayToast("Analytical database mapping module generated unexpected errors processing data queries loops.", "error");
+            } catch (err) {
+                console.error(err);
+                displayToast("Cross-sectional processing context threw query evaluation errors.", "error");
             } finally {
                 switchPanelLoadingState("reportingSystemPanel", false);
             }
         }
 
-        /**
-         * CSV Flat Spreadsheet Compilation Document Downloader Routine Pipeline Handler System Exporter
-         */
         async function reportSystemCompileAndDownloadCSVAsset() {
             switchPanelLoadingState("reportingSystemPanel", true);
-            
-            // Build CSV Headers Matrix Specification Arrays Sequences Strings Structural Columns precisely matches requirements definitions
-            let structuralCsvBodyBuilderString = "Student Name,Mobile,Class,Month,Fine,Status,Date,Action\n";
-            let transactionMetricsExportRowsCounter = 0;
+            let csvContent = "Student Name,Mobile,Class,Month,Fine,Status,Timestamp,Last Action\n";
+            let rowsCount = 0;
 
             try {
-                // Fetch absolute state directly bypassing cached localized processing scope views context structures arrays mapping definitions
-                const applicationLiveDatabaseTelemetrySnapshot = await databaseEngine.ref().once("value");
-                const centralizedDataGraphObject = applicationLiveDatabaseTelemetrySnapshot.val() || {};
+                const snap = await databaseEngine.ref().once("value");
+                const dataMap = snap.val() || {};
 
-                Object.keys(centralizedDataGraphObject).forEach(mobileIndexerKey => {
-                    const studentDataNodeReference = centralizedDataGraphObject[mobileIndexerKey];
-                    if (!studentDataNodeReference || typeof studentDataNodeReference !== 'object' || !studentDataNodeReference.name) return;
+                Object.keys(dataMap).forEach(phoneKey => {
+                    const student = dataMap[phoneKey];
+                    if (!student || typeof student !== 'object' || !student.name) return;
 
-                    if (studentDataNodeReference.fees) {
-                        Object.keys(studentDataNodeReference.fees).forEach(calendarMonthKeyStr => {
-                            const actualFeeRecordStructureItem = studentDataNodeReference.fees[calendarMonthKeyStr];
-                            if (!actualFeeRecordStructureItem) return;
+                    if (student.fees) {
+                        Object.keys(student.fees).forEach(mKey => {
+                            const feeNode = student.fees[mKey];
+                            if (!feeNode) return;
 
-                            const operationalFineDisplayVal = actualFeeRecordStructureItem.fine !== undefined ? actualFeeRecordStructureItem.fine : 0;
-                            const dynamicOperationalStatusVal = actualFeeRecordStructureItem.status || "unpaid";
+                            const fine = feeNode.fine || 0;
+                            const status = feeNode.status || "unpaid";
+                            const cleanName = student.name.replace(/,/g, ' ');
+                            const cleanClass = (student.class || "N/A").toString().replace(/,/g, ' ');
 
-                            // Audit history trace tracking logs structural iteration parsing system engine loops sequence logic
-                            if (actualFeeRecordStructureItem.fineHistory) {
-                                Object.keys(actualFeeRecordStructureItem.fineHistory).forEach(logNodeKeyUnique => {
-                                    const directHistoryItemObject = actualFeeRecordStructureItem.fineHistory[logNodeKeyUnique];
-                                    if (!directHistoryItemObject) return;
-
-                                    const structuralDateTimestampString = `${directHistoryItemObject.date || ""} ${directHistoryItemObject.time || ""}`.trim().replace(/,/g, ' ');
-                                    const actionLabelValueFlag = directHistoryItemObject.action || "Applied";
-                                    const staticCleanedNameDataStr = studentDataNodeReference.name.replace(/,/g, ' ');
-                                    const staticCleanedClassDataStr = (studentDataNodeReference.class || "N/A").toString().replace(/,/g, ' ');
-
-                                    structuralCsvBodyBuilderString += `"${staticCleanedNameDataStr}","${mobileIndexerKey}","${staticCleanedClassDataStr}","${calendarMonthKeyStr}",${operationalFineDisplayVal},"${dynamicOperationalStatusVal}","${structuralDateTimestampString}","${actionLabelValueFlag}"\n`;
-                                    transactionMetricsExportRowsCounter++;
+                            if (feeNode.fineHistory) {
+                                Object.keys(feeNode.fineHistory).forEach(hKey => {
+                                    const log = feeNode.fineHistory[hKey];
+                                    const ts = `${log.date || ""} ${log.time || ""}`.trim().replace(/,/g, ' ');
+                                    const act = log.action || "Applied";
+                                    csvContent += `"${cleanName}","${phoneKey}","${cleanClass}","${mKey}",${fine},"${status}","${ts}","${act}"\n`;
+                                    rowsCount++;
                                 });
                             } else {
-                                // If history node doesn't have explicit historical tracking items log trace structures write basic layout entries
-                                const structuredCleanNameStr = studentDataNodeReference.name.replace(/,/g, ' ');
-                                const structuredCleanClassStr = (studentDataNodeReference.class || "N/A").toString().replace(/,/g, ' ');
-                                
-                                structuralCsvBodyBuilderString += `"${structuredCleanNameStr}","${mobileIndexerKey}","${structuredCleanClassStr}","${calendarMonthKeyStr}",${operationalFineDisplayVal},"${dynamicOperationalStatusVal}","N/A","No History Nodes Traced"\n`;
-                                transactionMetricsExportRowsCounter++;
+                                csvContent += `"${cleanName}","${phoneKey}","${cleanClass}","${mKey}",${fine},"${status}","N/A","No History"\n`;
+                                rowsCount++;
                             }
                         });
                     }
                 });
 
-                // Generate system download anchor execution vectors element layers seamlessly without interfering user focus visual layouts layers
-                const generatedBlobDataFileContainer = new Blob([structuralCsvBodyBuilderString], { type: "text/csv;charset=utf-8;" });
-                const temporaryDownloadAnchorElementNode = document.createElement("a");
-                const pseudoBlobResourceObjectUrl = URL.createObjectURL(generatedBlobDataFileContainer);
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute("download", `Fine_Ledger_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = "hidden";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
                 
-                const currentSystemFileCalendarTimestamp = new Date().toISOString().slice(0, 10);
-                
-                temporaryDownloadAnchorElementNode.href = pseudoBlobResourceObjectUrl;
-                temporaryDownloadAnchorElementNode.setAttribute("download", `Fine_Management_Ledger_Report_${currentSystemFileCalendarTimestamp}.csv`);
-                temporaryDownloadAnchorElementNode.style.visibility = "hidden";
-                
-                document.body.appendChild(temporaryDownloadAnchorElementNode);
-                temporaryDownloadAnchorElementNode.click();
-                document.body.removeChild(temporaryDownloadAnchorElementNode);
-                
-                displayToast(`Successfully encoded spreadsheet artifact. Exported ${transactionMetricsExportRowsCounter} rows matrices data metrics points.`, "success");
+                displayToast(`Spreadsheet compiled successfully. Exported ${rowsCount} log entries.`, "success");
 
-            } catch (csvCompilationAndExtractionPipelineFailureException) {
-                console.error(csvCompilationAndExtractionPipelineFailureException);
-                displayToast("File exporter engine runtime crashed tracking CSV data output streaming operations.", "error");
+            } catch (err) {
+                console.error(err);
+                displayToast("Document compilation framework encountered an extraction failure runtime error.", "error");
             } finally {
                 switchPanelLoadingState("reportingSystemPanel", false);
             }
         }
 
-        /**
-         * Global Orchestration Initializer & DOM Context Bindings Matrix Implementation Systems Bootstrap Setup
-         */
         document.addEventListener("DOMContentLoaded", () => {
-            
-            // Primary operational buttons mapping configurations structures array nodes hooks
             document.getElementById("btnLoadStudents").addEventListener("click", streamStudentDataStoreNetworkContext);
             document.getElementById("btnApplyFine").addEventListener("click", transactionEngineApplyFineProcedure);
             document.getElementById("btnRemoveFine").addEventListener("click", transactionEngineRetractFineProcedure);
             document.getElementById("btnRunQuery").addEventListener("click", analyticalReportSystemGenerateEvaluationQuery);
             document.getElementById("btnExportCSV").addEventListener("click", reportSystemCompileAndDownloadCSVAsset);
 
-            // Row target selection state control vectors processing listeners
             document.getElementById("btnSelectAll").addEventListener("click", () => {
-                const targetCheckboxElementsList = document.querySelectorAll(".student-row-selector");
-                targetCheckboxElementsList.forEach(checkboxItem => {
-                    checkboxItem.checked = true;
-                    const correspondingCardFrame = checkboxItem.closest(".student-card");
-                    if (correspondingCardFrame) correspondingCardFrame.classList.add("selected");
-                    activeSelectionVector.add(checkboxItem.getAttribute("data-mob"));
+                document.querySelectorAll(".student-row-selector").forEach(cb => {
+                    cb.checked = true;
+                    const card = cb.closest(".student-card");
+                    if (card) card.classList.add("selected");
+                    activeSelectionVector.add(cb.getAttribute("data-mob"));
                 });
                 evaluateActiveSelectionDisplayCounters();
-                displayToast("All available interface student data targets selected.", "info");
+                displayToast("All data records present within UI mapped safely into targeting matrix.", "info");
             });
 
             document.getElementById("btnUnselectAll").addEventListener("click", () => {
-                const targetCheckboxElementsList = document.querySelectorAll(".student-row-selector");
-                targetCheckboxElementsList.forEach(checkboxItem => {
-                    checkboxItem.checked = false;
-                    const correspondingCardFrame = checkboxItem.closest(".student-card");
-                    if (correspondingCardFrame) correspondingCardFrame.classList.remove("selected");
+                document.querySelectorAll(".student-row-selector").forEach(cb => {
+                    cb.checked = false;
+                    const card = cb.closest(".student-card");
+                    if (card) card.classList.remove("selected");
                 });
                 activeSelectionVector.clear();
                 evaluateActiveSelectionDisplayCounters();
-                displayToast("Selection elements references emptied cleanly.", "info");
+                displayToast("Active execution targeting tracking arrays reset completely.", "info");
             });
 
-            // Automatically run metric calculation analytics routines dashboard display visualization on application system wake event trace
             runComputeDashboardAnalytics();
         });
     </script>
