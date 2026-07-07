@@ -12,13 +12,11 @@ if(isLoggedIn !== "true"){
 }
 </script>
 
-<!-- Enterprise Core Dependencies -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Corporate Typography & Iconography -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -699,15 +697,12 @@ body {
 
 <body>
 
-<!-- App Master Micro Spinner -->
 <div class="spinner-overlay" id="loadingSpinner">
     <div class="spinner-element"></div>
 </div>
 
-<!-- Notification Overlay Engine Target -->
 <div class="notification-container" id="toastContainer"></div>
 
-<!-- Mobile Drawer Navigation Bridge Header -->
 <div class="mobile-header-bar">
     <div style="font-weight:700; font-size:14px; letter-spacing:0.5px;">ERP ACCOUNTING SUITE</div>
     <button class="drawer-trigger-btn" onclick="toggleSidebar()">
@@ -717,7 +712,6 @@ body {
 
 <div class="app-wrapper">
 
-    <!-- Primary Control Hub Navigation Sidebar Panel -->
     <div class="sidebar" id="appSidebar">
         <div class="sidebar-brand">
             <img src="logo.jpeg" alt="ERP Logo" onerror="this.src='https://via.placeholder.com/32/1e3a5f/ffffff?text=ERP'">
@@ -741,10 +735,8 @@ body {
         </div>
     </div>
 
-    <!-- Central Interactive Workspace Matrix Canvas -->
     <div class="main-content">
         
-        <!-- Corporate Structural Context Metric Topbar Header -->
         <div class="topbar">
             <div class="topbar-context">
                 <h1>Accounts & Fees Ledger</h1>
@@ -769,7 +761,6 @@ body {
 
         <div class="workspace-wrapper">
 
-            <!-- Real-time Financial Reporting Analytics Status Grid -->
             <div class="kpi-dashboard-grid">
                 <div class="kpi-card collected-active">
                     <div class="kpi-card-details">
@@ -797,7 +788,6 @@ body {
                 </div>
             </div>
 
-            <!-- Global Actions Context Controls Row Panel -->
             <div class="action-ribbon">
                 <div class="btn-group">
                     <button class="btn-corporate btn-corporate-primary" onclick="openPaymentModal('create')">
@@ -817,7 +807,6 @@ body {
                 </div>
             </div>
 
-            <!-- Multi-channel Parameter Analytical Audit Filter Panel -->
             <div class="search-control-panel">
                 <div class="control-input-group">
                     <label>Identity / Receipt Lookup</label>
@@ -896,7 +885,6 @@ body {
                 </div>
             </div>
 
-            <!-- Central High Density Transaction Register Module Container -->
             <div class="ledger-container-block" id="pdfReportContainer">
                 <div class="ledger-block-header">
                     <h2>Central Fee Collection Register Ledger</h2>
@@ -924,7 +912,6 @@ body {
                     </table>
                 </div>
 
-                <!-- Pagination Footer Navigation Block Component -->
                 <div class="ledger-pagination-bar no-pdf-print">
                     <div class="pagination-metrics-text" id="paginationDisplayInfo">Showing logs 0-0 of 0</div>
                     <div class="btn-group">
@@ -937,7 +924,6 @@ body {
     </div>
 </div>
 
-<!-- Transaction Architecture Enterprise Voucher Entry Modal Form Overlay -->
 <div class="modal-overlay" id="feeModal">
     <div class="voucher-modal-canvas">
         <div class="voucher-modal-header">
@@ -950,7 +936,6 @@ body {
             
             <div class="voucher-modal-body">
                 
-                <!-- Section 1: Customer Profile Context Metadata Mapping -->
                 <div class="voucher-form-section-title">I. Customer / Student Mapping Profile</div>
                 <div class="voucher-form-layout-grid">
                     <div class="control-input-group span-all-columns">
@@ -959,7 +944,6 @@ body {
                     </div>
                 </div>
 
-                <!-- Section 2: Fiscal Year Period & Accrual Matrix Allocation Parameters -->
                 <div class="voucher-form-section-title">II. Fiscal Period Allocation Parameters</div>
                 <div class="voucher-form-layout-grid">
                     <div class="control-input-group">
@@ -988,7 +972,6 @@ body {
                     </div>
                 </div>
 
-                <!-- Section 3: Value Transaction Realization Config Slices -->
                 <div class="voucher-form-section-title">III. Asset Valuation & Realization Strategy</div>
                 <div class="voucher-form-layout-grid">
                     <div class="control-input-group">
@@ -1027,7 +1010,6 @@ body {
     </div>
 </div>
 
-<!-- Static Corporate Voucher Sandbox Target Container for Printing -->
 <div id="printableReceipt"></div>
 
 <script>
@@ -1042,7 +1024,6 @@ firebase.initializeApp({
 const db = firebase.database();
 let masterCashPaymentsDataset = [];
 let filteredDataset = [];
-let fallbackModeActive = false;
 
 /* SUBSIDIARY INTERNAL CLIENT CONTROLS AND MEMORY CELL STATE SETTINGS */
 let currentPage = 1;
@@ -1071,7 +1052,7 @@ function showToast(message, type = "success") {
     setTimeout(() => { toast.remove(); }, 4000);
 }
 
-/* SCHEMA SWITCH ROUTING ENGINE INTERCEPTOR */
+/* UNIFIED EXTRACTION STRATEGY: COMPUTE SOLELY VIA STUDENT ACCOUNTS MATRICES */
 function initializeRealtimeLedger() {
     showSpinner();
     
@@ -1079,54 +1060,11 @@ function initializeRealtimeLedger() {
     const userDisplayNode = document.getElementById("topbarUserEmail");
     if(userDisplayNode) userDisplayNode.innerText = cachedUser;
 
-    db.ref("cashPayments").on("value", snapshot => {
-        const paymentsData = snapshot.val();
-        
-        if (paymentsData && Object.keys(paymentsData).length > 0) {
-            fallbackModeActive = false;
-            processCashPaymentsData(paymentsData);
-        } else {
-            fallbackModeActive = true;
-            fallbackToLegacySchema();
-        }
-    }, error => {
-        hideSpinner();
-        showToast("Database tracking synchronization failure: " + error.message, "error");
-    });
-}
-
-/* CONTROLLER STRATEGY A: PRIMARY LIVE LEDGER DATA HARVEST ROUTINES */
-function processCashPaymentsData(paymentsData) {
-    masterCashPaymentsDataset = [];
-    let runningCollected = 0;
-    let runningOutstanding = 0;
-
-    Object.keys(paymentsData).forEach(payId => {
-        const record = paymentsData[payId];
-        masterCashPaymentsDataset.push({ paymentId: payId, ...record });
-        
-        const amt = Number(record.amount || 0);
-        if (record.status === "paid") {
-            runningCollected += amt;
-        } else {
-            runningOutstanding += amt;
-        }
-    });
-    
-    updateDashboardUI(runningCollected, runningOutstanding, masterCashPaymentsDataset.length);
-    filterAndPaginateData();
-    hideSpinner();
-}
-
-/* CONTROLLER STRATEGY B: NESTED SUBSIDIARY ACCOUNT TREE TRANSLATOR HOOKS */
-function fallbackToLegacySchema() {
     db.ref("students").on("value", snapshot => {
-        if (!fallbackModeActive) return;
-
         masterCashPaymentsDataset = [];
         let runningCollected = 0;
         let runningOutstanding = 0;
-        let syntheticCounter = 0;
+        let totalCount = 0;
 
         const studentsData = snapshot.val();
         if (studentsData) {
@@ -1147,34 +1085,34 @@ function fallbackToLegacySchema() {
                         } else {
                             runningOutstanding += amt;
                         }
-                        syntheticCounter++;
+                        totalCount++;
 
                         masterCashPaymentsDataset.push({
-                            paymentId: txn.paymentIdLink || `legacy_${studentKey}_${monthKey}`,
+                            paymentId: txn.paymentIdLink || `vch_${studentKey}_${monthKey}`,
                             receiptNo: txn.receiptNo || "LEGACY_VCH",
                             studentId: studentKey,
                             studentName: data.name || studentKey,
                             class: data.class || "N/A",
-                            academicYear: txn.academicYear || data.academicYear || "2025-2026",
+                            academicYear: txn.academicYear || data.academicYear || "2026-2027",
                             month: monthKey,
                             amount: amt,
                             paymentMode: txn.paymentMode || "Cash",
                             status: currentStatus,
-                            collectedBy: txn.collectedBy || "System Migration Engine",
+                            collectedBy: txn.collectedBy || "System Admin",
                             transactionDate: txn.transactionDate || 1741132800000,
-                            remarks: txn.remarks || "Legacy Auto-Translated Entry Row"
+                            remarks: txn.remarks || ""
                         });
                     });
                 }
             });
         }
 
-        updateDashboardUI(runningCollected, runningOutstanding, syntheticCounter);
+        updateDashboardUI(runningCollected, runningOutstanding, totalCount);
         filterAndPaginateData();
         hideSpinner();
     }, error => {
         hideSpinner();
-        showToast("Legacy extraction channel exception: " + error.message, "error");
+        showToast("Ledger structural sync failure: " + error.message, "error");
     });
 }
 
@@ -1306,7 +1244,7 @@ function closeModal() {
     document.getElementById("feeForm").reset();
 }
 
-/* BATCED DISTRIBUTED ATOMIC MUTATION PIPELINES */
+/* TRANSACTION PIPELINES - UPDATES STUDENTS EXCLUSIVELY AND DELETES CASH PAYMENTS node */
 async function handleFormSubmission(e) {
     e.preventDefault();
     showSpinner();
@@ -1335,31 +1273,9 @@ async function handleFormSubmission(e) {
         }
 
         const studentProfile = studentSnapshot.val();
-        const studentName = studentProfile.name || "Unknown Subsidiary Ledger";
-        const studentClass = studentProfile.class || "N/A";
-
-        if (!paymentId) {
-            const duplicateCheck = masterCashPaymentsDataset.find(p => 
-                p.studentId === studentId && 
-                p.month === month && 
-                p.academicYear === year
-            );
-            
-            if (duplicateCheck) {
-                const overwrite = confirm(`A financial allocation for ${studentName} already exists for period ${month} (${year}). Overwrite active row?`);
-                if (!overwrite) {
-                    hideSpinner();
-                    return;
-                }
-                document.getElementById("editPaymentId").value = duplicateCheck.paymentId;
-                document.getElementById("editReceiptNo").value = duplicateCheck.receiptNo;
-            }
-        }
-
-        const activePaymentId = document.getElementById("editPaymentId").value || db.ref().child("cashPayments").push().key;
         let assignedReceiptNo = document.getElementById("editReceiptNo").value;
 
-        if (!assignedReceiptNo || assignedReceiptNo === "LEGACY_VCH" || assignedReceiptNo === "LEGACY") {
+        if (!assignedReceiptNo || assignedReceiptNo === "LEGACY_VCH") {
             const currentCounterRef = db.ref("metaProperties/receiptCounter");
             const counterTransaction = await currentCounterRef.transaction(current => (current || 0) + 1);
             const serialNumber = counterTransaction.snapshot.val();
@@ -1368,28 +1284,14 @@ async function handleFormSubmission(e) {
 
         const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator Tool";
         const targetTimestamp = paymentId ? (masterCashPaymentsDataset.find(p => p.paymentId === paymentId)?.transactionDate || firebase.database.ServerValue.TIMESTAMP) : firebase.database.ServerValue.TIMESTAMP;
-
-        const transactionDataNode = {
-            studentId: studentId,
-            studentName: studentName,
-            class: studentClass,
-            month: month,
-            amount: amount,
-            status: status,
-            paymentMode: mode,
-            receiptNo: assignedReceiptNo,
-            academicYear: year,
-            collectedBy: currentUserEmail,
-            transactionDate: targetTimestamp,
-            remarks: remarks
-        };
+        const fallbackPaymentIdLink = paymentId || `vch_${studentId}_${month}`;
 
         const atomicBatchedUpdates = {};
-        atomicBatchedUpdates[`/cashPayments/${activePaymentId}`] = transactionDataNode;
+        // Explicitly force updating ONLY the students nesting node map
         atomicBatchedUpdates[`/students/${studentId}/fees/${month}`] = {
             amount: amount,
             status: status,
-            paymentIdLink: activePaymentId,
+            paymentIdLink: fallbackPaymentIdLink,
             receiptNo: assignedReceiptNo,
             paymentMode: mode,
             academicYear: year,
@@ -1398,18 +1300,29 @@ async function handleFormSubmission(e) {
             transactionDate: targetTimestamp
         };
 
+        // Actively scrub/remove any conflicting data tracking inside the absolute cashPayments node framework
+        if (paymentId) {
+            atomicBatchedUpdates[`/cashPayments/${paymentId}`] = null;
+        }
+        
+        // Also ensure it checks and deletes by month matching pattern
+        const historicalRecord = masterCashPaymentsDataset.find(p => p.studentId === studentId && p.month === month);
+        if (historicalRecord && historicalRecord.paymentId) {
+            atomicBatchedUpdates[`/cashPayments/${historicalRecord.paymentId}`] = null;
+        }
+
         await db.ref().update(atomicBatchedUpdates);
         
         closeModal();
-        showToast(`Transaction Voucher ${assignedReceiptNo} successfully written to master data frames.`);
+        showToast(`Transaction Voucher ${assignedReceiptNo} successfully written to student parameters.`);
     } catch (err) {
-        showToast("Atomic batch mutation error: " + err.message, "error");
+        showToast("Atomic initialization mutation error: " + err.message, "error");
     } finally {
         hideSpinner();
     }
 }
 
-/* TRANSACTION PURGE INLINE ROUTINES */
+/* TRANSACTION PURGE TARGETS */
 async function actionDeletePayment(paymentId) {
     const confirmation = confirm("CRITICAL AUDIT NOTICE: Are you certain you want to permanently purge this financial entry? Balances will dynamically recompute.");
     if (!confirmation) return;
@@ -1420,8 +1333,9 @@ async function actionDeletePayment(paymentId) {
         if (!target) throw new Error("Target ledger node context tracking failed.");
 
         const purgeBatchedUpdates = {};
-        purgeBatchedUpdates[`/cashPayments/${paymentId}`] = null;
+        // Structural removal mapping fields
         purgeBatchedUpdates[`/students/${target.studentId}/fees/${target.month}`] = null;
+        purgeBatchedUpdates[`/cashPayments/${paymentId}`] = null;
 
         await db.ref().update(purgeBatchedUpdates);
         showToast("Voucher record purged from balance indices successfully.");
