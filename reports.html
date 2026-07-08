@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ERP - Financial Management Reports</title>
 
-<!-- Session Guard -->
 <script>
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     if(isLoggedIn !== "true"){
@@ -13,12 +12,10 @@
     }
 </script>
 
-<!-- Google Fonts & External Libraries -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<!-- jsPDF and AutoTable plugins -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -68,10 +65,25 @@ body {
     margin-bottom: 25px;
 }
 
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.topbar-logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #e5e7eb;
+}
+
 .topbar h1 {
-    font-size: 26px;
+    font-size: 24px;
     color: #111827;
     font-weight: 700;
+    line-height: 1.2;
 }
 
 .topbar p {
@@ -272,6 +284,7 @@ body {
 /* MULTI-MEDIA / PRINT BREAKPOINTS */
 @media(max-width: 768px) {
     .topbar { flex-direction: column; gap: 15px; align-items: flex-start; }
+    .topbar-brand { width: 100%; }
     .topbar-actions { width: 100%; justify-content: space-between; }
     .controls-panel { flex-direction: column; align-items: stretch; }
     .search-input { max-width: 100%; }
@@ -288,11 +301,13 @@ body {
 <body>
 
 <div class="main">
-    <!-- Topbar Banner Workspace -->
     <div class="topbar">
-        <div>
-            <h1>School ERP Management Reports</h1>
-            <p>Real-time institutional balance sheets, invoice mapping, and revenue analysis logs.</p>
+        <div class="topbar-brand">
+            <img src="logo.jpeg" alt="School Logo" class="topbar-logo" onerror="this.style.display='none'">
+            <div>
+                <h1>School ERP Management Reports</h1>
+                <p>Real-time institutional balance sheets, invoice mapping, and revenue analysis logs.</p>
+            </div>
         </div>
         <div class="topbar-actions">
             <button class="btn btn-primary" onclick="exportDataToPDF()">📄 Download PDF</button>
@@ -301,7 +316,6 @@ body {
         </div>
     </div>
 
-    <!-- Live Performance Metrics Cards Grid -->
     <div class="report-grid-summary">
         <div class="analytics-card card-collected">
             <h3>Gross Revenue Collected</h3>
@@ -330,23 +344,20 @@ body {
         </div>
     </div>
 
-    <!-- Control Filters Row -->
     <div class="controls-panel">
         <div class="search-filter-group">
             <input type="text" id="repSearch" class="search-input" placeholder="Search Student Name or ID..." oninput="processLocalDatasetFilter()">
             
             <select id="repClass" class="report-select" onchange="processLocalDatasetFilter()">
                 <option value="">All Classes</option>
+                <option value="IK-1">IK-1</option>
+                <option value="IK-2">IK-2</option>
+                <option value="IK-3">IK-3</option>
                 <option value="1">Class 1</option>
                 <option value="2">Class 2</option>
                 <option value="3">Class 3</option>
                 <option value="4">Class 4</option>
                 <option value="5">Class 5</option>
-                <option value="6">Class 6</option>
-                <option value="7">Class 7</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-                <option value="10">Class 10</option>
             </select>
 
             <select id="repStatus" class="report-select" onchange="processLocalDatasetFilter()">
@@ -373,10 +384,8 @@ body {
         </div>
     </div>
 
-    <!-- Double Column Dynamic Split Matrix Boards -->
     <div class="report-sections">
         
-        <!-- Left Column: Primary Ledger Audit Table -->
         <div class="report-panel">
             <div class="panel-header">
                 <h2>Master Transaction Audit Log</h2>
@@ -402,7 +411,6 @@ body {
             </div>
         </div>
 
-        <!-- Right Column: Secondary Summary Table -->
         <div class="report-panel">
             <div class="panel-header">
                 <h2>Class Revenue Summary</h2>
@@ -446,6 +454,9 @@ const db = firebase.database();
 let localReportsCache = [];
 let localClassSummaryCache = {};
 
+// Order sequence of supported segments
+const targetClassesOrdered = ["IK-1", "IK-2", "IK-3", "1", "2", "3", "4", "5"];
+
 /* MASTER CONTEXT DATA REALTIME LISTENER OVERSEER */
 function initManagementReportsEngine() {
     db.ref("students").on("value", snapshot => {
@@ -460,9 +471,9 @@ function initManagementReportsEngine() {
         
         // Zero-fill Class Data Distribution Struct Maps
         localClassSummaryCache = {};
-        for(let i = 1; i <= 10; i++) {
-            localClassSummaryCache[i] = { collected: 0, pending: 0, count: 0 };
-        }
+        targetClassesOrdered.forEach(cls => {
+            localClassSummaryCache[cls] = { collected: 0, pending: 0, count: 0 };
+        });
 
         if (studentsData) {
             Object.keys(studentsData).forEach(studentId => {
@@ -470,7 +481,12 @@ function initManagementReportsEngine() {
                 if (!student || typeof student !== 'object') return;
 
                 const baseFee = Number(student.monthlyfee || 0);
-                const studentClass = parseInt(student.class) || 0;
+                let studentClass = String(student.class || "").trim();
+
+                // Drop higher numeric class branches from execution calculations safely
+                if (["6", "7", "8", "9", "10"].includes(studentClass)) {
+                    return; 
+                }
 
                 if (student.fees && typeof student.fees === 'object') {
                     Object.keys(student.fees).forEach(month => {
@@ -542,11 +558,12 @@ function displayMasterLogTable(dataset) {
     }
 
     dataset.forEach(item => {
+        const classLabel = (item.class.startsWith("IK") ? item.class : "Class " + item.class);
         tbody.innerHTML += `
             <tr>
                 <td><strong>#${item.id}</strong></td>
                 <td>${item.name}</td>
-                <td>Class ${item.class}</td>
+                <td>${classLabel}</td>
                 <td>${item.month}</td>
                 <td>₹${item.monthlyfee.toLocaleString('en-IN')}</td>
                 <td>₹${item.fine.toLocaleString('en-IN')}</td>
@@ -566,17 +583,19 @@ function renderClassDistributionMatrixTable(matrix) {
     let totalClassPending = 0;
     let totalClassInvoices = 0;
 
-    Object.keys(matrix).forEach(cls => {
+    targetClassesOrdered.forEach(cls => {
         const item = matrix[cls];
-        if(item.count === 0) return; // Avoid displaying completely empty rows
+        if(!item || item.count === 0) return; 
         
         totalClassCollected += item.collected;
         totalClassPending += item.pending;
         totalClassInvoices += item.count;
 
+        const classLabel = (cls.startsWith("IK") ? cls : "Class " + cls);
+
         tbody.innerHTML += `
             <tr>
-                <td><strong>Class ${cls}</strong></td>
+                <td><strong>${classLabel}</strong></td>
                 <td class="text-success">₹${item.collected.toLocaleString('en-IN')}</td>
                 <td class="text-warning">₹${item.pending.toLocaleString('en-IN')}</td>
                 <td>${item.count}</td>
@@ -623,13 +642,12 @@ function processLocalDatasetFilter() {
 /* JSPDFAUTOTABLE STRATEGIC PDF FILE CREATOR ENGINE */
 function exportDataToPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape layout for wide data matrix configurations
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape layout
     
     const today = new Date();
     const dateFormatted = today.toISOString().split('T')[0];
     const timestampString = today.toLocaleString();
 
-    // Re-evaluate current metrics matching filters directly from runtime data
     const activeSearchQuery = document.getElementById("repSearch").value.toLowerCase().trim();
     const activeClassFilter = document.getElementById("repClass").value;
     const activeStatusFilter = document.getElementById("repStatus").value;
@@ -649,7 +667,7 @@ function exportDataToPDF() {
     let pdfPendingCount = 0;
 
     let classPdfMatrix = {};
-    for(let i=1; i<=10; i++) classPdfMatrix[i] = { collected: 0, pending: 0, count: 0 };
+    targetClassesOrdered.forEach(cls => { classPdfMatrix[cls] = { collected: 0, pending: 0, count: 0 }; });
 
     currentlyFilteredDataset.forEach(item => {
         if (item.status === 'paid') {
@@ -675,22 +693,31 @@ function exportDataToPDF() {
     doc.setFillColor(37, 99, 235);
     doc.rect(0, 0, 297, 24, 'F');
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("SCHOOL ERP - FINANCIAL & COLLECTION REPORT", 14, 16);
+    // Safe injection of logo.jpeg into header coordinates
+    try {
+        doc.addImage('logo.jpeg', 'JPEG', 14, 4, 16, 16);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(20);
+        doc.text("SCHOOL ERP - FINANCIAL & COLLECTION REPORT", 36, 15);
+    } catch (e) {
+        // Text fallback if image loading encounters cross-origin or storage locks
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(20);
+        doc.text("SCHOOL ERP - FINANCIAL & COLLECTION REPORT", 14, 15);
+    }
 
     doc.setTextColor(100, 116, 139);
     doc.setFontSize(10);
     doc.setFont("Helvetica", "normal");
     doc.text(`Generated: ${timestampString}`, 220, 32);
 
-    // Dynamic Filter State Status Header Blocks
     let currentFilterMetaStr = `Filters Applied -> Class: ${activeClassFilter || 'All'}, Status: ${activeStatusFilter || 'All'}, Month: ${activeMonthFilter || 'All'}`;
     if(activeSearchQuery) currentFilterMetaStr += `, Search: "${activeSearchQuery}"`;
     doc.text(currentFilterMetaStr, 14, 32);
 
-    // Financial Analysis Summary Table Block Injection
+    // Summary Assessment Block
     doc.autoTable({
         startY: 36,
         head: [['Metric Parametric Description', 'Value Assessment Map']],
@@ -707,11 +734,11 @@ function exportDataToPDF() {
         margin: { left: 14, right: 14 }
     });
 
-    // Main Transaction Matrix Logging Array Transformation
+    // Transform Table Audit Log Array Data
     const auditRows = currentlyFilteredDataset.map(item => [
         `#${item.id}`,
         item.name,
-        `Class ${item.class}`,
+        (item.class.startsWith("IK") ? item.class : `Class ${item.class}`),
         item.month,
         `INR ${item.monthlyfee.toLocaleString('en-IN')}`,
         `INR ${item.fine.toLocaleString('en-IN')}`,
@@ -734,20 +761,19 @@ function exportDataToPDF() {
         margin: { left: 14, right: 14 }
     });
 
-    // Secondary Class Distribution Summary Table Setup
+    // Breakdown Class Distribution matrix
     const distributionRows = [];
-    Object.keys(classPdfMatrix).forEach(cls => {
+    targetClassesOrdered.forEach(cls => {
         const item = classPdfMatrix[cls];
-        if (item.count === 0) return;
+        if (!item || item.count === 0) return;
         distributionRows.push([
-            `Class Level ${cls}`,
+            (cls.startsWith("IK") ? cls : `Class Level ${cls}`),
             `INR ${item.collected.toLocaleString('en-IN')}.00`,
             `INR ${item.pending.toLocaleString('en-IN')}.00`,
             `${item.count} Issued Statements`
         ]);
     });
 
-    // Append Matrix Consolidated Summary Grand Total Footer Row to PDF
     distributionRows.push([
         'Grand Balance Calculations Total',
         `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`,
@@ -768,7 +794,6 @@ function exportDataToPDF() {
         styles: { fontSize: 9, cellPadding: 4 },
         margin: { left: 14, right: 14 },
         didParseCell: function(data) {
-            // Stylize the last row (Grand Total row) uniquely inside the autotable container
             if (data.row.index === distributionRows.length - 1) {
                 data.cell.styles.fontStyle = 'bold';
                 data.cell.styles.fillColor = [241, 245, 249];
@@ -776,14 +801,13 @@ function exportDataToPDF() {
         }
     });
 
-    // Automatic Page Numbering Layout Configuration Footer Layer
+    // Page numbers
     const pagesTotalCount = doc.internal.getNumberOfPages();
     for (let j = 1; j <= pagesTotalCount; j++) {
         doc.setPage(j);
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(156, 163, 175);
-        // Page boundary coordinates positioning parameters
         doc.text("System Notice: Generated securely via automated School ERP Platform Architecture Logs.", 14, 202);
         doc.text(`Page Data Ledger ${j} of ${pagesTotalCount}`, 250, 202);
     }
@@ -799,9 +823,9 @@ function logout(){
     window.location.href = "index.html";
 }
 
-// System Startup Allocation Hook
 window.onload = initManagementReportsEngine;
 </script>
 
 </body>
 </html>
+
