@@ -227,13 +227,19 @@
         .school-header-container {
             display: flex;
             align-items: center;
-            gap: 24px;
+            justify-content: center;
+            position: relative;
             border-bottom: 2px solid #f1f5f9;
             padding-bottom: 24px;
             margin-bottom: 24px;
+            min-height: 90px;
         }
 
         .school-logo {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
             width: 80px;
             height: 80px;
             object-fit: contain;
@@ -241,7 +247,8 @@
         }
 
         .school-header-text {
-            flex-grow: 1;
+            text-align: center;
+            width: 100%;
         }
 
         .school-name {
@@ -410,10 +417,10 @@
                 <div class="school-header-container">
                     <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.display='none'">
                     <div class="school-header-text">
-                                               <div class="school-name">SAI DRS SCHOOL</div>
-                                     <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
-                                 <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
-                                  <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
+                        <div class="school-name">SAI DRS SCHOOL</div>
+                        <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
+                        <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
+                        <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
                     </div>
                 </div>
 
@@ -456,7 +463,6 @@
                             <td>Basic Pay Scale & Allowances</td>
                             <td style="text-align: right; font-weight: 600;">₹<span id="slipSalary">0</span></td>
                         </tr>
-                        <tr>
                         <tr class="total-row">
                             <td>Net Disbursed Amount</td>
                             <td style="text-align: right;">₹<span id="slipTotalSalary">0</span></td>
