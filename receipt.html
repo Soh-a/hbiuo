@@ -3,242 +3,360 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Fee Receipt System</title>
+<title>Parent Receipt Portal</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #eef2ff;
-    margin: 0;
-    padding: 20px;
-    color: #333;
-  }
-  .container {
-    max-width: 700px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  h2 {
-    margin-top: 0;
-    color: #1e3a8a;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 10px;
-  }
-  .search-box {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  input {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 16px;
-  }
-  input:focus {
-    outline: 2px solid #2563eb;
-  }
-  button {
-    padding: 12px 24px;
-    background: #2563eb;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  button:hover {
-    background: #1d4ed8;
-  }
-  .student-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .student-card div {
-    font-size: 14px;
-  }
-  .student-card strong {
-    color: #475569;
-  }
-  .months-container {
-    margin-top: 20px;
-  }
-  .month-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 10px;
-    background: #fff;
-    margin-bottom: 20px;
-  }
-  .month-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px;
-    border-bottom: 1px solid #f1f5f9;
-  }
-  .month-item:last-child {
-    border-bottom: none;
-  }
-  .month-item input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    transform: scale(1.2);
-    cursor: pointer;
-  }
-  .month-item label {
-    cursor: pointer;
-    font-weight: 500;
-    text-transform: capitalize;
-  }
-  .btn-submit {
-    width: 100%;
-    background: #059669;
-  }
-  .btn-submit:hover {
-    background: #047857;
-  }
-  .error-text {
-    color: #dc2626;
-    font-weight: 500;
-  }
+:root {
+  --primary: #16a34a;
+  --primary-hover: #15803d;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  margin: 0;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 95vh;
+}
+
+.container {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card-bg);
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+h2 {
+  text-align: center;
+  color: var(--text-main);
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+#studentInfo {
+  background: #f0fdf4;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#studentInfo i {
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+.student-meta h4 {
+  margin: 0;
+  color: #14532d;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.student-meta p {
+  margin: 2px 0 0 0;
+  color: #166534;
+  font-size: 0.85rem;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.month-box {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+
+.month {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+}
+
+.month:last-child {
+  border-bottom: none;
+}
+
+.month:hover {
+  background: #f8fafc;
+}
+
+.month-label-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.month-label-group i {
+  color: var(--primary);
+  font-size: 0.95rem;
+}
+
+.month span {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.checkbox-container {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  height: 22px;
+  width: 22px;
+  background-color: #f1f5f9;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  display: inline-block;
+  position: relative;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--primary);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.generate {
+  background: var(--primary);
+  color: #fff;
+}
+
+.generate:hover {
+  background: var(--primary-hover);
+}
+
+.logout {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.logout:hover {
+  background: #f1f5f9;
+  color: var(--danger);
+}
+
+.no-data {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.no-data i {
+  font-size: 2rem;
+  color: var(--border-color);
+  margin-bottom: 8px;
+  display: block;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container">
-  <h2>School Fee Receipt System</h2>
-  
-  <div class="search-box">
-    <input id="mobile" type="text" placeholder="Enter Registered Mobile Number" autocomplete="off">
-    <button onclick="fetchStudent()">Search Record</button>
+  <h2>Download Receipt</h2>
+
+  <div id="studentInfo">
+    <i class="fas fa-circle-notch fa-spin"></i>
+    <div class="student-meta">
+      <h4>Loading profile...</h4>
+    </div>
   </div>
 
-  <div id="studentInfo"></div>
-  <div id="monthsBox"></div>
+  <span class="section-title">Select Paid Months</span>
+  <div class="month-box" id="monthsBox">
+    <div class="no-data"><i class="fas fa-receipt"></i>Retrieving payment records...</div>
+  </div>
+
+  <div class="btn-group">
+    <button class="generate" onclick="generatePDF()">
+      <i class="fas fa-cloud-download-alt"></i> Download Receipt
+    </button>
+    <button class="logout" onclick="logout()">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+  </div>
 </div>
 
 <script>
-// 1. FIREBASE CONFIGURATION
+// ================= FIREBASE INITIALIZATION =================
 const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com"
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271"
 };
 
-// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
 
-let currentStudent = null;
-let currentMobile = "";
+// ================= LOGIN VALIDATION =================
+let cachedStudentData = JSON.parse(localStorage.getItem("studentData"));
 
-// 2. FETCH STUDENT FROM TARGETED 'students/{mobile}' NODE
-function fetchStudent() {
-  const mobile = document.getElementById("mobile").value.trim();
-  const infoBox = document.getElementById("studentInfo");
-  const monthsBox = document.getElementById("monthsBox");
-  
-  // Reset containers
-  infoBox.innerHTML = "";
-  monthsBox.innerHTML = "";
-  currentStudent = null;
-  currentMobile = "";
+if(!cachedStudentData || !cachedStudentData.mobile){
+    alert("User not logged in");
+    window.location.href = "index.html";
+}
 
-  if (!mobile) {
-    alert("Please enter a mobile number.");
-    return;
-  }
+const mobileKey = String(cachedStudentData.mobile).trim();
+let dynamicFeesData = {}; 
+let monthlyFeeAmount = Number(cachedStudentData.monthlyfee || 0);
 
-  infoBox.innerHTML = "<p>Searching database records...</p>";
+// Containers for tracking sync variables
+let dbStudentName = cachedStudentData.name || "Student";
+let dbStudentClass = cachedStudentData.class || "N/A";
+let dbAdmissionNo = cachedStudentData.admissionNo || "N/A";
 
-  db.ref("students/" + mobile).once("value")
-    .then((snap) => {
-      if (!snap.exists()) {
-        infoBox.innerHTML = "<p class='error-text'>Student profile not found.</p>";
-        alert("Student not found");
+// ================= REALTIME SYNCHRONIZATION LISTENER =================
+db.ref("students/" + mobileKey).on("value", snapshot => {
+    const freshSnapshot = snapshot.val();
+    
+    if(!freshSnapshot) {
+        document.getElementById("monthsBox").innerHTML = "<div class='no-data'><i class='fas fa-exclamation-triangle'></i>No records available.</div>";
         return;
-      }
-
-      currentStudent = snap.val();
-      currentMobile = mobile;
-      
-      // Destructure & safely assign fallbacks
-      const name = currentStudent.name || "N/A";
-      const className = currentStudent.class || "N/A";
-      const admissionNo = currentStudent.admissionNo || "N/A";
-
-      // Render Student Meta Information Card
-      infoBox.innerHTML = `
-        <div class="student-card">
-          <div><strong>Student Name:</strong> ${name}</div>
-          <div><strong>Class/Grade:</strong> ${className}</div>
-          <div><strong>Admission No:</strong> ${admissionNo}</div>
-          <div><strong>Mobile No:</strong> ${mobile}</div>
-        </div>
-      `;
-
-      showMonths();
-    })
-    .catch((err) => {
-      console.error(err);
-      infoBox.innerHTML = "<p class='error-text'>Error authenticating database request.</p>";
-      alert("Error fetching student data.");
-    });
-}
-
-// 3. RENDER ALL PAID MONTHS
-function showMonths() {
-  const monthsBox = document.getElementById("monthsBox");
-  let html = `<div class="months-container">
-                <h3>Select Paid Months for Invoice</h3>
-                <div class="month-list">`;
-  
-  let hasPaidMonths = false;
-
-  if (currentStudent && currentStudent.fees) {
-    for (let month in currentStudent.fees) {
-      if (currentStudent.fees[month] && currentStudent.fees[month].status === "paid") {
-        hasPaidMonths = true;
-        html += `
-          <div class="month-item">
-            <input type="checkbox" id="m-${month}" value="${month}">
-            <label for="m-${month}">${month.toUpperCase()}</label>
-          </div>`;
-      }
     }
-  }
 
-  html += `</div></div>`;
+    dynamicFeesData = freshSnapshot.fees || {};
+    monthlyFeeAmount = Number(freshSnapshot.monthlyfee || 0);
+    dbStudentName = freshSnapshot.name ? freshSnapshot.name.toUpperCase() : cachedStudentData.name.toUpperCase();
+    dbStudentClass = freshSnapshot.class || cachedStudentData.class;
+    dbAdmissionNo = freshSnapshot.admissionNo || cachedStudentData.admissionNo || "N/A";
 
-  if (!hasPaidMonths) {
-    monthsBox.innerHTML = "<p>No cleared or paid fee history found for this account.</p>";
-    return;
-  }
+    document.getElementById("studentInfo").innerHTML = `
+      <i class="fas fa-user"></i>
+      <div class="student-meta">
+        <h4>${dbStudentName}</h4>
+        <p>Class: ${dbStudentClass} | Adm No: ${dbAdmissionNo}</p>
+      </div>
+    `;
 
-  html += `<button class="btn-submit" onclick="generatePDF()">Generate Professional Receipt</button>`;
-  monthsBox.innerHTML = html;
-}
+    let html = "";
+    Object.keys(dynamicFeesData).forEach(monthKey => {
+        const data = dynamicFeesData[monthKey] || {};
+        const status = String(data.status || "").trim().toLowerCase();
 
-// 4. NUMBER TO WORDS CONVERTER (Indian Financial Structure)
+        if (status === "paid") {
+            html += `
+            <div class="month">
+              <div class="month-label-group">
+                <i class="fas fa-check-circle"></i>
+                <span>${monthKey.toUpperCase()}</span>
+              </div>
+              <label class="checkbox-container">
+                <input type="checkbox" value="${monthKey}">
+                <span class="checkmark"></span>
+              </label>
+            </div>`;
+        }
+    });
+
+    document.getElementById("monthsBox").innerHTML = html || `
+      <div class="no-data">
+        <i class="fas fa-info-circle"></i> No settled payments found.
+      </div>`;
+});
+
+// ================= NUMBER TO WORDS ENGINE (Indian Financial Structure) =================
 function numberToWords(num) {
   const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
   "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
@@ -256,102 +374,121 @@ function numberToWords(num) {
   return str.trim() ? str.trim() : "Zero";
 }
 
-// 5. GENERATE CLEAN PROFESSIONAL A4 PDF (Dual Slits: Office + Parent Copy)
+// ================= LOGOUT MANAGEMENT =================
+function logout() {
+    localStorage.removeItem("studentData");
+    window.location.href = "index.html";
+}
+
+// ================= PDF EXPORT GENERATOR =================
+const logo = new Image();
+logo.src = "logo.jpeg";
+
 function generatePDF() {
-  const selectedCheckboxes = document.querySelectorAll(".month-list input:checked");
-  if (selectedCheckboxes.length === 0) {
-    alert("Please select at least one paid month to print invoice.");
+  const selected = document.querySelectorAll("#monthsBox input:checked");
+
+  if(selected.length === 0){
+    alert("Select at least one month");
+    return;
+  }
+
+  // Fallback safe mechanism for logo load states
+  if(!logo.complete){
+    alert("Logo is loading. Please try again in a moment.");
     return;
   }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
 
-  // Gather fallback primary values based on first chosen month node
-  const baseMonthKey = selectedCheckboxes[0].value;
-  const baseMonthData = currentStudent.fees[baseMonthKey] || {};
-
-  const receiptNo = baseMonthData.receiptNo || "N/A";
-  const rawPaymentDate = baseMonthData.paymentDate || "N/A";
-  const paymentMode = baseMonthData.paymentMode || "N/A";
-  const transactionNo = baseMonthData.transactionId || baseMonthData.paymentId || "N/A";
+  // Pull primary metadata details from the first chosen checkbox sequence
+  const firstMonthKey = selected[0].value;
+  const targetReceiptData = dynamicFeesData[firstMonthKey] || {};
+  
+  const receiptNo = targetReceiptData.receiptNo || "FR/" + Math.floor(100000 + Math.random() * 900000);
+  const transactionNo = targetReceiptData.paymentId || targetReceiptData.transactionId || "N/A";
+  const paymentMode = targetReceiptData.paymentMode || "Online Payment";
+  
+  const rawDate = targetReceiptData.paymentDate || new Date().toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
 
   let totalPaidAmount = 0;
 
-  // Process data lines
-  const finalFeeItems = Array.from(selectedCheckboxes).map((cb, idx) => {
+  // Process selected lines
+  const feeItems = Array.from(selected).map((cb, index) => {
     const mName = cb.value;
-    const mData = currentStudent.fees[mName] || {};
-    
-    // Fallback contextually to general monthlyfee if nested amount is missing
-    const computedAmt = Number(mData.amount !== undefined ? mData.amount : currentStudent.monthlyfee || 0);
-    totalPaidAmount += computedAmt;
+    const mData = dynamicFeesData[mName] || {};
+    const baseAmt = Number(mData.amountPaid || mData.amount || monthlyFeeAmount);
 
-    // Academic Year Mapping
+    totalPaidAmount += baseAmt;
+
+    const monthShort = mName.substring(0, 3);
     const monthIndex = new Date(mName + " 1, 2026").getMonth();
-    const formattedYearStr = (monthIndex >= 3) ? "2026" : "2027";
-    const displayMonth = mName.charAt(0).toUpperCase() + mName.slice(1, 3) + "-" + formattedYearStr;
+    const yearSuffix = (monthIndex >= 3) ? "2026" : "2027";
 
     return {
-      sno: idx + 1,
+      sno: index + 1,
       particulars: "School Tuition Fee",
-      month: displayMonth,
-      amount: computedAmt
+      month: monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + yearSuffix,
+      amount: baseAmt
     };
   });
 
-  // Base Function Layout for crisp rendering
   function drawLayout(startY, layoutTitle) {
     let y = startY;
 
-    // School Info Header
+    // BRAND LOGO
+    try {
+      doc.addImage(logo, "JPEG", 15, y, 20, 20);
+    } catch(e) {
+      console.warn("Logo rendering skipped or file missing.");
+    }
+
+    // SCHOOL DETAILS HEADER BLOCK
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
-    doc.text("SAI DRS KIDS SCHOOL", 105, y, { align: "center" });
+    doc.text("SAI DRS KIDS SCHOOL", 112, y + 4, { align: "center" });
 
-    y += 5;
-    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text("R.G.B Road, Junali, Guwahati - 781024", 105, y, { align: "center" });
-    doc.text("Email: address@school.edu.in | Support Terminal", 105, y + 4, { align: "center" });
+    doc.setFontSize(9);
+    doc.text("R.G.B Road, Junali, Guwahati - 781024", 112, y + 10, { align: "center" });
+    doc.text("Email: sai.drs.kids.school@gmail.com", 112, y + 15, { align: "center" });
 
-    y += 12;
+    y += 26;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text(`FEE RECEIPT (ACADEMIC YEAR 2026-2027) - [${layoutTitle}]`, 105, y, { align: "center" });
+    doc.text(`FEE RECEIPT (ACADEMIC YEAR 2026-2027) - [${layoutTitle.toUpperCase()}]`, 105, y, { align: "center" });
 
-    // Meta Row 1
+    // METADATA INVOICE INFRASTRUCTURE
     y += 8;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text(`Receipt No: ${receiptNo}`, 15, y);
-    doc.text(`Payment Date: ${rawPaymentDate}`, 195, y, { align: "right" });
+    doc.text(`Receipt Date: ${rawDate}`, 195, y, { align: "right" });
 
-    // Meta Row 2
     y += 5;
-    doc.text(`Student Name: ${(currentStudent.name || "N/A").toUpperCase()}`, 15, y);
-    doc.text(`Class: ${currentStudent.class || "N/A"}`, 195, y, { align: "right" });
+    doc.text(`Student Name: ${dbStudentName}`, 15, y);
+    doc.text(`Class: ${dbStudentClass}`, 195, y, { align: "right" });
 
-    // Meta Row 3
     y += 5;
-    doc.text(`Admission No: ${currentStudent.admissionNo || "N/A"}`, 15, y);
-    doc.text(`Mobile: ${currentMobile}`, 195, y, { align: "right" });
+    doc.text(`Admission No: ${dbAdmissionNo}`, 15, y);
+    doc.text(`Mobile: ${mobileKey}`, 195, y, { align: "right" });
 
-    // Table Lines Initialization
+    // TABULAR INTERFACE GRID
     y += 4;
     doc.line(15, y, 195, y);
     y += 5;
     doc.setFont("helvetica", "bold");
     doc.text("S.No", 17, y);
-    doc.text("Description Particulars", 35, y);
+    doc.text("Particulars Description", 35, y);
     doc.text("Session Term", 95, y);
     doc.text("Paid Amount", 195, y, { align: "right" });
     y += 2;
     doc.line(15, y, 195, y);
 
-    // Iterative data populating
     doc.setFont("helvetica", "normal");
-    finalFeeItems.forEach(item => {
+    feeItems.forEach(item => {
       y += 6;
       doc.text(String(item.sno), 17, y);
       doc.text(item.particulars, 35, y);
@@ -362,7 +499,7 @@ function generatePDF() {
     y += 3;
     doc.line(15, y, 195, y);
 
-    // Financial calculations summary block
+    // SUMMARY BALANCES
     y += 6;
     doc.setFont("helvetica", "bold");
     doc.text("Total Paid Net Balance:", 135, y);
@@ -380,7 +517,7 @@ function generatePDF() {
     y += 8;
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "italic");
-    doc.text("Disclaimer: Please review receipt specifications. Discrepancies should be reported immediately.", 15, y);
+    doc.text("Note: Parents are requested to preserve this receipt. Fees once paid are non-refundable.", 15, y);
 
     y += 10;
     doc.setFont("helvetica", "bold");
@@ -388,21 +525,21 @@ function generatePDF() {
     doc.text("Authorized Cashier / Manager Signature", 195, y, { align: "right" });
   }
 
-  // Draw Twin Document layout distribution for legal proofing
-  drawLayout(20, "Office Copy");
+  // Draw Twin Document layout distribution across standard A4 sheet
+  drawLayout(15, "Office Copy");
   
-  // Perforation Cut-off Border line indicator
+  // Perforation Cut line Indicator
   doc.setLineDashPattern([2, 2], 0);
   doc.line(10, 148, 200, 148);
   doc.setLineDashPattern([], 0);
 
-  drawLayout(160, "Parent Copy");
+  drawLayout(155, "Parent Copy");
 
-  // Fire document print output stream
-  const safeFilename = (currentStudent.name || "Student").replace(/\s+/g, '_');
+  // Output compilation streaming download
+  const safeFilename = dbStudentName.replace(/\s+/g, '_');
   doc.save(`Receipt_${safeFilename}.pdf`);
 }
 </script>
-
 </body>
 </html>
+
