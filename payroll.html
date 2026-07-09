@@ -642,10 +642,24 @@
             alert("Marked As Paid Successfully");
         };
 
+        // Helper function to generate a fixed code per employee key
+        function getConsistentCode(key) {
+            let hash = 0;
+            for (let i = 0; i < key.length; i++) {
+                hash = (hash << 5) - hash + key.charCodeAt(i);
+                hash |= 0;
+            }
+            const code = Math.abs(hash % 900) + 100; 
+            return `LP${code}`;
+        }
+
         window.generatePayslip = function (key, name, username, role, salary, month) {
             document.getElementById("payslip").style.display = "block";
             
-            const receiptId = "SDS/" + key.substring(1, 6).toUpperCase() + "/26-27";
+            // Fixed receipt number generated deterministically based on employee's unique DB key
+            const empCode = getConsistentCode(key);
+            const receiptId = `SDS/${empCode}/26-27`;
+
             const formattedSalary = Number(salary).toLocaleString('en-IN');
             const currentDate = new Date().toLocaleDateString();
 
