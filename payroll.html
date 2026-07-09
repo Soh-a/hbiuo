@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Payroll & Institutional Slip System</title>
-    <!-- Fixed QR Code script asset delivery -->
     <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
     <style>
         :root {
@@ -200,7 +199,7 @@
             position: relative;
         }
 
-        /* Header Layout: Left Logo, Middle Text, Right QR */
+        /* Header Layout */
         .school-header-container {
             display: flex;
             align-items: center;
@@ -214,7 +213,10 @@
         .school-logo {
             width: 80px;
             height: 80px;
+            max-width: 80px;
+            max-height: 80px;
             object-fit: contain;
+            flex-shrink: 0;
         }
 
         .school-header-text {
@@ -257,20 +259,35 @@
             justify-content: center;
             text-align: center;
             width: 85px;
+            flex-shrink: 0;
         }
 
-        #qrcode img {
+        /* Strict sizing for QR code canvas/img */
+        #qrcode {
+            width: 75px !important;
+            height: 75px !important;
+        }
+
+        #qrcode img, 
+        #qrcode canvas {
+            width: 75px !important;
+            height: 75px !important;
+            max-width: 75px !important;
+            max-height: 75px !important;
             border: 1px solid #000000;
-            padding: 3px;
-            background: #fff;
+            padding: 2px;
+            background: #ffffff;
+            display: block;
+            margin: 0 auto;
         }
 
         .qr-label {
             font-size: 9px;
             color: #000000;
-            margin-top: 5px;
+            margin-top: 4px;
             font-weight: 700;
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .school-meta-grid {
@@ -333,7 +350,6 @@
             border-bottom: none;
         }
 
-        /* Signatures Layout */
         .signatures-area {
             display: flex;
             justify-content: flex-end;
@@ -381,7 +397,7 @@
             background: #333333;
         }
 
-        /* STSTRICT BLACK & WHITE PRINT CSS */
+        /* STRICT BLACK & WHITE PRINT CSS */
         @media print {
             body {
                 background: #ffffff !important;
@@ -404,6 +420,20 @@
                 padding: 20px;
                 max-width: 100%;
                 background: #ffffff !important;
+            }
+
+            .school-header-container {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+            }
+
+            #qrcode img, 
+            #qrcode canvas {
+                width: 75px !important;
+                height: 75px !important;
+                max-width: 75px !important;
+                max-height: 75px !important;
             }
 
             .particulars-table th, 
@@ -451,10 +481,8 @@
         <div id="payslip">
             <div class="school-slip-box">
                 <div class="school-header-container">
-                    <!-- Left Side Logo -->
                     <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.visibility='hidden'">
 
-                    <!-- Centered Header Text -->
                     <div class="school-header-text">
                         <div class="school-name">SAI DRS SCHOOL</div>
                         <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
@@ -462,7 +490,6 @@
                         <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
                     </div>
 
-                    <!-- Right Side QR Code Display Box -->
                     <div class="qr-container">
                         <div id="qrcode"></div>
                         <span class="qr-label">VERIFIED SLIP</span>
@@ -520,7 +547,6 @@
                 </div>
 
                 <div class="signatures-area">
-                    <!-- Digitally Signed Stamp Block -->
                     <div class="digital-sig-box">
                         <div class="digital-sig-title">✓ Digitally Signed By</div>
                         <div style="font-size: 11px; font-weight: 700; margin-top:2px;">OFFICE ACCOUNTANT</div>
@@ -634,13 +660,11 @@
             document.getElementById("slipDate").innerText = currentDate;
             document.getElementById("sigTimestamp").innerText = "Date: " + currentDate;
 
-            // Compilation of signature verification data
             const qrText = `SAI DRS SCHOOL\nName: ${name}\nMonth: ${month}\nAmount: INR ${formattedSalary}\nReceipt ID: ${receiptId}`;
             
             const qrContainer = document.getElementById("qrcode");
             qrContainer.innerHTML = ""; 
             
-            // Generate QR Code using standard implementation payload
             new QRCode(qrContainer, {
                 text: qrText,
                 width: 75,
@@ -658,4 +682,4 @@
     </script>
 </body>
 
-</html>
+    </html>
