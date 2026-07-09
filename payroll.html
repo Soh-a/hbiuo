@@ -10,18 +10,13 @@
         :root {
             --bg: #f8fafc;
             --card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --primary: #1e3a8a;
-            --primary-light: #eff6ff;
-            --success: #10b981;
-            --success-light: #ecfdf5;
-            --danger: #ef4444;
-            --danger-light: #fef2f2;
-            --border: #e2e8f0;
-            --radius-md: 10px;
-            --radius-sm: 6px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --text-main: #000000;
+            --text-muted: #555555;
+            --border: #cccccc;
+            --border-dark: #000000;
+            --radius-md: 6px;
+            --radius-sm: 4px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             --transition: all 0.2s ease-in-out;
         }
 
@@ -51,7 +46,7 @@
         .title {
             font-size: 26px;
             font-weight: 700;
-            color: var(--primary);
+            color: #000;
             letter-spacing: -0.5px;
         }
 
@@ -81,30 +76,26 @@
         }
 
         table th {
-            background: #f8fafc;
-            color: var(--text-muted);
+            background: #f1f1f1;
+            color: #000;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-dark);
         }
 
         table td {
             padding: 16px 24px;
             border-bottom: 1px solid var(--border);
             font-size: 14px;
-            color: #334155;
+            color: #000;
             vertical-align: middle;
         }
 
-        table tr:last-child td {
-            border-bottom: none;
-        }
-
         table tr:hover td {
-            background-color: #fafafa;
+            background-color: #f9f9f9;
         }
 
         .emp-name {
@@ -113,12 +104,12 @@
         }
 
         .emp-role {
-            background: var(--primary-light);
-            color: var(--primary);
+            background: #e2e2e2;
+            color: #000;
             padding: 4px 8px;
             border-radius: var(--radius-sm);
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .status {
@@ -128,27 +119,18 @@
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .status::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
+            border: 1px solid #000;
         }
 
         .paid {
-            background: var(--success-light);
-            color: #065f46;
+            background: #000;
+            color: #fff;
         }
-        .paid::before { background: var(--success); }
 
         .pending {
-            background: var(--danger-light);
-            color: #991b1b;
+            background: #fff;
+            color: #000;
         }
-        .pending::before { background: var(--danger); }
 
         .btns {
             display: flex;
@@ -156,53 +138,45 @@
         }
 
         button {
-            border: 1px solid transparent;
+            border: 1px solid #000;
             padding: 8px 14px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             transition: var(--transition);
         }
 
         .mark-btn {
-            background: var(--success);
-            color: white;
+            background: #000;
+            color: #fff;
         }
 
         .mark-btn:hover {
-            background: #0d9488;
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+            background: #333;
         }
 
         .slip-btn {
             background: white;
-            border-color: var(--border);
-            color: #475569;
+            color: #000;
         }
 
         .slip-btn:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
+            background: #eee;
         }
 
         select {
             padding: 8px 12px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--border-dark);
             border-radius: var(--radius-sm);
             background: white;
             font-size: 13px;
             color: var(--text-main);
             outline: none;
             cursor: pointer;
-            transition: var(--transition);
         }
 
-        select:focus {
-            border-color: var(--primary);
-        }
-
-        /* MODERN SLIP BOX */
+        /* BLACK AND WHITE SLIP BOX */
         #payslip {
             display: none;
             margin-top: 50px;
@@ -218,67 +192,60 @@
             background: white;
             max-width: 850px;
             margin: auto;
-            border: 2px solid #cbd5e1;
-            border-radius: var(--radius-md);
-            padding: 40px;
-            box-shadow: var(--shadow);
-            color: #1e293b;
+            border: 2px solid #000000;
+            border-radius: 0;
+            padding: 35px;
+            color: #000000;
             position: relative;
         }
 
+        /* Centered Header with Absolute Right QR */
         .school-header-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 20px;
+            position: relative;
+            text-align: center;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 15px;
             margin-bottom: 20px;
-        }
-
-        .school-header-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .school-logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            border-radius: var(--radius-sm);
+            min-height: 100px;
         }
 
         .school-header-text {
-            text-align: left;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
         }
 
         .school-name {
             font-size: 24px;
-            font-weight: 800;
-            color: var(--primary);
+            font-weight: 900;
+            color: #000000;
             letter-spacing: -0.5px;
+            text-transform: uppercase;
         }
 
         .school-sub {
             font-size: 13px;
-            color: var(--text-muted);
+            color: #000000;
             margin-top: 2px;
         }
 
         .slip-title-badge {
             display: inline-block;
-            background: var(--primary);
-            color: white;
-            padding: 4px 12px;
-            font-weight: 600;
-            border-radius: var(--radius-sm);
-            margin-top: 8px;
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            padding: 3px 10px;
+            font-weight: 700;
+            margin-top: 10px;
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .qr-container {
+            position: absolute;
+            top: 0;
+            right: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -287,113 +254,142 @@
         }
 
         #qrcode img {
-            border: 1px solid #e2e8f0;
-            padding: 4px;
+            border: 1px solid #000000;
+            padding: 3px;
             background: #fff;
-            border-radius: 4px;
         }
 
         .qr-label {
-            font-size: 10px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            font-weight: 600;
+            font-size: 9px;
+            color: #000000;
+            margin-top: 3px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .school-meta-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px 24px;
             margin-bottom: 24px;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            font-size: 14px;
+            background: #ffffff;
+            padding: 15px;
+            border: 1px solid #000000;
+            font-size: 13px;
         }
 
         .meta-item {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px dashed #e2e8f0;
-            padding-bottom: 6px;
+            border-bottom: 1px dotted #000000;
+            padding-bottom: 4px;
         }
 
         .meta-item label {
-            font-weight: 500;
-            color: var(--text-muted);
+            font-weight: 600;
+            color: #000000;
         }
 
         .meta-item span {
-            font-weight: 600;
-            color: var(--text-main);
+            font-weight: 700;
+            color: #000000;
         }
 
         .particulars-table {
             width: 100%;
             margin-bottom: 24px;
-            border: 1px solid var(--border);
+            border: 1px solid #000000;
         }
 
         .particulars-table th {
-            background: #f1f5f9;
-            color: var(--text-main);
-            font-weight: 600;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
+            background: #f1f1f1;
+            color: #000000;
+            font-weight: 700;
+            padding: 10px;
+            border-bottom: 1px solid #000000;
         }
 
         .particulars-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .total-row {
             font-weight: 700;
-            background: var(--primary-light);
-            color: var(--primary);
+            background: #f8f8f8;
+            color: #000000;
         }
 
         .total-row td {
-            font-size: 16px;
-            color: var(--primary) !important;
-            border-top: 2px solid var(--primary);
+            font-size: 15px;
+            color: #000000 !important;
+            border-top: 2px solid #000000;
+            border-bottom: none;
         }
 
+        /* Signatures Layout */
         .signatures-area {
             display: flex;
             justify-content: space-between;
-            margin-top: 60px;
+            align-items: flex-end;
+            margin-top: 40px;
             padding-top: 10px;
         }
 
         .sig-box {
             text-align: center;
-            width: 200px;
-            border-top: 1px dashed #94a3b8;
-            padding-top: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
+            width: 220px;
+            border-top: 1px solid #000000;
+            padding-top: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #000000;
+        }
+
+        .digital-sig-box {
+            border: 1px double #000000;
+            padding: 10px;
+            text-align: center;
+            width: 240px;
+            background: #fafafa;
+        }
+
+        .digital-sig-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .digital-sig-sub {
+            font-size: 10px;
+            color: #333333;
+            margin-top: 3px;
+            font-family: monospace;
         }
 
         .print-btn {
             width: 100%;
-            margin-top: 20px;
-            background: var(--primary);
-            color: white;
-            padding: 14px;
-            font-weight: 600;
-            border-radius: var(--radius-sm);
+            margin-top: 25px;
+            background: #000000;
+            color: #ffffff;
+            padding: 12px;
+            font-weight: 700;
+            border: 1px solid #000000;
+            cursor: pointer;
             letter-spacing: 0.5px;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            text-transform: uppercase;
         }
 
         .print-btn:hover {
-            background: #1e40af;
+            background: #333333;
         }
 
-        /* PRINT STYLES FOR PERFECT PDF CONVERSION */
+        /* PRINT STYLES */
         @media print {
             body {
                 background: white;
@@ -410,9 +406,9 @@
             }
 
             .school-slip-box {
-                border: 1px solid #000;
+                border: 2px solid #000;
                 box-shadow: none;
-                padding: 30px;
+                padding: 25px;
                 max-width: 100%;
             }
 
@@ -454,18 +450,16 @@
         <div id="payslip">
             <div class="school-slip-box">
                 <div class="school-header-container">
-                    <div class="school-header-left">
-                        <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.display='none'">
-                        <div class="school-header-text">
-                            <div class="school-name">SAI DRS SCHOOL</div>
-                            <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
-                            <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
-                            <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
-                        </div>
+                    <div class="school-header-text">
+                        <div class="school-name">SAI DRS SCHOOL</div>
+                        <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
+                        <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
+                        <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
                     </div>
+
                     <div class="qr-container">
                         <div id="qrcode"></div>
-                        <span class="qr-label">VERIFIED PAYSLIP</span>
+                        <span class="qr-label">VERIFIED SLIP</span>
                     </div>
                 </div>
 
@@ -506,7 +500,7 @@
                     <tbody>
                         <tr>
                             <td>Basic Pay Scale & Allowances</td>
-                            <td style="text-align: right; font-weight: 600;">₹<span id="slipSalary">0</span></td>
+                            <td style="text-align: right; font-weight: 700;">₹<span id="slipSalary">0</span></td>
                         </tr>
                         <tr class="total-row">
                             <td>Net Disbursed Amount</td>
@@ -515,17 +509,22 @@
                     </tbody>
                 </table>
 
-                <div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">
-                    * This is an officially generated computer slip. Scan the QR code to verify details.
+                <div style="font-size: 11px; color: #333; font-style: italic; margin-bottom: 20px;">
+                    * This is a computer-generated document. Scan the QR code on top right to verify authenticity.
                 </div>
 
                 <div class="signatures-area">
                     <div class="sig-box">Employee Signature</div>
-                    <div class="sig-box">Authorized Signatory</div>
+                    
+                    <div class="digital-sig-box">
+                        <div class="digital-sig-title">✓ Digitally Signed</div>
+                        <div style="font-size: 11px; font-weight: 700; margin-top:2px;">OFFICE ACCOUNTANT</div>
+                        <div class="digital-sig-sub" id="sigTimestamp">Date: --/--/----</div>
+                    </div>
                 </div>
 
                 <button class="print-btn" onclick="window.print()">
-                    Print / Save as PDF
+                    Print / Download Official Slip
                 </button>
             </div>
         </div>
@@ -580,7 +579,7 @@
                                 ${monthOptions}
                             </select>
                         </td>
-                        <td><b style="color: var(--text-main);">₹${Number(emp.salary || 0).toLocaleString('en-IN')}</b></td>
+                        <td><b>₹${Number(emp.salary || 0).toLocaleString('en-IN')}</b></td>
                         <td>
                             <span class="status ${emp.paymentStatus === 'Paid' ? 'paid' : 'pending'}">
                                 ${emp.paymentStatus || "Pending"}
@@ -630,6 +629,7 @@
             
             document.getElementById("slipReceiptId").innerText = receiptId;
             document.getElementById("slipDate").innerText = currentDate;
+            document.getElementById("sigTimestamp").innerText = "Signed: " + currentDate;
 
             // Generate QR Code containing relevant payment information
             const qrText = `SAI DRS SCHOOL\nName: ${name}\nMonth: ${month}\nAmount: ₹${formattedSalary}\nReceipt: ${receiptId}`;
@@ -639,9 +639,9 @@
             
             qrCodeInstance = new QRCode(qrContainer, {
                 text: qrText,
-                width: 70,
-                height: 70,
-                colorDark: "#1e3a8a",
+                width: 75,
+                height: 75,
+                colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
@@ -654,4 +654,4 @@
     </script>
 </body>
 
-    </html>
+                        </html>
