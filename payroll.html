@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Payroll & Institutional Slip System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --bg: #f8fafc;
@@ -215,31 +216,32 @@
 
         .school-slip-box {
             background: white;
-            max-width: 800px;
+            max-width: 850px;
             margin: auto;
-            border: 1px solid var(--border);
+            border: 2px solid #cbd5e1;
             border-radius: var(--radius-md);
             padding: 40px;
             box-shadow: var(--shadow);
             color: #1e293b;
+            position: relative;
         }
 
         .school-header-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 24px;
-            margin-bottom: 24px;
-            min-height: 90px;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .school-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
         .school-logo {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
             width: 80px;
             height: 80px;
             object-fit: contain;
@@ -247,8 +249,7 @@
         }
 
         .school-header-text {
-            text-align: center;
-            width: 100%;
+            text-align: left;
         }
 
         .school-name {
@@ -266,25 +267,48 @@
 
         .slip-title-badge {
             display: inline-block;
-            background: var(--primary-light);
-            color: var(--primary);
+            background: var(--primary);
+            color: white;
             padding: 4px 12px;
             font-weight: 600;
             border-radius: var(--radius-sm);
-            margin-top: 10px;
+            margin-top: 8px;
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #qrcode img {
+            border: 1px solid #e2e8f0;
+            padding: 4px;
+            background: #fff;
+            border-radius: 4px;
+        }
+
+        .qr-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 600;
         }
 
         .school-meta-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             background: #f8fafc;
             padding: 20px;
             border-radius: var(--radius-md);
+            border: 1px solid var(--border);
             font-size: 14px;
         }
 
@@ -308,6 +332,7 @@
         .particulars-table {
             width: 100%;
             margin-bottom: 24px;
+            border: 1px solid var(--border);
         }
 
         .particulars-table th {
@@ -315,16 +340,12 @@
             color: var(--text-main);
             font-weight: 600;
             padding: 12px;
-            border: none;
+            border-bottom: 1px solid var(--border);
         }
 
         .particulars-table td {
             padding: 14px 12px;
             border-bottom: 1px solid #f1f5f9;
-        }
-
-        .particulars-table tr:last-child td {
-            border-bottom: none;
         }
 
         .total-row {
@@ -336,11 +357,29 @@
         .total-row td {
             font-size: 16px;
             color: var(--primary) !important;
+            border-top: 2px solid var(--primary);
+        }
+
+        .signatures-area {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+            padding-top: 10px;
+        }
+
+        .sig-box {
+            text-align: center;
+            width: 200px;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
         }
 
         .print-btn {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 20px;
             background: var(--primary);
             color: white;
             padding: 14px;
@@ -354,27 +393,27 @@
             background: #1e40af;
         }
 
+        /* PRINT STYLES FOR PERFECT PDF CONVERSION */
         @media print {
-            body * {
-                visibility: hidden;
+            body {
+                background: white;
+                padding: 0;
             }
 
-            #payslip,
-            #payslip * {
-                visibility: visible;
+            .container > *:not(#payslip) {
+                display: none !important;
             }
 
             #payslip {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+                display: block !important;
+                margin-top: 0;
             }
 
             .school-slip-box {
-                border: none;
+                border: 1px solid #000;
                 box-shadow: none;
-                padding: 0;
+                padding: 30px;
+                max-width: 100%;
             }
 
             .print-btn {
@@ -415,12 +454,18 @@
         <div id="payslip">
             <div class="school-slip-box">
                 <div class="school-header-container">
-                    <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.display='none'">
-                    <div class="school-header-text">
-                        <div class="school-name">SAI DRS SCHOOL</div>
-                        <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
-                        <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
-                        <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
+                    <div class="school-header-left">
+                        <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.display='none'">
+                        <div class="school-header-text">
+                            <div class="school-name">SAI DRS SCHOOL</div>
+                            <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
+                            <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
+                            <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
+                        </div>
+                    </div>
+                    <div class="qr-container">
+                        <div id="qrcode"></div>
+                        <span class="qr-label">VERIFIED PAYSLIP</span>
                     </div>
                 </div>
 
@@ -470,12 +515,17 @@
                     </tbody>
                 </table>
 
-                <div style="font-size: 12px; color: var(--text-muted); font-style: italic; margin-bottom: 25px;">
-                    * This is an officially generated digital system statement. No physical signature required.
+                <div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">
+                    * This is an officially generated computer slip. Scan the QR code to verify details.
+                </div>
+
+                <div class="signatures-area">
+                    <div class="sig-box">Employee Signature</div>
+                    <div class="sig-box">Authorized Signatory</div>
                 </div>
 
                 <button class="print-btn" onclick="window.print()">
-                    Print / Download Official Slip
+                    Print / Save as PDF
                 </button>
             </div>
         </div>
@@ -503,6 +553,8 @@
             "April", "May", "June", "July", "August", "September",
             "October", "November", "December", "January", "February", "March"
         ];
+
+        let qrCodeInstance = null;
 
         onValue(staffRef, (snapshot) => {
             const data = snapshot.val();
@@ -565,15 +617,34 @@
         window.generatePayslip = function (key, name, username, role, salary, month) {
             document.getElementById("payslip").style.display = "block";
             
+            const receiptId = "SDS/" + key.substring(1, 6).toUpperCase() + "/26-27";
+            const formattedSalary = Number(salary).toLocaleString('en-IN');
+            const currentDate = new Date().toLocaleDateString();
+
             document.getElementById("slipName").innerText = name;
             document.getElementById("slipUsername").innerText = username;
             document.getElementById("slipRole").innerText = role;
-            document.getElementById("slipSalary").innerText = Number(salary).toLocaleString('en-IN');
-            document.getElementById("slipTotalSalary").innerText = Number(salary).toLocaleString('en-IN');
+            document.getElementById("slipSalary").innerText = formattedSalary;
+            document.getElementById("slipTotalSalary").innerText = formattedSalary;
             document.getElementById("slipMonth").innerText = month;
             
-            document.getElementById("slipReceiptId").innerText = "SDS/" + key.substring(1, 6).toUpperCase() + "/26-27";
-            document.getElementById("slipDate").innerText = new Date().toLocaleDateString();
+            document.getElementById("slipReceiptId").innerText = receiptId;
+            document.getElementById("slipDate").innerText = currentDate;
+
+            // Generate QR Code containing relevant payment information
+            const qrText = `SAI DRS SCHOOL\nName: ${name}\nMonth: ${month}\nAmount: ₹${formattedSalary}\nReceipt: ${receiptId}`;
+            
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = ""; // Clear existing QR Code
+            
+            qrCodeInstance = new QRCode(qrContainer, {
+                text: qrText,
+                width: 70,
+                height: 70,
+                colorDark: "#1e3a8a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
 
             window.scrollTo({
                 top: document.body.scrollHeight,
@@ -583,5 +654,4 @@
     </script>
 </body>
 
-</html>
-
+    </html>
