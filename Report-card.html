@@ -18,16 +18,19 @@
 
   <style>
     /* ==========================================================================
-       1. GLOBAL & APP STYLES (Screen View)
+       1. GLOBAL & APP STYLES - ROYAL BLUE PALETTE
        ========================================================================== */
     :root {
-      --primary-navy: #1e3a8a;
-      --secondary-burgundy: #800000;
-      --accent-gold: #d97706;
-      --bg-cream: #fffbeb;
-      --text-dark: #1f2937;
-      --glass-bg: rgba(255, 255, 255, 0.45);
-      --glass-border: rgba(255, 255, 255, 0.6);
+      --primary-navy: #1E3A8A;
+      --primary-blue: #2563EB;
+      --accent-blue: #3B82F6;
+      --light-blue: #DBEAFE;
+      --bg-slate: #f8fafc;
+      --text-dark: #1e293b;
+      --text-muted: #475569;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(219, 234, 254, 0.8);
+      --card-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.08), 0 8px 10px -6px rgba(30, 58, 138, 0.05);
     }
 
     * {
@@ -39,9 +42,9 @@
 
     body {
       min-height: 100vh;
-      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fae8ff 100%);
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%);
       background-attachment: fixed;
-      padding: 20px 10px;
+      padding: 24px 12px;
       color: var(--text-dark);
       display: flex;
       flex-direction: column;
@@ -53,39 +56,45 @@
       max-width: 1100px;
     }
 
-    /* Glassmorphism Control Panel */
+    /* Modern Glassmorphism Control Panel */
     .control-panel {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 25px -5px rgba(30, 58, 138, 0.1), 0 8px 10px -6px rgba(30, 58, 138, 0.04);
       margin-bottom: 30px;
-      animation: fadeInDown 0.6s ease;
+      animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
+      from { opacity: 0; transform: translateY(-16px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .panel-title {
-      font-size: 1.4rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
       color: var(--primary-navy);
-      margin-bottom: 20px;
+      margin-bottom: 22px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      border-bottom: 2px solid var(--light-blue);
+      padding-bottom: 12px;
+    }
+
+    .panel-title i {
+      color: var(--primary-blue);
     }
 
     .search-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
     }
 
     .input-field {
@@ -94,26 +103,28 @@
     }
 
     .input-field label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #334155;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary-navy);
       margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .input-field input, .input-field select {
-      padding: 10px 14px;
+      padding: 11px 15px;
       border-radius: 10px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
-      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
       font-size: 0.95rem;
+      color: var(--text-dark);
       outline: none;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
     }
 
     .input-field input:focus, .input-field select:focus {
-      border-color: var(--primary-navy);
-      background: #ffffff;
-      box-shadow: 0 0 8px rgba(30, 58, 138, 0.2);
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
     }
 
     .action-btns {
@@ -123,49 +134,69 @@
     }
 
     .btn {
-      padding: 12px 22px;
+      padding: 12px 24px;
       border: none;
       border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 0.9rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      gap: 9px;
+      transition: all 0.25s ease;
     }
 
-    .btn-primary { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(30, 58, 138, 0.3); }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--primary-navy), var(--primary-blue)); 
+      color: white; 
+      box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25);
+    }
+    .btn-primary:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.35); 
+    }
 
-    .btn-print { background: linear-gradient(135deg, #059669, #10b981); color: white; }
-    .btn-print:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3); }
+    .btn-print { 
+      background: linear-gradient(135deg, #0284c7, #0369a1); 
+      color: white; 
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+    }
+    .btn-print:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35); 
+    }
 
-    .btn-pdf { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; }
-    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.3); }
+    .btn-pdf { 
+      background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+      color: white; 
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    }
+    .btn-pdf:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); 
+    }
 
     /* Loader & Error Messages */
     #loader {
       display: none;
       text-align: center;
       padding: 20px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--primary-navy);
     }
 
     #errorMessage {
       display: none;
-      padding: 12px 18px;
+      padding: 14px 20px;
       border-radius: 10px;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid #ef4444;
+      background: #fef2f2;
+      border: 1.5px solid #fca5a5;
       color: #991b1b;
-      margin-top: 15px;
+      margin-top: 18px;
       font-weight: 600;
     }
 
-    /* A4 Document View Stage */
+    /* A4 Document Stage */
     .report-card-stage {
       display: flex;
       justify-content: center;
@@ -173,28 +204,29 @@
       margin-bottom: 50px;
     }
 
-    /* Base Page Settings for Print / PDF (Standard A4 dimensions) */
     .a4-page {
       width: 210mm;
       min-height: 297mm;
       background: #ffffff;
       padding: 12mm 15mm;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(30, 58, 138, 0.25);
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
-      display: none; /* Controlled by JS */
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      display: none;
     }
 
-    /* Watermark */
+    /* Watermark - Royal Blue Tone */
     .watermark {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) rotate(-30deg);
-      font-size: 4rem;
+      font-size: 3.8rem;
       font-weight: 800;
-      color: rgba(30, 58, 138, 0.03);
+      color: rgba(30, 58, 138, 0.035);
       white-space: nowrap;
       pointer-events: none;
       z-index: 0;
@@ -211,24 +243,24 @@
     }
 
     /* ==========================================================================
-       2. TEMPLATE 1: CLASS 1 TO CLASS 5 (Classic Academic Layout)
+       2. TEMPLATE 1: CLASS 1 TO CLASS 5 (Royal Blue Academic Theme)
        ========================================================================== */
     .t1-header {
-      border-bottom: 3px double var(--secondary-burgundy);
-      padding-bottom: 10px;
-      margin-bottom: 15px;
+      border-bottom: 3px double var(--primary-blue);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .t1-header-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 15px;
+      gap: 16px;
     }
 
     .t1-school-logo {
-      width: 75px;
-      height: 75px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
     }
 
@@ -239,60 +271,66 @@
 
     .t1-school-details h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      color: var(--secondary-burgundy);
+      font-size: 1.85rem;
+      color: var(--primary-navy);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      line-height: 1.2;
     }
 
     .t1-school-details p {
       font-size: 0.78rem;
-      color: #4b5563;
-      margin-top: 2px;
-      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-weight: 600;
     }
 
     .t1-card-title {
-      background: var(--secondary-burgundy);
+      background: linear-gradient(135deg, var(--primary-navy), var(--primary-blue));
       color: white;
       text-align: center;
-      padding: 4px 0;
-      margin-top: 10px;
-      font-size: 1rem;
+      padding: 6px 0;
+      margin-top: 12px;
+      font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: 1px;
       text-transform: uppercase;
-      border-radius: 4px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(30, 58, 138, 0.15);
     }
 
     .t1-student-info {
       display: grid;
-      grid-template-columns: 1fr 130px;
+      grid-template-columns: 1fr 125px;
       gap: 15px;
-      border: 1px solid #cbd5e1;
-      padding: 10px 12px;
-      border-radius: 6px;
-      margin-bottom: 12px;
+      border: 1.5px solid var(--light-blue);
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
       background: #f8fafc;
     }
 
     .t1-info-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      row-gap: 6px;
-      column-gap: 15px;
+      row-gap: 8px;
+      column-gap: 16px;
       font-size: 0.82rem;
+    }
+
+    .t1-info-item {
+      color: #334155;
     }
 
     .t1-info-item span {
       font-weight: 700;
-      color: #334155;
+      color: var(--primary-navy);
     }
 
     .t1-photo-box {
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      height: 120px;
+      border: 1.5px solid var(--light-blue);
+      border-radius: 6px;
+      height: 125px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -306,85 +344,95 @@
       object-fit: cover;
     }
 
-    /* Marks Table Styling */
+    /* Marks Table - Royal Blue Styling */
     .t1-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       font-size: 0.78rem;
     }
 
     .t1-table th, .t1-table td {
-      border: 1px solid #94a3b8;
-      padding: 6px 5px;
+      border: 1px solid #cbd5e1;
+      padding: 7px 6px;
       text-align: center;
     }
 
     .t1-table th {
-      background-color: #f1f5f9;
-      color: var(--secondary-burgundy);
+      background-color: var(--primary-navy);
+      color: #ffffff;
       font-weight: 700;
       text-transform: uppercase;
       font-size: 0.72rem;
+      letter-spacing: 0.3px;
+    }
+
+    .t1-table tr:nth-child(even) {
+      background-color: #f8fafc;
     }
 
     .t1-table td.subject-name {
       text-align: left;
       font-weight: 600;
-      padding-left: 8px;
+      padding-left: 10px;
+      color: var(--primary-navy);
     }
 
     .t1-summary-box {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 12px;
     }
 
     .t1-summary-item {
-      border: 1px solid #cbd5e1;
-      padding: 6px;
-      border-radius: 4px;
+      border: 1.5px solid var(--light-blue);
+      padding: 8px 6px;
+      border-radius: 6px;
       text-align: center;
-      background: #fafafa;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(30, 58, 138, 0.03);
     }
 
     .t1-summary-item label {
       display: block;
       font-size: 0.68rem;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .t1-summary-item value {
       display: block;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 800;
-      color: var(--secondary-burgundy);
+      color: var(--primary-navy);
       margin-top: 2px;
     }
 
     .t1-remarks-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 12px;
     }
 
     .t1-remark-card {
-      border: 1px solid #cbd5e1;
-      padding: 8px;
-      border-radius: 4px;
+      border: 1.5px solid var(--light-blue);
+      padding: 10px;
+      border-radius: 6px;
       font-size: 0.78rem;
       min-height: 55px;
+      background: #ffffff;
     }
 
     .t1-remark-card strong {
       display: block;
       color: var(--primary-navy);
       margin-bottom: 4px;
-      font-size: 0.75rem;
+      font-size: 0.76rem;
+      text-transform: uppercase;
     }
 
     /* Footer / Signatures */
@@ -407,38 +455,39 @@
     }
 
     .sig-line p {
-      border-top: 1px solid #64748b;
-      padding-top: 4px;
+      border-top: 1.5px solid var(--primary-navy);
+      padding-top: 5px;
       font-size: 0.75rem;
       font-weight: 700;
-      color: #334155;
+      color: var(--primary-navy);
     }
 
     .seal-qr-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 10px;
+      margin-top: 12px;
       border-top: 1px dashed #cbd5e1;
-      padding-top: 8px;
+      padding-top: 10px;
     }
 
     .seal-box {
       font-size: 0.7rem;
       font-weight: 700;
-      color: #94a3b8;
-      border: 1px dashed #cbd5e1;
-      padding: 4px 12px;
+      color: var(--primary-blue);
+      border: 1.5px dashed var(--accent-blue);
+      padding: 5px 14px;
       border-radius: 20px;
+      background: var(--light-blue);
     }
 
     /* ==========================================================================
-       3. TEMPLATE 2: IK-1, IK-2, IK-3 (Playful Nursery Layout)
+       3. TEMPLATE 2: IK-1, IK-2, IK-3 (Preschool Royal Blue Theme)
        ========================================================================== */
     .t2-wrapper {
-      border: 4px rounded #fde047;
-      background: #fffdf5;
-      padding: 10px;
+      border: 3px solid var(--accent-blue);
+      background: #ffffff;
+      padding: 12px;
       border-radius: 12px;
       height: 100%;
       box-sizing: border-box;
@@ -448,44 +497,44 @@
 
     .t2-header {
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .t2-title-badge {
-      background: #fbbf24;
-      color: #78350f;
+      background: linear-gradient(135deg, var(--primary-navy), var(--primary-blue));
+      color: #ffffff;
       display: inline-block;
-      padding: 6px 20px;
+      padding: 6px 24px;
       border-radius: 20px;
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
-      box-shadow: 0 3px 0 #d97706;
+      box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
     }
 
     .t2-info-card {
-      background: #ffffff;
-      border: 2px solid #fef08a;
+      background: #f8fafc;
+      border: 1.5px solid var(--light-blue);
       border-radius: 10px;
-      padding: 10px;
+      padding: 12px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 10px;
       font-size: 0.8rem;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .t2-info-item span {
       font-weight: 700;
-      color: #d97706;
+      color: var(--primary-navy);
     }
 
     .t2-grid-assessment {
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .t2-table {
@@ -495,36 +544,38 @@
     }
 
     .t2-table th, .t2-table td {
-      border: 1px solid #fef08a;
-      padding: 5px 8px;
+      border: 1px solid #cbd5e1;
+      padding: 6px 10px;
     }
 
     .t2-table th {
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--light-blue);
+      color: var(--primary-navy);
       font-weight: 700;
+      text-transform: uppercase;
     }
 
     .t2-table td.grade-cell {
       text-align: center;
       font-weight: 800;
-      color: #b45309;
+      color: var(--primary-blue);
     }
 
     .t2-grading-key {
       background: #ffffff;
-      border: 2px solid #fed7aa;
+      border: 1.5px solid var(--light-blue);
       border-radius: 8px;
-      padding: 8px;
+      padding: 10px;
       font-size: 0.75rem;
     }
 
     .t2-grading-key h4 {
-      color: #c2410c;
+      color: var(--primary-navy);
       margin-bottom: 6px;
       text-align: center;
-      border-bottom: 1px solid #ffedd5;
+      border-bottom: 1px solid var(--light-blue);
       padding-bottom: 4px;
+      text-transform: uppercase;
     }
 
     .t2-key-item {
@@ -535,31 +586,32 @@
     }
 
     .t2-key-item strong {
-      color: #ea580c;
+      color: var(--primary-blue);
     }
 
     .t2-obs-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 10px;
     }
 
     .t2-obs-box {
       background: #ffffff;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid var(--light-blue);
       border-radius: 8px;
-      padding: 8px;
+      padding: 10px;
       font-size: 0.75rem;
     }
 
     .t2-obs-box strong {
-      color: #0284c7;
+      color: var(--primary-navy);
       display: block;
       margin-bottom: 4px;
+      text-transform: uppercase;
     }
 
-    /* Print Specific Overrides */
+    /* Print Overrides */
     @media print {
       body {
         background: none;
@@ -640,7 +692,7 @@
           <div>
             <div class="t1-header">
               <div class="t1-header-top">
-                <img src="https://via.placeholder.com/80/1e3a8a/ffffff?text=DRS" alt="School Logo" class="t1-school-logo">
+                <img src="logo.jpeg" alt="Sai DRS Kids School Logo" class="t1-school-logo">
                 <div class="t1-school-details">
                   <h2>Sai DRS Kids School</h2>
                   <p>108 N Platinum Ave, Educational Zone, City - 781001</p>
@@ -664,7 +716,7 @@
                 <div class="t1-info-item"><span>Mother's Name:</span> <label id="t1-mother">-</label></div>
               </div>
               <div class="t1-photo-box">
-                <img src="https://via.placeholder.com/120x130/cbd5e1/475569?text=Student+Photo" id="t1-studentPhoto" alt="Student Photo">
+                <img src="https://via.placeholder.com/120x130/dbeafe/1e3a8a?text=Student+Photo" id="t1-studentPhoto" alt="Student Photo">
               </div>
             </div>
 
@@ -682,7 +734,7 @@
                 </tr>
               </thead>
               <tbody id="t1-marksTableBody">
-                </tbody>
+              </tbody>
             </table>
 
             <div class="t1-summary-box">
@@ -750,13 +802,15 @@
         </div>
       </div>
 
-
       <div id="template2" class="a4-page">
         <div class="watermark">SAI DRS KIDS SCHOOL</div>
         <div class="t2-wrapper">
           <div class="t2-header">
-            <h2 style="color: #92400e; font-size: 1.5rem; text-transform: uppercase;">Sai DRS Kids School</h2>
-            <div class="t2-title-badge" style="margin-top: 5px;">Preschool Progress Card</div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px;">
+              <img src="logo.jpeg" alt="Sai DRS Kids School Logo" style="width: 50px; height: 50px; object-fit: contain;">
+              <h2 style="color: var(--primary-navy); font-size: 1.5rem; text-transform: uppercase;">Sai DRS Kids School</h2>
+            </div>
+            <div class="t2-title-badge">Preschool Progress Card</div>
           </div>
 
           <div class="t2-info-card">
@@ -777,7 +831,7 @@
                 </tr>
               </thead>
               <tbody id="t2-activityTableBody">
-                </tbody>
+              </tbody>
             </table>
 
             <div>
