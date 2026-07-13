@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap">
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -92,7 +91,7 @@
 
     .search-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 18px;
       margin-bottom: 22px;
     }
@@ -127,6 +126,13 @@
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
     }
 
+    .input-field select:disabled {
+      background-color: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
+      border-color: #e2e8f0;
+    }
+
     .action-btns {
       display: flex;
       gap: 12px;
@@ -156,6 +162,16 @@
       box-shadow: 0 6px 20px rgba(30, 58, 138, 0.35); 
     }
 
+    .btn-save {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    }
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+    }
+
     .btn-print { 
       background: linear-gradient(135deg, #0284c7, #0369a1); 
       color: white; 
@@ -176,7 +192,7 @@
       box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); 
     }
 
-    /* Loader & Error Messages */
+    /* Loader & Alerts */
     #loader {
       display: none;
       text-align: center;
@@ -192,6 +208,17 @@
       background: #fef2f2;
       border: 1.5px solid #fca5a5;
       color: #991b1b;
+      margin-top: 18px;
+      font-weight: 600;
+    }
+
+    #successMessage {
+      display: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      background: #ecfdf5;
+      border: 1.5px solid #6ee7b7;
+      color: #065f46;
       margin-top: 18px;
       font-weight: 600;
     }
@@ -218,7 +245,7 @@
       display: none;
     }
 
-    /* Watermark - Royal Blue Tone */
+    /* Watermark */
     .watermark {
       position: absolute;
       top: 50%;
@@ -344,7 +371,6 @@
       object-fit: cover;
     }
 
-    /* Marks Table - Royal Blue Styling */
     .t1-table {
       width: 100%;
       border-collapse: collapse;
@@ -435,7 +461,6 @@
       text-transform: uppercase;
     }
 
-    /* Footer / Signatures */
     .t1-footer {
       margin-top: auto;
       padding-top: 10px;
@@ -659,11 +684,19 @@
         </div>
         <div class="input-field">
           <label for="searchExamType">Exam Type *</label>
-          <select id="searchExamType">
+          <select id="searchExamType" onchange="togglePromotionDropdown()">
             <option value="Unit Test 1">Unit Test 1</option>
             <option value="Half Yearly">Half Yearly</option>
             <option value="Unit Test 2">Unit Test 2</option>
             <option value="Annual" selected>Annual</option>
+          </select>
+        </div>
+        <div class="input-field">
+          <label for="promotionStatus">Promotion Status</label>
+          <select id="promotionStatus">
+            <option value="">Select Promotion</option>
+            <option value="Promoted to Next Class">Promoted to Next Class</option>
+            <option value="Not Promoted">Not Promoted</option>
           </select>
         </div>
       </div>
@@ -671,6 +704,9 @@
       <div class="action-btns">
         <button class="btn btn-primary" onclick="fetchAndGenerateReport()">
           <i class="fa-solid fa-file-circle-check"></i> Generate Report Card
+        </button>
+        <button class="btn btn-save" onclick="saveRecord()">
+          <i class="fa-solid fa-floppy-disk"></i> Save Record
         </button>
         <button class="btn btn-print" onclick="window.print()">
           <i class="fa-solid fa-print"></i> Print
@@ -680,8 +716,9 @@
         </button>
       </div>
 
-      <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Fetching examination record from database...</div>
+      <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Processing request...</div>
       <div id="errorMessage"></div>
+      <div id="successMessage"></div>
     </div>
 
     <div class="report-card-stage">
@@ -923,10 +960,71 @@
       'Fine Motor Skills', 'Gross Motor Skills', 'Social Behaviour', 'Personal Hygiene'
     ];
 
-    /* Auto Fetch & Generate on Page Load */
+    /* Auto Fetch & Setup UI state on DOM Load */
     window.addEventListener('DOMContentLoaded', () => {
+      togglePromotionDropdown();
       fetchAndGenerateReport();
     });
+
+    /* ==========================================================================
+       PROMOTION STATUS FIELD CONTROL (Requirement 3, 4, 5, 10)
+       ========================================================================== */
+    function togglePromotionDropdown() {
+      const examTypeSelect = document.getElementById('searchExamType');
+      const promotionSelect = document.getElementById('promotionStatus');
+
+      if (examTypeSelect.value === 'Annual') {
+        promotionSelect.disabled = false;
+      } else {
+        promotionSelect.disabled = true;
+        promotionSelect.value = ''; // Reset value when disabled
+      }
+    }
+
+    /* ==========================================================================
+       SAVE RECORD TO FIREBASE (Requirement 6)
+       ========================================================================== */
+    function saveRecord() {
+      const studentId = document.getElementById('searchStudentId').value.trim();
+      const session = document.getElementById('searchSession').value;
+      const examType = document.getElementById('searchExamType').value;
+      const promotionStatusVal = document.getElementById('promotionStatus').value;
+
+      const loader = document.getElementById('loader');
+      const errorMsg = document.getElementById('errorMessage');
+      const successMsg = document.getElementById('successMessage');
+
+      if (!studentId) {
+        showError('Please enter a valid Student ID before saving.');
+        return;
+      }
+
+      loader.style.display = 'block';
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      const path = `exam/${studentId}/${session}/${examType}`;
+
+      // Payload updates promotionStatus if Annual selected
+      const payload = {
+        updatedAt: new Date().toISOString()
+      };
+
+      if (examType === 'Annual') {
+        payload.promotionStatus = promotionStatusVal;
+      }
+
+      database.ref(path).update(payload)
+        .then(() => {
+          loader.style.display = 'none';
+          showSuccess(`Record updated successfully under '${path}'.`);
+          fetchAndGenerateReport();
+        })
+        .catch(err => {
+          loader.style.display = 'none';
+          showError('Database Update Error: ' + err.message);
+        });
+    }
 
     /* ==========================================================================
        MAIN FETCH & ROUTING FUNCTION
@@ -938,6 +1036,7 @@
 
       const loader = document.getElementById('loader');
       const errorMsg = document.getElementById('errorMessage');
+      const successMsg = document.getElementById('successMessage');
       const t1 = document.getElementById('template1');
       const t2 = document.getElementById('template2');
 
@@ -948,10 +1047,10 @@
 
       loader.style.display = 'block';
       errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
       t1.style.display = 'none';
       t2.style.display = 'none';
 
-      // Querying node path: exam / StudentID / Session / ExamType
       const path = `exam/${studentId}/${session}/${examType}`;
 
       database.ref(path).once('value')
@@ -960,7 +1059,6 @@
           const data = snapshot.val();
 
           if (!data) {
-            // Fallback mock payload if record doesn't exist yet for demonstration
             showError(`No database record found at '${path}'. Displaying sample layout data.`);
             renderSampleData(studentId, session, examType);
             return;
@@ -980,8 +1078,14 @@
       errorMsg.style.display = 'block';
     }
 
+    function showSuccess(msg) {
+      const successMsg = document.getElementById('successMessage');
+      successMsg.textContent = msg;
+      successMsg.style.display = 'block';
+    }
+
     /* ==========================================================================
-       REPORT CARD RENDERING LOGIC
+       REPORT CARD RENDERING LOGIC (Requirement 7)
        ========================================================================== */
     function renderReportCard(data, session, examType) {
       const studentClass = data.class || '';
@@ -994,7 +1098,6 @@
       }
     }
 
-    /* Populates Class 1 - Class 5 Report Card (Template 1) */
     function populateTemplate1(data, session, examType) {
       document.getElementById('template1').style.display = 'block';
 
@@ -1007,6 +1110,11 @@
       document.getElementById('t1-examType').textContent = examType;
       document.getElementById('t1-father').textContent = data.fatherName || '-';
       document.getElementById('t1-mother').textContent = data.motherName || '-';
+
+      // Sync form dropdown with saved Firebase promotionStatus if Annual
+      if (examType === 'Annual' && data.promotionStatus) {
+        document.getElementById('promotionStatus').value = data.promotionStatus;
+      }
 
       // Table Generation
       const tbody = document.getElementById('t1-marksTableBody');
@@ -1051,7 +1159,13 @@
       document.getElementById('t1-grade').textContent = data.grade || getGradeFromScore(data.percentage);
       document.getElementById('t1-rank').textContent = data.rank || '1st';
       document.getElementById('t1-result').textContent = data.result || (data.percentage >= 33 ? 'PASS' : 'FAIL');
-      document.getElementById('t1-promotion').textContent = data.promotionStatus || 'Promoted to Next Class';
+
+      // Requirement 7: Promotion Status visibility on report card
+      if (examType === 'Annual') {
+        document.getElementById('t1-promotion').textContent = data.promotionStatus || 'Not Applicable';
+      } else {
+        document.getElementById('t1-promotion').textContent = 'Not Applicable';
+      }
 
       // Attendance & Remarks
       const att = data.attendance || {};
@@ -1063,7 +1177,6 @@
       generateQRCode('t1-qrcode', `SAIDRS:${data.admissionNo || '00'}:${session}:${examType}`);
     }
 
-    /* Populates IK-1 to IK-3 Preschool Report Card (Template 2) */
     function populateTemplate2(data, session, examType) {
       document.getElementById('template2').style.display = 'block';
 
@@ -1097,7 +1210,7 @@
       generateQRCode('t2-qrcode', `SAIDRS-KIDS:${data.admissionNo || '00'}:${data.class}`);
     }
 
-    /* Fallback data for demonstration if node is empty */
+    /* Fallback data for demonstration */
     function renderSampleData(studentId, session, examType) {
       const samplePrimary = {
         studentName: "Stephen Winters",
@@ -1122,13 +1235,12 @@
         grade: "A",
         rank: "2nd",
         result: "PASS",
-        promotionStatus: "Promoted to Class 5"
+        promotionStatus: "Promoted to Next Class"
       };
 
       renderReportCard(samplePrimary, session, examType);
     }
 
-    /* Helper: Grade Calculation */
     function getGradeFromScore(perc) {
       const p = parseFloat(perc);
       if (isNaN(p)) return '';
@@ -1140,7 +1252,6 @@
       return 'F';
     }
 
-    /* Helper: Dynamic QR Code Generator */
     function generateQRCode(elementId, text) {
       const container = document.getElementById(elementId);
       container.innerHTML = '';
@@ -1154,9 +1265,6 @@
       });
     }
 
-    /* ==========================================================================
-       PDF GENERATION USING JSPDF & HTML2CANVAS
-       ========================================================================== */
     function downloadPDF() {
       const t1 = document.getElementById('template1');
       const t2 = document.getElementById('template2');
@@ -1185,4 +1293,4 @@
     }
   </script>
 </body>
-  </html>
+              </html>
