@@ -2,12 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>📘 Gradebook Management</title>
+  <title>🏫 Examination Management System - Sai DRS Kids School</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+
   <style>
-    /* Google Fonts for modern look */
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    :root {
+      --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --accent-gold: #fbbf24;
+      --accent-blue: #0284c7;
+      --card-bg: rgba(255, 255, 255, 0.15);
+      --input-bg: rgba(255, 255, 255, 0.25);
+      --text-main: #0f172a;
+      --text-light: #f8fafc;
+      --success: #10b981;
+      --error: #ef4444;
+    }
 
     * {
       box-sizing: border-box;
@@ -18,11 +29,14 @@
 
     body {
       min-height: 100vh;
+      background: linear-gradient(135deg, #e0f2fe, #fef3c7, #fae8ff);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      padding: 20px 10px;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #e0f7fa, #fff9c4);
-      animation: gradientBG 15s ease infinite;
+      color: var(--text-main);
     }
 
     @keyframes gradientBG {
@@ -31,14 +45,30 @@
       100% { background-position: 0% 50%; }
     }
 
-    h2 {
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
       text-align: center;
-      color: #ffd700; /* golden */
-      margin-bottom: 30px;
-      font-size: 2em;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
-      animation: fadeInDown 1s ease forwards;
-      opacity: 0;
+      margin-bottom: 20px;
+      animation: fadeInDown 0.8s ease forwards;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #0369a1;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+    }
+
+    header p {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 5px;
     }
 
     @keyframes fadeInDown {
@@ -47,157 +77,601 @@
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(15px);
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
       padding: 30px;
-      width: 100%;
-      max-width: 500px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0284c7;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid rgba(2, 132, 199, 0.2);
     }
 
-    input {
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #334155;
+    }
+
+    input, select {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      background: rgba(255, 255, 255, 0.3);
-      color: #000;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: var(--input-bg);
+      color: #0f172a;
+      font-size: 0.95rem;
       font-weight: 500;
+      outline: none;
       transition: all 0.3s ease;
     }
 
-    input:focus {
-      outline: none;
-      border-color: #ffd700;
-      background: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 8px #ffd700;
+    input:focus, select:focus {
+      border-color: var(--accent-blue);
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 8px rgba(2, 132, 199, 0.3);
+    }
+
+    /* Table Styling */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 25px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    th {
+      background: rgba(2, 132, 199, 0.1);
+      color: #0369a1;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+
+    .subject-cell {
+      font-weight: 600;
+    }
+
+    /* Calculated Results Summary Grid */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 25px;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .summary-card {
+      text-align: center;
+    }
+
+    .summary-card span {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+    }
+
+    .summary-card strong {
+      font-size: 1.2rem;
+      color: #0f172a;
+    }
+
+    /* Action Buttons */
+    .button-group {
+      display: flex;
+      gap: 15px;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
+      flex: 1;
+      padding: 12px 20px;
       border: none;
       border-radius: 12px;
-      background: linear-gradient(135deg, #00bfff, #ffd700);
-      color: #fff;
-      font-size: 1em;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    .btn-save {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: white;
     }
 
-    #result {
-      margin-top: 15px;
-      font-weight: bold;
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn-reset {
+      background: linear-gradient(135deg, #64748b, #475569);
+      color: white;
+    }
+
+    .btn-reset:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(100, 116, 139, 0.3);
+    }
+
+    /* Messages */
+    #statusMessage {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
       text-align: center;
-      color: #ffd700;
-      text-shadow: 0 0 4px rgba(0,0,0,0.3);
-      animation: fadeIn 0.5s ease forwards;
-      opacity: 0;
+      font-weight: 600;
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .msg-success {
+      background: rgba(16, 185, 129, 0.2);
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+
+    .msg-error {
+      background: rgba(239, 68, 68, 0.2);
+      color: #991b1b;
+      border: 1px solid #ef4444;
     }
 
     @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div>
-    <h2>📘 Gradebook Management</h2>
+  <div class="container">
+    <header>
+      <h1>🏫 Sai DRS Kids School</h1>
+      <p>Examination Management System</p>
+    </header>
+
     <div class="card">
-      <input type="text" id="studentName" placeholder="Student Name">
-      <input type="text" id="studentClass" placeholder="Class">
-      <input type="text" id="studentId" placeholder="Student ID">
-      <input type="text" id="subject" placeholder="Subject">
+      <form id="examForm" onsubmit="handleFormSubmit(event)">
+        
+        <div class="section-title">Student Information</div>
+        <div class="form-grid">
+          <div class="input-group">
+            <label for="studentId">Student ID *</label>
+            <input type="text" id="studentId" required placeholder="e.g., STU1001">
+          </div>
+          <div class="input-group">
+            <label for="studentName">Student Name *</label>
+            <input type="text" id="studentName" required placeholder="Full Name">
+          </div>
+          <div class="input-group">
+            <label for="admissionNo">Admission No *</label>
+            <input type="text" id="admissionNo" required placeholder="e.g., ADM202301">
+          </div>
+          <div class="input-group">
+            <label for="studentClass">Class Level *</label>
+            <select id="studentClass" required onchange="handleClassChange()">
+              <option value="">Select Class</option>
+              <option value="IK-1">IK-1 (Grade-Based)</option>
+              <option value="IK-2">IK-2 (Grade-Based)</option>
+              <option value="IK-3">IK-3 (Grade-Based)</option>
+              <option value="Class 1">Class 1</option>
+              <option value="Class 2">Class 2</option>
+              <option value="Class 3">Class 3</option>
+              <option value="Class 4">Class 4</option>
+              <option value="Class 5">Class 5</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="section">Section *</label>
+            <input type="text" id="section" required placeholder="e.g., A">
+          </div>
+          <div class="input-group">
+            <label for="rollNo">Roll No *</label>
+            <input type="number" id="rollNo" min="1" required placeholder="e.g., 12">
+          </div>
+        </div>
 
-      <input type="number" id="assignment" placeholder="Assignment Marks">
-      <input type="number" id="test" placeholder="Class Test Marks">
-      <input type="number" id="exam" placeholder="Exam Marks">
+        <div class="section-title">Exam Context & Attendance</div>
+        <div class="form-grid">
+          <div class="input-group">
+            <label for="session">Academic Session *</label>
+            <select id="session" required>
+              <option value="2025-2026">2025-2026</option>
+              <option value="2026-2027">2026-2027</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="examType">Exam Type *</label>
+            <select id="examType" required>
+              <option value="">Select Exam</option>
+              <option value="Unit Test 1">Unit Test 1</option>
+              <option value="Half Yearly">Half Yearly</option>
+              <option value="Unit Test 2">Unit Test 2</option>
+              <option value="Annual">Annual</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="presentDays">Attendance Present (Days)</label>
+            <input type="number" id="presentDays" min="0" value="0">
+          </div>
+          <div class="input-group">
+            <label for="absentDays">Attendance Absent (Days)</label>
+            <input type="number" id="absentDays" min="0" value="0">
+          </div>
+        </div>
 
-      <button onclick="saveMarks()">Save Marks</button>
-      <p id="result"></p>
+        <div class="section-title">Subject Assessment</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Score / Grade</th>
+              </tr>
+            </thead>
+            <tbody id="subjectTableBody">
+              </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Calculated Performance Summary</div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span>Total Marks</span>
+            <strong id="calcTotal">0</strong>
+          </div>
+          <div class="summary-card">
+            <span>Obtained</span>
+            <strong id="calcObtained">0</strong>
+          </div>
+          <div class="summary-card">
+            <span>Percentage</span>
+            <strong id="calcPercentage">0%</strong>
+          </div>
+          <div class="summary-card">
+            <span>Overall Grade</span>
+            <strong id="calcGrade">N/A</strong>
+          </div>
+          <div class="summary-card">
+            <span>Result</span>
+            <strong id="calcResult">N/A</strong>
+          </div>
+        </div>
+
+        <div class="section-title">Remarks</div>
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="input-group">
+            <label for="remarks">Teacher Remarks</label>
+            <input type="text" id="remarks" placeholder="Enter performance feedback...">
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn-save">Save Exam Record</button>
+          <button type="button" class="btn-reset" onclick="resetForm()">Reset Form</button>
+        </div>
+
+        <div id="statusMessage"></div>
+      </form>
     </div>
   </div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
-    // Firebase config
+    // 1. Firebase Initialization
     const firebaseConfig = {
       apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271",
-  storageBucket: "students-6e271.firebasestorage.app",
-  messagingSenderId: "336382170224",
-  appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+      authDomain: "students-6e271.firebaseapp.com",
+      databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+      projectId: "students-6e271",
+      storageBucket: "students-6e271.firebasestorage.app",
+      messagingSenderId: "336382170224",
+      appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     const database = firebase.database();
 
-    function saveMarks() {
-      const name = document.getElementById('studentName').value.trim();
-      const studentClass = document.getElementById('studentClass').value.trim();
-      const studentId = document.getElementById('studentId').value.trim();
-      const subject = document.getElementById('subject').value.trim();
-      const assignment = document.getElementById('assignment').value;
-      const test = document.getElementById('test').value;
-      const exam = document.getElementById('exam').value;
+    // Subject List Constants
+    const SUBJECTS = [
+      'English', 'Mathematics', 'Science', 'Social Science', 
+      'Hindi', 'Assamese', 'Computer', 'GK', 'Drawing', 'Physical Education'
+    ];
 
-      if (!name || !studentClass || !studentId || !subject) {
-        document.getElementById('result').innerText = "Please fill all required fields!";
-        document.getElementById('result').style.opacity = 1;
+    const GRADE_OPTIONS = ['A+', 'A', 'B+', 'B', 'C'];
+
+    // 2. Initialize Subject Table on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSubjectRows(false);
+    });
+
+    // 3. Render Table Rows based on Class Selection
+    function handleClassChange() {
+      const selectedClass = document.getElementById('studentClass').value;
+      const isGradeBased = ['IK-1', 'IK-2', 'IK-3'].includes(selectedClass);
+      renderSubjectRows(isGradeBased);
+      recalculateMetrics();
+    }
+
+    function renderSubjectRows(isGradeBased) {
+      const tbody = document.getElementById('subjectTableBody');
+      tbody.innerHTML = '';
+
+      SUBJECTS.forEach(sub => {
+        const tr = document.createElement('tr');
+        const subCell = document.createElement('td');
+        subCell.className = 'subject-cell';
+        subCell.textContent = sub;
+
+        const inputCell = document.createElement('td');
+
+        if (isGradeBased) {
+          const select = document.createElement('select');
+          select.className = 'subject-input grade-input';
+          select.dataset.subject = sub;
+
+          const defaultOpt = document.createElement('option');
+          defaultOpt.value = '';
+          defaultOpt.textContent = 'Select Grade';
+          select.appendChild(defaultOpt);
+
+          GRADE_OPTIONS.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g;
+            opt.textContent = g;
+            select.appendChild(opt);
+          });
+
+          select.addEventListener('change', recalculateMetrics);
+          inputCell.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.className = 'subject-input score-input';
+          input.dataset.subject = sub;
+          input.min = '0';
+          input.max = '100';
+          input.placeholder = 'Max 100';
+          input.addEventListener('input', recalculateMetrics);
+          inputCell.appendChild(input);
+        }
+
+        tr.appendChild(subCell);
+        tr.appendChild(inputCell);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 4. Mathematical & Grade Calculations
+    function recalculateMetrics() {
+      const selectedClass = document.getElementById('studentClass').value;
+      const isGradeBased = ['IK-1', 'IK-2', 'IK-3'].includes(selectedClass);
+
+      if (isGradeBased || !selectedClass) {
+        document.getElementById('calcTotal').textContent = 'N/A';
+        document.getElementById('calcObtained').textContent = 'N/A';
+        document.getElementById('calcPercentage').textContent = 'N/A';
+        document.getElementById('calcGrade').textContent = 'N/A';
+        document.getElementById('calcResult').textContent = 'N/A';
         return;
       }
 
-      const newLogRef = database.ref('logbook/' + studentId + '/' + subject).push();
+      const scoreInputs = document.querySelectorAll('.score-input');
+      let totalMax = 0;
+      let totalObtained = 0;
+      let filledCount = 0;
 
-      newLogRef.set({
-        studentName: name,
-        class: studentClass,
-        assignmentMarks: Number(assignment),
-        testMarks: Number(test),
-        examMarks: Number(exam),
-        timestamp: new Date().toISOString()
-      })
-      .then(() => {
-        const res = document.getElementById('result');
-        res.innerText = "Marks saved successfully!";
-        res.style.opacity = 1;
-
-        // Clear inputs
-        ['studentName','studentClass','studentId','subject','assignment','test','exam'].forEach(id => {
-          document.getElementById(id).value = '';
-        });
-      })
-      .catch(error => {
-        const res = document.getElementById('result');
-        res.innerText = "Error: " + error.message;
-        res.style.opacity = 1;
+      scoreInputs.forEach(input => {
+        const val = input.value;
+        if (val !== '' && !isNaN(val)) {
+          totalMax += 100;
+          totalObtained += parseFloat(val);
+          filledCount++;
+        }
       });
+
+      if (filledCount === 0) {
+        document.getElementById('calcTotal').textContent = '0';
+        document.getElementById('calcObtained').textContent = '0';
+        document.getElementById('calcPercentage').textContent = '0%';
+        document.getElementById('calcGrade').textContent = 'N/A';
+        document.getElementById('calcResult').textContent = 'N/A';
+        return;
+      }
+
+      const percentage = calculatePercentage(totalObtained, totalMax);
+      const grade = calculateOverallGrade(percentage);
+      const result = percentage >= 33 ? 'PASS' : 'FAIL';
+
+      document.getElementById('calcTotal').textContent = totalMax;
+      document.getElementById('calcObtained').textContent = totalObtained;
+      document.getElementById('calcPercentage').textContent = percentage.toFixed(2) + '%';
+      document.getElementById('calcGrade').textContent = grade;
+      document.getElementById('calcResult').textContent = result;
+    }
+
+    function calculatePercentage(obtained, total) {
+      if (total === 0) return 0;
+      return (obtained / total) * 100;
+    }
+
+    function calculateOverallGrade(percentage) {
+      if (percentage >= 90) return 'A+';
+      if (percentage >= 80) return 'A';
+      if (percentage >= 70) return 'B+';
+      if (percentage >= 60) return 'B';
+      if (percentage >= 50) return 'C';
+      if (percentage >= 33) return 'D';
+      return 'F';
+    }
+
+    // 5. Form Validation
+    function validateForm() {
+      const requiredIds = ['studentId', 'studentName', 'admissionNo', 'studentClass', 'section', 'rollNo', 'session', 'examType'];
+      for (let id of requiredIds) {
+        const el = document.getElementById(id);
+        if (!el || !el.value.trim()) {
+          showStatus(`Please complete required field: ${id.replace(/([A-Z])/g, ' $1')}`, 'error');
+          return false;
+        }
+      }
+
+      // Validate Subjects
+      const inputs = document.querySelectorAll('.subject-input');
+      let missingSubject = false;
+      inputs.forEach(inp => {
+        if (!inp.value.trim()) {
+          missingSubject = true;
+        }
+      });
+
+      if (missingSubject) {
+        showStatus('Please assign marks/grades to all subjects.', 'error');
+        return false;
+      }
+
+      return true;
+    }
+
+    // 6. Save Data to Firebase Realtime Database
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      if (!validateForm()) return;
+
+      const studentId = document.getElementById('studentId').value.trim();
+      const session = document.getElementById('session').value.trim();
+      const examType = document.getElementById('examType').value.trim();
+      const studentClass = document.getElementById('studentClass').value;
+      const isGradeBased = ['IK-1', 'IK-2', 'IK-3'].includes(studentClass);
+
+      // Collect Subjects
+      const subjectsData = {};
+      document.querySelectorAll('.subject-input').forEach(inp => {
+        const subName = inp.dataset.subject;
+        subjectsData[subName] = isGradeBased ? inp.value : (Number(inp.value) || 0);
+      });
+
+      // Calculate aggregated metrics for payload
+      let totalMarks = "N/A";
+      let obtainedMarks = "N/A";
+      let percentage = "N/A";
+      let grade = "N/A";
+      let result = "N/A";
+
+      if (!isGradeBased) {
+        const totalMax = Object.keys(subjectsData).length * 100;
+        const totalObt = Object.values(subjectsData).reduce((a, b) => a + Number(b), 0);
+        const perc = calculatePercentage(totalObt, totalMax);
+
+        totalMarks = totalMax;
+        obtainedMarks = totalObt;
+        percentage = Number(perc.toFixed(2));
+        grade = calculateOverallGrade(perc);
+        result = perc >= 33 ? 'PASS' : 'FAIL';
+      }
+
+      // Payload object matching requested structure
+      const payload = {
+        studentName: document.getElementById('studentName').value.trim(),
+        class: studentClass,
+        section: document.getElementById('section').value.trim(),
+        rollNo: Number(document.getElementById('rollNo').value),
+        admissionNo: document.getElementById('admissionNo').value.trim(),
+        attendance: {
+          present: Number(document.getElementById('presentDays').value) || 0,
+          absent: Number(document.getElementById('absentDays').value) || 0
+        },
+        remarks: document.getElementById('remarks').value.trim(),
+        subjects: subjectsData,
+        totalMarks: totalMarks,
+        obtainedMarks: obtainedMarks,
+        percentage: percentage,
+        grade: grade,
+        rank: "N/A", // Default placeholder
+        result: result
+      };
+
+      // Sanitize key paths for Firebase Realtime DB
+      const targetPath = `exam/${studentId}/${session}/${examType}`;
+
+      database.ref(targetPath).set(payload)
+        .then(() => {
+          showStatus('Examination record saved successfully!', 'success');
+        })
+        .catch((error) => {
+          showStatus('Failed to save record: ' + error.message, 'error');
+        });
+    }
+
+    // 7. Form Reset Helper
+    function resetForm() {
+      document.getElementById('examForm').reset();
+      handleClassChange();
+      const statusMsg = document.getElementById('statusMessage');
+      statusMsg.style.display = 'none';
+    }
+
+    // 8. UI Status Feedback
+    function showStatus(message, type) {
+      const statusMsg = document.getElementById('statusMessage');
+      statusMsg.textContent = message;
+      statusMsg.className = type === 'success' ? 'msg-success' : 'msg-error';
+      statusMsg.style.display = 'block';
+      statusMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   </script>
-
 </body>
-</html>
+                </html>
