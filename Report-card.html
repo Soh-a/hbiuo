@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sai DRS Kids School - Report Card Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. GLOBAL & APP STYLES (Screen View)
+       ========================================================================== */
+    :root {
+      --primary-navy: #1e3a8a;
+      --secondary-burgundy: #800000;
+      --accent-gold: #d97706;
+      --bg-cream: #fffbeb;
+      --text-dark: #1f2937;
+      --glass-bg: rgba(255, 255, 255, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fae8ff 100%);
+      background-attachment: fixed;
+      padding: 20px 10px;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    /* Glassmorphism Control Panel */
+    .control-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .input-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-field label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .input-field input, .input-field select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-field input:focus, .input-field select:focus {
+      border-color: var(--primary-navy);
+      background: #ffffff;
+      box-shadow: 0 0 8px rgba(30, 58, 138, 0.2);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(30, 58, 138, 0.3); }
+
+    .btn-print { background: linear-gradient(135deg, #059669, #10b981); color: white; }
+    .btn-print:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3); }
+
+    .btn-pdf { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; }
+    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.3); }
+
+    /* Loader & Error Messages */
+    #loader {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      font-weight: 600;
+      color: var(--primary-navy);
+    }
+
+    #errorMessage {
+      display: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      color: #991b1b;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    /* A4 Document View Stage */
+    .report-card-stage {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 50px;
+    }
+
+    /* Base Page Settings for Print / PDF (Standard A4 dimensions) */
+    .a4-page {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      padding: 12mm 15mm;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      display: none; /* Controlled by JS */
+    }
+
+    /* Watermark */
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 4rem;
+      font-weight: 800;
+      color: rgba(30, 58, 138, 0.03);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .report-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* ==========================================================================
+       2. TEMPLATE 1: CLASS 1 TO CLASS 5 (Classic Academic Layout)
+       ========================================================================== */
+    .t1-header {
+      border-bottom: 3px double var(--secondary-burgundy);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .t1-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .t1-school-logo {
+      width: 75px;
+      height: 75px;
+      object-fit: contain;
+    }
+
+    .t1-school-details {
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .t1-school-details h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--secondary-burgundy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .t1-school-details p {
+      font-size: 0.78rem;
+      color: #4b5563;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .t1-card-title {
+      background: var(--secondary-burgundy);
+      color: white;
+      text-align: center;
+      padding: 4px 0;
+      margin-top: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+
+    .t1-student-info {
+      display: grid;
+      grid-template-columns: 1fr 130px;
+      gap: 15px;
+      border: 1px solid #cbd5e1;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+    }
+
+    .t1-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: 6px;
+      column-gap: 15px;
+      font-size: 0.82rem;
+    }
+
+    .t1-info-item span {
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .t1-photo-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .t1-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Marks Table Styling */
+    .t1-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 0.78rem;
+    }
+
+    .t1-table th, .t1-table td {
+      border: 1px solid #94a3b8;
+      padding: 6px 5px;
+      text-align: center;
+    }
+
+    .t1-table th {
+      background-color: #f1f5f9;
+      color: var(--secondary-burgundy);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+
+    .t1-table td.subject-name {
+      text-align: left;
+      font-weight: 600;
+      padding-left: 8px;
+    }
+
+    .t1-summary-box {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .t1-summary-item {
+      border: 1px solid #cbd5e1;
+      padding: 6px;
+      border-radius: 4px;
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .t1-summary-item label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .t1-summary-item value {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--secondary-burgundy);
+      margin-top: 2px;
+    }
+
+    .t1-remarks-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .t1-remark-card {
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      min-height: 55px;
+    }
+
+    .t1-remark-card strong {
+      display: block;
+      color: var(--primary-navy);
+      margin-bottom: 4px;
+      font-size: 0.75rem;
+    }
+
+    /* Footer / Signatures */
+    .t1-footer {
+      margin-top: auto;
+      padding-top: 10px;
+    }
+
+    .t1-signatures {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 25px;
+      padding: 0 10px;
+    }
+
+    .sig-line {
+      text-align: center;
+      width: 140px;
+    }
+
+    .sig-line p {
+      border-top: 1px solid #64748b;
+      padding-top: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .seal-qr-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+    }
+
+    .seal-box {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #94a3b8;
+      border: 1px dashed #cbd5e1;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ==========================================================================
+       3. TEMPLATE 2: IK-1, IK-2, IK-3 (Playful Nursery Layout)
+       ========================================================================== */
+    .t2-wrapper {
+      border: 4px rounded #fde047;
+      background: #fffdf5;
+      padding: 10px;
+      border-radius: 12px;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .t2-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .t2-title-badge {
+      background: #fbbf24;
+      color: #78350f;
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 3px 0 #d97706;
+    }
+
+    .t2-info-card {
+      background: #ffffff;
+      border: 2px solid #fef08a;
+      border-radius: 10px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    .t2-info-item span {
+      font-weight: 700;
+      color: #d97706;
+    }
+
+    .t2-grid-assessment {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .t2-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .t2-table th, .t2-table td {
+      border: 1px solid #fef08a;
+      padding: 5px 8px;
+    }
+
+    .t2-table th {
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: 700;
+    }
+
+    .t2-table td.grade-cell {
+      text-align: center;
+      font-weight: 800;
+      color: #b45309;
+    }
+
+    .t2-grading-key {
+      background: #ffffff;
+      border: 2px solid #fed7aa;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.75rem;
+    }
+
+    .t2-grading-key h4 {
+      color: #c2410c;
+      margin-bottom: 6px;
+      text-align: center;
+      border-bottom: 1px solid #ffedd5;
+      padding-bottom: 4px;
+    }
+
+    .t2-key-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      padding: 2px 4px;
+    }
+
+    .t2-key-item strong {
+      color: #ea580c;
+    }
+
+    .t2-obs-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .t2-obs-box {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.75rem;
+    }
+
+    .t2-obs-box strong {
+      color: #0284c7;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Print Specific Overrides */
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+
+      .control-panel {
+        display: none !important;
+      }
+
+      .report-card-stage {
+        margin: 0;
+      }
+
+      .a4-page {
+        box-shadow: none;
+        border: none;
+        width: 100%;
+        min-height: 100vh;
+        padding: 8mm 10mm;
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="control-panel">
+      <div class="panel-title">
+        <i class="fa-solid fa-graduation-cap"></i> Sai DRS Kids School - Examination Portal
+      </div>
+
+      <div class="search-grid">
+        <div class="input-field">
+          <label for="searchStudentId">Student ID *</label>
+          <input type="text" id="searchStudentId" placeholder="e.g., STU1001" value="STU1001">
+        </div>
+        <div class="input-field">
+          <label for="searchSession">Academic Session *</label>
+          <select id="searchSession">
+            <option value="2025-2026">2025-2026</option>
+            <option value="2026-2027" selected>2026-2027</option>
+          </select>
+        </div>
+        <div class="input-field">
+          <label for="searchExamType">Exam Type *</label>
+          <select id="searchExamType">
+            <option value="Unit Test 1">Unit Test 1</option>
+            <option value="Half Yearly">Half Yearly</option>
+            <option value="Unit Test 2">Unit Test 2</option>
+            <option value="Annual" selected>Annual</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-btns">
+        <button class="btn btn-primary" onclick="fetchAndGenerateReport()">
+          <i class="fa-solid fa-file-circle-check"></i> Generate Report Card
+        </button>
+        <button class="btn btn-print" onclick="window.print()">
+          <i class="fa-solid fa-print"></i> Print
+        </button>
+        <button class="btn btn-pdf" onclick="downloadPDF()">
+          <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </button>
+      </div>
+
+      <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Fetching examination record from database...</div>
+      <div id="errorMessage"></div>
+    </div>
+
+    <div class="report-card-stage">
+
+      <div id="template1" class="a4-page">
+        <div class="watermark">SAI DRS KIDS SCHOOL</div>
+        <div class="report-content">
+          <div>
+            <div class="t1-header">
+              <div class="t1-header-top">
+                <img src="https://via.placeholder.com/80/1e3a8a/ffffff?text=DRS" alt="School Logo" class="t1-school-logo">
+                <div class="t1-school-details">
+                  <h2>Sai DRS Kids School</h2>
+                  <p>108 N Platinum Ave, Educational Zone, City - 781001</p>
+                  <p>Contact: +91 98765 43210 | Email: info@saidrskidsschool.com</p>
+                </div>
+              </div>
+              <div class="t1-card-title">
+                Academic Performance Report (<span class="lbl-session">2026-2027</span>)
+              </div>
+            </div>
+
+            <div class="t1-student-info">
+              <div class="t1-info-grid">
+                <div class="t1-info-item"><span>Student Name:</span> <label id="t1-name">-</label></div>
+                <div class="t1-info-item"><span>Admission No:</span> <label id="t1-admNo">-</label></div>
+                <div class="t1-info-item"><span>Class & Section:</span> <label id="t1-classSec">-</label></div>
+                <div class="t1-info-item"><span>Roll Number:</span> <label id="t1-rollNo">-</label></div>
+                <div class="t1-info-item"><span>Date of Birth:</span> <label id="t1-dob">-</label></div>
+                <div class="t1-info-item"><span>Exam Type:</span> <label id="t1-examType">-</label></div>
+                <div class="t1-info-item"><span>Father's Name:</span> <label id="t1-father">-</label></div>
+                <div class="t1-info-item"><span>Mother's Name:</span> <label id="t1-mother">-</label></div>
+              </div>
+              <div class="t1-photo-box">
+                <img src="https://via.placeholder.com/120x130/cbd5e1/475569?text=Student+Photo" id="t1-studentPhoto" alt="Student Photo">
+              </div>
+            </div>
+
+            <table class="t1-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Periodic Test (10)</th>
+                  <th>Half Yearly (80)</th>
+                  <th>Notebook (5)</th>
+                  <th>Subject Enrich (5)</th>
+                  <th>Annual Exam (100)</th>
+                  <th>Total</th>
+                  <th>Grade</th>
+                </tr>
+              </thead>
+              <tbody id="t1-marksTableBody">
+                </tbody>
+            </table>
+
+            <div class="t1-summary-box">
+              <div class="t1-summary-item">
+                <label>Total Marks</label>
+                <value id="t1-totalMarks">-</value>
+              </div>
+              <div class="t1-summary-item">
+                <label>Obtained Marks</label>
+                <value id="t1-obtainedMarks">-</value>
+              </div>
+              <div class="t1-summary-item">
+                <label>Percentage</label>
+                <value id="t1-percentage">-</value>
+              </div>
+              <div class="t1-summary-item">
+                <label>Overall Grade</label>
+                <value id="t1-grade">-</value>
+              </div>
+            </div>
+
+            <div class="t1-summary-box" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="t1-summary-item">
+                <label>Class Rank</label>
+                <value id="t1-rank">-</value>
+              </div>
+              <div class="t1-summary-item">
+                <label>Result</label>
+                <value id="t1-result">-</value>
+              </div>
+              <div class="t1-summary-item">
+                <label>Promotion Status</label>
+                <value id="t1-promotion">-</value>
+              </div>
+            </div>
+
+            <div class="t1-remarks-grid">
+              <div class="t1-remark-card">
+                <strong>Attendance Record</strong>
+                Present Days: <span id="t1-present">0</span> | Absent Days: <span id="t1-absent">0</span>
+              </div>
+              <div class="t1-remark-card">
+                <strong>Teacher's Remarks</strong>
+                <span id="t1-teacherRemarks">-</span>
+              </div>
+            </div>
+
+            <div class="t1-remark-card" style="margin-bottom: 12px;">
+              <strong>Principal's Remarks</strong>
+              <span id="t1-principalRemarks">-</span>
+            </div>
+          </div>
+
+          <div class="t1-footer">
+            <div class="t1-signatures">
+              <div class="sig-line"><p>Class Teacher</p></div>
+              <div class="sig-line"><p>Parent / Guardian</p></div>
+              <div class="sig-line"><p>Principal</p></div>
+            </div>
+            <div class="seal-qr-container">
+              <div class="seal-box">OFFICIAL SCHOOL SEAL</div>
+              <div id="t1-qrcode"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="template2" class="a4-page">
+        <div class="watermark">SAI DRS KIDS SCHOOL</div>
+        <div class="t2-wrapper">
+          <div class="t2-header">
+            <h2 style="color: #92400e; font-size: 1.5rem; text-transform: uppercase;">Sai DRS Kids School</h2>
+            <div class="t2-title-badge" style="margin-top: 5px;">Preschool Progress Card</div>
+          </div>
+
+          <div class="t2-info-card">
+            <div class="t2-info-item"><span>Student:</span> <label id="t2-name">-</label></div>
+            <div class="t2-info-item"><span>Level / Class:</span> <label id="t2-class">-</label></div>
+            <div class="t2-info-item"><span>Roll No:</span> <label id="t2-rollNo">-</label></div>
+            <div class="t2-info-item"><span>Adm No:</span> <label id="t2-admNo">-</label></div>
+            <div class="t2-info-item"><span>Session:</span> <label id="t2-session">-</label></div>
+            <div class="t2-info-item"><span>Date of Birth:</span> <label id="t2-dob">-</label></div>
+          </div>
+
+          <div class="t2-grid-assessment">
+            <table class="t2-table">
+              <thead>
+                <tr>
+                  <th>Learning Domain / Activity</th>
+                  <th style="width: 100px; text-align: center;">Grade</th>
+                </tr>
+              </thead>
+              <tbody id="t2-activityTableBody">
+                </tbody>
+            </table>
+
+            <div>
+              <div class="t2-grading-key">
+                <h4>Grading System</h4>
+                <div class="t2-key-item"><strong>A+</strong> <span>Excellent</span></div>
+                <div class="t2-key-item"><strong>A</strong> <span>Outstanding</span></div>
+                <div class="t2-key-item"><strong>B+</strong> <span>Very Good</span></div>
+                <div class="t2-key-item"><strong>B</strong> <span>Good</span></div>
+                <div class="t2-key-item"><strong>C</strong> <span>Satisfactory</span></div>
+              </div>
+
+              <div class="t2-obs-box" style="margin-top: 10px;">
+                <strong>Attendance Record</strong>
+                Present: <span id="t2-present">0</span> Days<br>
+                Absent: <span id="t2-absent">0</span> Days
+              </div>
+            </div>
+          </div>
+
+          <div class="t2-obs-container">
+            <div class="t2-obs-box">
+              <strong>Key Strengths</strong>
+              <span id="t2-strengths">Demonstrates excellent enthusiasm and curiosity in group activities.</span>
+            </div>
+            <div class="t2-obs-box">
+              <strong>Needs Improvement</strong>
+              <span id="t2-improvements">Focusing during quiet reading and pencil grip balance.</span>
+            </div>
+          </div>
+
+          <div class="t2-obs-container">
+            <div class="t2-obs-box">
+              <strong>Teacher Remarks</strong>
+              <span id="t2-teacherRemarks">-</span>
+            </div>
+            <div class="t2-obs-box">
+              <strong>Principal Remarks</strong>
+              <span id="t2-principalRemarks">-</span>
+            </div>
+          </div>
+
+          <div class="t1-signatures" style="margin-top: auto; padding-bottom: 5px;">
+            <div class="sig-line"><p>Class Teacher</p></div>
+            <div class="sig-line"><p>Parent / Guardian</p></div>
+            <div class="sig-line"><p>Principal</p></div>
+          </div>
+
+          <div class="seal-qr-container">
+            <div class="seal-box">SCHOOL SEAL</div>
+            <div id="t2-qrcode"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       FIREBASE CONFIGURATION & INITIALIZATION
+       ========================================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+      authDomain: "students-6e271.firebaseapp.com",
+      databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+      projectId: "students-6e271",
+      storageBucket: "students-6e271.firebasestorage.app",
+      messagingSenderId: "336382170224",
+      appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    /* ==========================================================================
+       SUBJECT & DOMAIN MAPS
+       ========================================================================== */
+    const PRIMARY_SUBJECTS = [
+      'English', 'Mathematics', 'EVS/Science', 'Social Science',
+      'Hindi', 'Assamese', 'Computer', 'General Knowledge',
+      'Drawing', 'Physical Education'
+    ];
+
+    const PRESCHOOL_ACTIVITIES = [
+      'English', 'Number Work', 'Rhymes', 'Conversation',
+      'Drawing', 'Colouring', 'General Knowledge', 'Activity',
+      'Fine Motor Skills', 'Gross Motor Skills', 'Social Behaviour', 'Personal Hygiene'
+    ];
+
+    /* Auto Fetch & Generate on Page Load */
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchAndGenerateReport();
+    });
+
+    /* ==========================================================================
+       MAIN FETCH & ROUTING FUNCTION
+       ========================================================================== */
+    function fetchAndGenerateReport() {
+      const studentId = document.getElementById('searchStudentId').value.trim();
+      const session = document.getElementById('searchSession').value;
+      const examType = document.getElementById('searchExamType').value;
+
+      const loader = document.getElementById('loader');
+      const errorMsg = document.getElementById('errorMessage');
+      const t1 = document.getElementById('template1');
+      const t2 = document.getElementById('template2');
+
+      if (!studentId) {
+        showError('Please enter a valid Student ID.');
+        return;
+      }
+
+      loader.style.display = 'block';
+      errorMsg.style.display = 'none';
+      t1.style.display = 'none';
+      t2.style.display = 'none';
+
+      // Querying node path: exam / StudentID / Session / ExamType
+      const path = `exam/${studentId}/${session}/${examType}`;
+
+      database.ref(path).once('value')
+        .then(snapshot => {
+          loader.style.display = 'none';
+          const data = snapshot.val();
+
+          if (!data) {
+            // Fallback mock payload if record doesn't exist yet for demonstration
+            showError(`No database record found at '${path}'. Displaying sample layout data.`);
+            renderSampleData(studentId, session, examType);
+            return;
+          }
+
+          renderReportCard(data, session, examType);
+        })
+        .catch(err => {
+          loader.style.display = 'none';
+          showError('Database Read Error: ' + err.message);
+        });
+    }
+
+    function showError(msg) {
+      const errorMsg = document.getElementById('errorMessage');
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+    }
+
+    /* ==========================================================================
+       REPORT CARD RENDERING LOGIC
+       ========================================================================== */
+    function renderReportCard(data, session, examType) {
+      const studentClass = data.class || '';
+      const isPreschool = ['IK-1', 'IK-2', 'IK-3'].includes(studentClass);
+
+      if (isPreschool) {
+        populateTemplate2(data, session, examType);
+      } else {
+        populateTemplate1(data, session, examType);
+      }
+    }
+
+    /* Populates Class 1 - Class 5 Report Card (Template 1) */
+    function populateTemplate1(data, session, examType) {
+      document.getElementById('template1').style.display = 'block';
+
+      document.querySelectorAll('.lbl-session').forEach(e => e.textContent = session);
+      document.getElementById('t1-name').textContent = data.studentName || '-';
+      document.getElementById('t1-admNo').textContent = data.admissionNo || '-';
+      document.getElementById('t1-classSec').textContent = `${data.class || ''} - ${data.section || ''}`;
+      document.getElementById('t1-rollNo').textContent = data.rollNo || '-';
+      document.getElementById('t1-dob').textContent = data.dob || '01-01-2017';
+      document.getElementById('t1-examType').textContent = examType;
+      document.getElementById('t1-father').textContent = data.fatherName || '-';
+      document.getElementById('t1-mother').textContent = data.motherName || '-';
+
+      // Table Generation
+      const tbody = document.getElementById('t1-marksTableBody');
+      tbody.innerHTML = '';
+
+      const subjectsObj = data.subjects || {};
+      PRIMARY_SUBJECTS.forEach(sub => {
+        const val = subjectsObj[sub] !== undefined ? subjectsObj[sub] : '-';
+        const isNum = !isNaN(val) && val !== '-';
+        
+        // Break down marks components
+        const pt = isNum ? Math.round(val * 0.1) : '-';
+        const hy = isNum ? Math.round(val * 0.8) : '-';
+        const nb = isNum ? 5 : '-';
+        const se = isNum ? 5 : '-';
+        const grade = isNum ? getGradeFromScore(val) : '-';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="subject-name">${sub}</td>
+          <td>${pt}</td>
+          <td>${hy}</td>
+          <td>${nb}</td>
+          <td>${se}</td>
+          <td>${val}</td>
+          <td><strong>${val}</strong></td>
+          <td><strong>${grade}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Summary Values
+      document.getElementById('t1-totalMarks').textContent = data.totalMarks || '1000';
+      document.getElementById('t1-obtainedMarks').textContent = data.obtainedMarks || '-';
+      document.getElementById('t1-percentage').textContent = data.percentage ? `${data.percentage}%` : '-';
+      document.getElementById('t1-grade').textContent = data.grade || getGradeFromScore(data.percentage);
+      document.getElementById('t1-rank').textContent = data.rank || '1st';
+      document.getElementById('t1-result').textContent = data.result || (data.percentage >= 33 ? 'PASS' : 'FAIL');
+      document.getElementById('t1-promotion').textContent = data.promotionStatus || 'Promoted to Next Class';
+
+      // Attendance & Remarks
+      const att = data.attendance || {};
+      document.getElementById('t1-present').textContent = att.present || '0';
+      document.getElementById('t1-absent').textContent = att.absent || '0';
+      document.getElementById('t1-teacherRemarks').textContent = data.remarks || 'Hardworking student with steady academic growth.';
+      document.getElementById('t1-principalRemarks').textContent = data.principalRemarks || 'Promoted with good performance.';
+
+      generateQRCode('t1-qrcode', `SAIDRS:${data.admissionNo || '00'}:${session}:${examType}`);
+    }
+
+    /* Populates IK-1 to IK-3 Preschool Report Card (Template 2) */
+    function populateTemplate2(data, session, examType) {
+      document.getElementById('template2').style.display = 'block';
+
+      document.getElementById('t2-name').textContent = data.studentName || '-';
+      document.getElementById('t2-class').textContent = data.class || '-';
+      document.getElementById('t2-rollNo').textContent = data.rollNo || '-';
+      document.getElementById('t2-admNo').textContent = data.admissionNo || '-';
+      document.getElementById('t2-session').textContent = session;
+      document.getElementById('t2-dob').textContent = data.dob || '01-01-2021';
+
+      const tbody = document.getElementById('t2-activityTableBody');
+      tbody.innerHTML = '';
+
+      const subjectsObj = data.subjects || {};
+      PRESCHOOL_ACTIVITIES.forEach(act => {
+        const grade = subjectsObj[act] || 'A';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${act}</td>
+          <td class="grade-cell">${grade}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const att = data.attendance || {};
+      document.getElementById('t2-present').textContent = att.present || '0';
+      document.getElementById('t2-absent').textContent = att.absent || '0';
+      document.getElementById('t2-teacherRemarks').textContent = data.remarks || 'An active, energetic participant in group activities.';
+      document.getElementById('t2-principalRemarks').textContent = data.principalRemarks || 'Making wonderful progress every day!';
+
+      generateQRCode('t2-qrcode', `SAIDRS-KIDS:${data.admissionNo || '00'}:${data.class}`);
+    }
+
+    /* Fallback data for demonstration if node is empty */
+    function renderSampleData(studentId, session, examType) {
+      const samplePrimary = {
+        studentName: "Stephen Winters",
+        class: "Class 4",
+        section: "A",
+        rollNo: 12,
+        admissionNo: "ADM-2026-042",
+        fatherName: "David Winters",
+        motherName: "Patricia Winters",
+        dob: "12-05-2016",
+        attendance: { present: 170, absent: 10 },
+        remarks: "Stephen shows consistent academic growth, especially in Science and Mathematics.",
+        principalRemarks: "Excellent performance throughout the session.",
+        subjects: {
+          'English': 85, 'Mathematics': 92, 'EVS/Science': 88, 'Social Science': 78,
+          'Hindi': 82, 'Assamese': 80, 'Computer': 95, 'General Knowledge': 89,
+          'Drawing': 90, 'Physical Education': 94
+        },
+        totalMarks: 1000,
+        obtainedMarks: 863,
+        percentage: 86.3,
+        grade: "A",
+        rank: "2nd",
+        result: "PASS",
+        promotionStatus: "Promoted to Class 5"
+      };
+
+      renderReportCard(samplePrimary, session, examType);
+    }
+
+    /* Helper: Grade Calculation */
+    function getGradeFromScore(perc) {
+      const p = parseFloat(perc);
+      if (isNaN(p)) return 'A';
+      if (p >= 90) return 'A+';
+      if (p >= 80) return 'A';
+      if (p >= 70) return 'B+';
+      if (p >= 60) return 'B';
+      if (p >= 50) return 'C';
+      return 'F';
+    }
+
+    /* Helper: Dynamic QR Code Generator */
+    function generateQRCode(elementId, text) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = '';
+      new QRCode(container, {
+        text: text,
+        width: 50,
+        height: 50,
+        colorDark : "#1e3a8a",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
+    }
+
+    /* ==========================================================================
+       PDF GENERATION USING JSPDF & HTML2CANVAS
+       ========================================================================== */
+    function downloadPDF() {
+      const t1 = document.getElementById('template1');
+      const t2 = document.getElementById('template2');
+      const activeElement = t1.style.display !== 'none' ? t1 : (t2.style.display !== 'none' ? t2 : null);
+
+      if (!activeElement) {
+        alert("Please generate a report card first.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      
+      html2canvas(activeElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`Report_Card_${document.getElementById('searchStudentId').value}.pdf`);
+      });
+    }
+  </script>
+</body>
+  </html>
