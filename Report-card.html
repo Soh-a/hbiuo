@@ -724,11 +724,10 @@
               <thead>
                 <tr>
                   <th>Subject</th>
-                  <th>Periodic Test (10)</th>
-                  <th>Half Yearly (80)</th>
-                  <th>Notebook (5)</th>
-                  <th>Subject Enrich (5)</th>
-                  <th>Annual Exam (100)</th>
+                  <th>Unit Test 1</th>
+                  <th>Half Yearly</th>
+                  <th>Unit Test 2</th>
+                  <th>Annual</th>
                   <th>Total</th>
                   <th>Grade</th>
                 </tr>
@@ -1015,25 +1014,31 @@
 
       const subjectsObj = data.subjects || {};
       PRIMARY_SUBJECTS.forEach(sub => {
-        const val = subjectsObj[sub] !== undefined ? subjectsObj[sub] : '-';
-        const isNum = !isNaN(val) && val !== '-';
-        
-        // Break down marks components
-        const pt = isNum ? Math.round(val * 0.1) : '-';
-        const hy = isNum ? Math.round(val * 0.8) : '-';
-        const nb = isNum ? 5 : '-';
-        const se = isNum ? 5 : '-';
-        const grade = isNum ? getGradeFromScore(val) : '-';
+        const val = subjectsObj[sub] !== undefined && subjectsObj[sub] !== null ? subjectsObj[sub] : '';
+        const isNum = val !== '' && !isNaN(val);
+
+        let ut1 = '', hy = '', ut2 = '', annual = '', total = '', grade = '';
+
+        if (examType === 'Unit Test 1') {
+          ut1 = isNum ? val : '';
+        } else if (examType === 'Half Yearly') {
+          hy = isNum ? val : '';
+        } else if (examType === 'Unit Test 2') {
+          ut2 = isNum ? val : '';
+        } else if (examType === 'Annual') {
+          annual = isNum ? val : '';
+          total = isNum ? val : '';
+          grade = isNum ? getGradeFromScore(val) : '';
+        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="subject-name">${sub}</td>
-          <td>${pt}</td>
+          <td>${ut1}</td>
           <td>${hy}</td>
-          <td>${nb}</td>
-          <td>${se}</td>
-          <td>${val}</td>
-          <td><strong>${val}</strong></td>
+          <td>${ut2}</td>
+          <td>${annual}</td>
+          <td><strong>${total}</strong></td>
           <td><strong>${grade}</strong></td>
         `;
         tbody.appendChild(tr);
@@ -1126,7 +1131,7 @@
     /* Helper: Grade Calculation */
     function getGradeFromScore(perc) {
       const p = parseFloat(perc);
-      if (isNaN(p)) return 'A';
+      if (isNaN(p)) return '';
       if (p >= 90) return 'A+';
       if (p >= 80) return 'A';
       if (p >= 70) return 'B+';
