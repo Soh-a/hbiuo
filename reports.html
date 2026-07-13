@@ -639,20 +639,22 @@ function processLocalDatasetFilter() {
     displayMasterLogTable(filteredResult);
 }
 
-/* JSPDFAUTOTABLE STRATEGIC PDF FILE CREATOR ENGINE */
+/* ENTERPRISE MONOCHROME ACCOUNTING PDF REPORT GENERATOR ENGINE */
 function exportDataToPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape layout
+    const doc = new jsPDF('l', 'mm', 'a4'); // A4 Landscape Layout (297mm x 210mm)
     
     const today = new Date();
     const dateFormatted = today.toISOString().split('T')[0];
-    const timestampString = today.toLocaleString();
+    const timestampString = today.toLocaleString('en-IN');
 
+    // Retrieve active filter inputs
     const activeSearchQuery = document.getElementById("repSearch").value.toLowerCase().trim();
     const activeClassFilter = document.getElementById("repClass").value;
     const activeStatusFilter = document.getElementById("repStatus").value;
     const activeMonthFilter = document.getElementById("repMonth").value;
 
+    // Filter local data strictly identical to system logic
     const currentlyFilteredDataset = localReportsCache.filter(record => {
         const matchSearch = activeSearchQuery === "" || record.name.toLowerCase().includes(activeSearchQuery) || record.id.toLowerCase().includes(activeSearchQuery);
         const matchClass = activeClassFilter === "" || String(record.class) === String(activeClassFilter);
@@ -661,6 +663,7 @@ function exportDataToPDF() {
         return matchSearch && matchClass && matchStatus && matchMonth;
     });
 
+    // Compute metrics
     let pdfGrossCollected = 0;
     let pdfGrossOutstanding = 0;
     let pdfInvoiceCount = currentlyFilteredDataset.length;
@@ -687,132 +690,203 @@ function exportDataToPDF() {
     });
 
     const pdfTotalExpected = pdfGrossCollected + pdfGrossOutstanding;
-    const pdfCollectionRate = pdfTotalExpected > 0 ? ((pdfGrossCollected / pdfTotalExpected) * 100).toFixed(1) : 0;
+    const pdfCollectionRate = pdfTotalExpected > 0 ? ((pdfGrossCollected / pdfTotalExpected) * 100).toFixed(1) : "0.0";
 
-    // Header Workspace Band Layout Design
-    doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, 297, 24, 'F');
+    // Common AutoTable Layout Styles
+    const commonTableStyles = {
+        font: 'helvetica',
+        fontSize: 8.5,
+        textColor: [20, 20, 20],
+        lineColor: [180, 180, 180],
+        lineWidth: 0.15,
+        cellPadding: 2.5
+    };
 
-    // Safe injection of logo.jpeg into header coordinates
-    try {
-        doc.addImage('logo.jpeg', 'JPEG', 14, 4, 16, 16);
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(20);
-        doc.text("SCHOOL ERP - FINANCIAL & COLLECTION REPORT", 36, 15);
-    } catch (e) {
-        // Text fallback if image loading encounters cross-origin or storage locks
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(20);
-        doc.text("SCHOOL ERP - FINANCIAL & COLLECTION REPORT", 14, 15);
-    }
+    const commonHeadStyles = {
+        fillColor: [0, 0, 0],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9,
+        halign: 'left',
+        lineWidth: 0.15,
+        lineColor: [0, 0, 0]
+    };
 
-    doc.setTextColor(100, 116, 139);
-    doc.setFontSize(10);
+    const commonAlternateRowStyles = {
+        fillColor: [248, 248, 248]
+    };
+
+    // --- 1. BLACK HEADER TITLE BAR ---
+    doc.setFillColor(0, 0, 0);
+    doc.rect(10, 10, 277, 18, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("SCHOOL ERP - FINANCIAL MANAGEMENT REPORT", 15, 21);
+
+    doc.setFontSize(9);
     doc.setFont("Helvetica", "normal");
-    doc.text(`Generated: ${timestampString}`, 220, 32);
+    doc.text("ACCOUNTING & AUDIT LEDGER LOG", 282, 21, { align: 'right' });
 
-    let currentFilterMetaStr = `Filters Applied -> Class: ${activeClassFilter || 'All'}, Status: ${activeStatusFilter || 'All'}, Month: ${activeMonthFilter || 'All'}`;
-    if(activeSearchQuery) currentFilterMetaStr += `, Search: "${activeSearchQuery}"`;
-    doc.text(currentFilterMetaStr, 14, 32);
+    // --- 2. METADATA SECTION ---
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(8.5);
+    doc.setFont("Helvetica", "bold");
+    doc.text("Report Date:", 10, 33);
+    doc.setFont("Helvetica", "normal");
+    doc.text(`${timestampString}`, 32, 33);
 
-    // Summary Assessment Block
+    const filterString = `Class: ${activeClassFilter || 'All'} | Status: ${activeStatusFilter || 'All'} | Month: ${activeMonthFilter || 'All'}${activeSearchQuery ? ` | Search: "${activeSearchQuery}"` : ''}`;
+    doc.setFont("Helvetica", "bold");
+    doc.text("Applied Filters:", 10, 38);
+    doc.setFont("Helvetica", "normal");
+    doc.text(filterString, 35, 38);
+
+    // --- 3. EXECUTIVE SUMMARY SECTION ---
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("EXECUTIVE FINANCIAL SUMMARY", 10, 46);
+
     doc.autoTable({
-        startY: 36,
-        head: [['Metric Parametric Description', 'Value Assessment Map']],
+        startY: 49,
+        head: [['Financial Metric Description', 'Calculated Ledger Value']],
         body: [
-            ['Gross Revenue Funds Collected', `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`],
-            ['Total Outstanding Arrears Balance', `INR ${pdfGrossOutstanding.toLocaleString('en-IN')}.00`],
-            ['Total Invoices Under Parameter Limits', `${pdfInvoiceCount} Item Records`],
-            ['Target Balance Collection Rate Percentage', `${pdfCollectionRate}%`],
-            ['Active Defaulter Delinquent Invoices', `${pdfPendingCount} Pending Entries`]
+            ['Gross Revenue Collected', `₹${pdfGrossCollected.toLocaleString('en-IN')}`],
+            ['Total Outstanding Revenue (Arrears)', `₹${pdfGrossOutstanding.toLocaleString('en-IN')}`],
+            ['Total Invoices Logged', `${pdfInvoiceCount}`],
+            ['Collection Yield Rate', `${pdfCollectionRate}%`],
+            ['Pending / Delinquent Invoices', `${pdfPendingCount}`]
         ],
-        theme: 'striped',
-        headStyles: { fillBox: true, fillColor: [75, 85, 99], fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 3 },
-        margin: { left: 14, right: 14 }
+        theme: 'grid',
+        styles: commonTableStyles,
+        headStyles: commonHeadStyles,
+        alternateRowStyles: commonAlternateRowStyles,
+        columnStyles: {
+            0: { cellWidth: 160 },
+            1: { cellWidth: 117, fontStyle: 'bold', halign: 'right' }
+        },
+        margin: { left: 10, right: 10 }
     });
 
-    // Transform Table Audit Log Array Data
+    // --- 4. MASTER TRANSACTION AUDIT LOG ---
     const auditRows = currentlyFilteredDataset.map(item => [
         `#${item.id}`,
         item.name,
         (item.class.startsWith("IK") ? item.class : `Class ${item.class}`),
         item.month,
-        `INR ${item.monthlyfee.toLocaleString('en-IN')}`,
-        `INR ${item.fine.toLocaleString('en-IN')}`,
-        `INR ${item.amount.toLocaleString('en-IN')}`,
+        `₹${item.monthlyfee.toLocaleString('en-IN')}`,
+        `₹${item.fine.toLocaleString('en-IN')}`,
+        `₹${item.amount.toLocaleString('en-IN')}`,
         item.status.toUpperCase()
     ]);
 
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(31, 41, 55);
-    doc.text("1. Master Transaction Audit Ledger Log Data", 14, doc.autoTable.previous.finalY + 12);
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("MASTER TRANSACTION AUDIT LEDGER", 10, doc.autoTable.previous.finalY + 9);
 
     doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 16,
-        head: [['ID', 'Student Name', 'Class Level', 'Billing Period', 'Base Fee', 'Late Fine', 'Total Statement', 'Status Tag']],
+        startY: doc.autoTable.previous.finalY + 12,
+        head: [['Student ID', 'Student Name', 'Class', 'Billing Month', 'Monthly Fee', 'Fine', 'Total Bill', 'Status']],
         body: auditRows,
-        theme: 'striped',
-        headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold' },
-        styles: { fontSize: 9, cellPadding: 3 },
-        margin: { left: 14, right: 14 }
+        theme: 'grid',
+        styles: commonTableStyles,
+        headStyles: commonHeadStyles,
+        alternateRowStyles: commonAlternateRowStyles,
+        columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 65 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 30, halign: 'right' },
+            5: { cellWidth: 25, halign: 'right' },
+            6: { cellWidth: 42, halign: 'right', fontStyle: 'bold' },
+            7: { cellWidth: 35, halign: 'center', fontStyle: 'bold' }
+        },
+        margin: { left: 10, right: 10 }
     });
 
-    // Breakdown Class Distribution matrix
+    // --- 5. CLASS REVENUE ACCOUNTING STATEMENT ---
+    let summaryTotalCollected = 0;
+    let summaryTotalPending = 0;
+    let summaryTotalInvoices = 0;
+
     const distributionRows = [];
     targetClassesOrdered.forEach(cls => {
         const item = classPdfMatrix[cls];
         if (!item || item.count === 0) return;
+
+        summaryTotalCollected += item.collected;
+        summaryTotalPending += item.pending;
+        summaryTotalInvoices += item.count;
+
         distributionRows.push([
-            (cls.startsWith("IK") ? cls : `Class Level ${cls}`),
-            `INR ${item.collected.toLocaleString('en-IN')}.00`,
-            `INR ${item.pending.toLocaleString('en-IN')}.00`,
-            `${item.count} Issued Statements`
+            (cls.startsWith("IK") ? cls : `Class ${cls}`),
+            `₹${item.collected.toLocaleString('en-IN')}`,
+            `₹${item.pending.toLocaleString('en-IN')}`,
+            `${item.count}`
         ]);
     });
 
     distributionRows.push([
-        'Grand Balance Calculations Total',
-        `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`,
-        `INR ${pdfGrossOutstanding.toLocaleString('en-IN')}.00`,
-        `${pdfInvoiceCount} Master Base Records`
+        'Grand Total',
+        `₹${summaryTotalCollected.toLocaleString('en-IN')}`,
+        `₹${summaryTotalPending.toLocaleString('en-IN')}`,
+        `${summaryTotalInvoices}`
     ]);
 
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("2. Class Allocation Matrix Summary Breakdown", 14, doc.autoTable.previous.finalY + 12);
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("CLASS REVENUE ACCOUNTING STATEMENT", 10, doc.autoTable.previous.finalY + 9);
 
     doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 16,
-        head: [['Class Segment Description', 'Consolidated Collected', 'Consolidated Arrears', 'Invoice Instances']],
+        startY: doc.autoTable.previous.finalY + 12,
+        head: [['Class Segment', 'Revenue Collected', 'Pending Arrears', 'Total Invoices']],
         body: distributionRows,
         theme: 'grid',
-        headStyles: { fillColor: [29, 78, 216], fontStyle: 'bold' },
-        styles: { fontSize: 9, cellPadding: 4 },
-        margin: { left: 14, right: 14 },
+        styles: commonTableStyles,
+        headStyles: commonHeadStyles,
+        alternateRowStyles: commonAlternateRowStyles,
+        columnStyles: {
+            0: { cellWidth: 70, fontStyle: 'bold' },
+            1: { cellWidth: 70, halign: 'right' },
+            2: { cellWidth: 70, halign: 'right' },
+            3: { cellWidth: 67, halign: 'right' }
+        },
+        margin: { left: 10, right: 10 },
         didParseCell: function(data) {
+            // Highlight Grand Total row with light gray background and bold font
             if (data.row.index === distributionRows.length - 1) {
                 data.cell.styles.fontStyle = 'bold';
-                data.cell.styles.fillColor = [241, 245, 249];
+                data.cell.styles.fillColor = [220, 220, 220];
+                data.cell.styles.textColor = [0, 0, 0];
             }
         }
     });
 
-    // Page numbers
-    const pagesTotalCount = doc.internal.getNumberOfPages();
-    for (let j = 1; j <= pagesTotalCount; j++) {
-        doc.setPage(j);
+    // --- 6. PAGE DECORATION, BORDERS, & FOOTER ---
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+
+        // Thin black border around page boundaries
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.3);
+        doc.rect(5, 5, 287, 200);
+
+        // Footer Metadata Text
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(156, 163, 175);
-        doc.text("System Notice: Generated securely via automated School ERP Platform Architecture Logs.", 14, 202);
-        doc.text(`Page Data Ledger ${j} of ${pagesTotalCount}`, 250, 202);
+        doc.setFontSize(7.5);
+        doc.setTextColor(80, 80, 80);
+        
+        doc.text("Confidential • Generated by School ERP Financial Management System", 10, 201);
+        doc.text(`Page ${i} of ${totalPages}`, 287, 201, { align: 'right' });
     }
 
-    doc.save(`ERP_Report_${dateFormatted}.pdf`);
+    doc.save(`Financial_Ledger_Report_${dateFormatted}.pdf`);
 }
 
 function logout(){
@@ -827,5 +901,4 @@ window.onload = initManagementReportsEngine;
 </script>
 
 </body>
-</html>
-
+                                                     </html>
