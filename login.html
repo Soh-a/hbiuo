@@ -2,99 +2,303 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ERP Login</title>
+<title>ERP Portal - Clay Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Modern Typography & Icons -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f1f5f9;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.box{
-  background:#fff;
-  padding:30px;
-  width:340px;
-  border-radius:10px;
-  box-shadow:0 10px 25px rgba(0,0,0,.15);
-}
-h2{text-align:center;color:#1e40af}
 
-/* Role Switch */
-.switch-box{text-align:center;margin:15px 0}
-.switch{
-  position:relative;
-  width:220px;
-  height:44px;
-  background:#e5e7eb;
-  border-radius:30px;
-  cursor:pointer;
-  margin:auto;
+body {
+  /* Soft, playful pastel gradient background */
+  background: linear-gradient(135deg, #e0e9f5 0%, #f1f5f9 50%, #f5eef7 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
-.slider{
-  position:absolute;
-  width:110px;
-  height:44px;
-  background:#2563eb;
-  border-radius:30px;
-  transition:.3s;
-  left:0;
-}
-.switch span{
-  position:absolute;
-  width:110px;
-  line-height:44px;
-  text-align:center;
-  font-weight:bold;
-  z-index:2;
-}
-#teacherLbl{left:0;color:#fff}
-#dvLbl{right:0;color:#111}
 
-input,button{
-  width:100%;
-  padding:10px;
-  margin-top:12px;
-  font-size:15px;
+/* The Claymorphism Container */
+.box {
+  background: #fdfdfd;
+  /* Double inset shadows give it the characteristic soft, rounded 3D clay look */
+  box-shadow: 
+    inset 4px 4px 8px rgba(255, 255, 255, 0.9),
+    inset -4px -4px 8px rgba(163, 177, 198, 0.2),
+    8px 12px 24px rgba(163, 177, 198, 0.35);
+  border-radius: 32px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
-button{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  cursor:pointer;
+
+.header-area {
+  text-align: center;
+  margin-bottom: 32px;
 }
-#error{text-align:center;color:red;margin-top:10px}
+
+/* Image Logo Container with Claymorphism style */
+.logo-container {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px auto;
+  background: #f3f4f6;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 
+    inset 2px 2px 5px rgba(255, 255, 255, 0.8),
+    inset -2px -2px 5px rgba(163, 177, 198, 0.2),
+    4px 6px 12px rgba(163, 177, 198, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.logo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+h2 {
+  color: #1e293b;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* Clay Segmented Switch Controller */
+.switch-box {
+  margin-bottom: 28px;
+}
+
+.switch {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  background: #f1f5f9;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8);
+}
+
+.slider {
+  position: absolute;
+  width: calc(50% - 5px);
+  height: 42px;
+  background: #ffffff;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  left: 5px;
+  box-shadow: 
+    inset 2px 2px 4px rgba(255, 255, 255, 0.9),
+    3px 4px 10px rgba(163, 177, 198, 0.25);
+}
+
+.switch span {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 2;
+  transition: color 0.25s ease;
+  user-select: none;
+}
+
+#teacherLbl { color: #3b82f6; }
+#dvLbl { color: #94a3b8; }
+
+/* Clay Form Input Fields */
+.input-group {
+  position: relative;
+  margin-bottom: 22px;
+}
+
+.input-group i.input-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 16px;
+  transition: color 0.2s ease;
+}
+
+input {
+  width: 100%;
+  padding: 16px 18px 16px 48px;
+  font-size: 15px;
+  background: #f8fafc;
+  border: none;
+  border-radius: 16px;
+  color: #334155;
+  outline: none;
+  transition: all 0.25s ease;
+  box-shadow: 
+    inset 2px 2px 5px rgba(163, 177, 198, 0.15), 
+    inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+}
+
+input::placeholder {
+  color: #cbd5e1;
+}
+
+input:focus {
+  background: #ffffff;
+  box-shadow: 
+    inset 1px 1px 3px rgba(163, 177, 198, 0.1), 
+    0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+input:focus + i.input-icon {
+  color: #3b82f6;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+.password-toggle:hover {
+  color: #3b82f6;
+}
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+/* Clay Glowing Interactive Button */
+button {
+  width: 100%;
+  padding: 16px;
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 
+    inset 3px 3px 6px rgba(255, 255, 255, 0.4),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.15),
+    4px 8px 20px rgba(59, 130, 246, 0.35);
+}
+
+button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 
+    inset 3px 3px 6px rgba(255, 255, 255, 0.4),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.15),
+    4px 10px 24px rgba(59, 130, 246, 0.45);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 2px 2px 4px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Soft Alert Frame */
+#error {
+  text-align: center;
+  color: #dc2626;
+  background: #fee2e2;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 14px;
+  border-radius: 14px;
+  margin-top: 20px;
+  display: none;
+  box-shadow: inset 1px 1px 3px rgba(220, 38, 38, 0.1);
+}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h2>ERP Login</h2>
+  <div class="header-area">
+    <!-- Clean Clay logo wrapper linking to your asset -->
+    <div class="logo-container">
+      <img src="logo.jpeg" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <i class="fa-solid fa-fingerprint" style="display:none; color: #3b82f6; font-size: 28px;"></i>
+    </div>
+    <h2>ERP Portal</h2>
+    <p class="subtitle">Secure administrative interface gateway</p>
+  </div>
 
+  <!-- Role Control Slider Switch -->
   <div class="switch-box">
     <div class="switch" onclick="toggleRole()">
       <div class="slider" id="slider"></div>
-      <span id="teacherLbl">Teacher</span>
-      <span id="dvLbl">DV</span>
+      <span id="teacherLbl">Teacher Portal</span>
+      <span id="dvLbl">DV System</span>
     </div>
   </div>
 
-  <input type="text" id="username" placeholder="Username">
-  <input type="password" id="password" placeholder="Password">
+  <!-- Identity Node Input -->
+  <div class="input-group">
+    <input type="text" id="username" placeholder="Username or Contact ID">
+    <i class="fa-regular fa-envelope input-icon"></i>
+  </div>
 
-  <button onclick="login()">Login</button>
+  <!-- Passphrase Module with Interactive Visibility Token -->
+  <div class="input-group">
+    <input type="password" id="password" placeholder="Access Password">
+    <i class="fa-solid fa-shield-blank input-icon"></i>
+    <i class="fa-regular fa-eye password-toggle" id="togglePassBtn" onclick="togglePasswordVisibility()"></i>
+  </div>
+
+  <button onclick="login()">
+    <span>Authenticate Execution</span>
+    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+  </button>
+  
   <p id="error"></p>
 </div>
 
 <script>
+// Firebase Initialization Framework Connection
 firebase.initializeApp({
   apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
   authDomain: "students-6e271.firebaseapp.com",
@@ -105,7 +309,23 @@ firebase.initializeApp({
 const db = firebase.database();
 let role = "teacher";
 
-/* Toggle Role */
+/* Clean UX Variant - Password state toggle element handler */
+function togglePasswordVisibility() {
+  const passInput = document.getElementById("password");
+  const toggleIcon = document.getElementById("togglePassBtn");
+  
+  if (passInput.type === "password") {
+    passInput.type = "text";
+    toggleIcon.classList.remove("fa-eye");
+    toggleIcon.classList.add("fa-eye-slash");
+  } else {
+    passInput.type = "password";
+    toggleIcon.classList.remove("fa-eye-slash");
+    toggleIcon.classList.add("fa-eye");
+  }
+}
+
+/* Sliding role selection script logic */
 function toggleRole(){
   const slider = document.getElementById("slider");
   const t = document.getElementById("teacherLbl");
@@ -113,42 +333,52 @@ function toggleRole(){
 
   if(role === "teacher"){
     role = "dv";
-    slider.style.left = "110px";
-    t.style.color = "#111";
-    d.style.color = "#fff";
+    slider.style.left = "calc(50% - 5px)";
+    t.style.color = "#94a3b8";
+    d.style.color = "#3b82f6";
   }else{
     role = "teacher";
-    slider.style.left = "0";
-    d.style.color = "#111";
-    t.style.color = "#fff";
+    slider.style.left = "5px";
+    d.style.color = "#94a3b8";
+    t.style.color = "#3b82f6";
   }
 }
 
-/* LOGIN */
+/* Present dynamic notifications inside context alert box frame */
+function showError(msg) {
+  const errorEl = document.getElementById("error");
+  if(msg) {
+    errorEl.innerText = msg;
+    errorEl.style.display = "block";
+  } else {
+    errorEl.style.display = "none";
+  }
+}
+
+/* SECURE LOGIN RUNTIME CORE */
 function login(){
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
-  const error = document.getElementById("error");
-  error.innerText = "";
+  showError(""); 
 
   if(!user || !pass){
-    error.innerText = "All fields required";
+    showError("Required validation credentials missing.");
     return;
   }
 
-  /* ===== DV LOGIN ===== */
+  /* ===== DV LOGIN GATEWAY ===== */
   if(role === "dv"){
     if(user === "6002425951" && pass === "sai_drs"){
       localStorage.setItem("isLoggedIn","true");
       localStorage.setItem("erpRole","dv");
-      window.location.href = "index.html";
+      window.location.href = "erp-dashboard.html";
     }else{
-      error.innerText = "Invalid DV credentials";
+      showError("Invalid access permission signature for DV.");
     }
     return;
   }
 
-  /* ===== TEACHER LOGIN ===== */
+  /* ===== TEACHER LOGIN DATA VALIDATION ===== */
   db.ref("staff").once("value").then(snapshot=>{
     let success = false;
 
@@ -157,7 +387,7 @@ function login(){
 
       if(
         s.phone === user &&
-        s.password === pass &&           // CASE SENSITIVE
+        s.password === pass &&           
         (s.role || "").toLowerCase() === "teacher" &&
         (s.status || "").toLowerCase() === "active"
       ){
@@ -171,11 +401,14 @@ function login(){
     });
 
     if(!success){
-      error.innerText = "Invalid Teacher credentials";
+      showError("Identity processing match failure.");
     }
+  }).catch(err => {
+    showError("Security connection timeout. Retry stack initialization.");
+    console.error(err);
   });
 }
 </script>
 
 </body>
-</html>
+  </html>
