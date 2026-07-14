@@ -676,6 +676,7 @@ body {
     display: none;
     background: #FFFFFF;
     color: #000000;
+    padding: 20px;
 }
 
 /* LAYOUT RESPONSIVE ADAPTABILITY RULES FOR MOBILE DEVICES */
@@ -1070,6 +1071,7 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
+let activeRealtimeListenerRef = null;
 let masterCashPaymentsDataset = [];
 let filteredDataset = [];
 
@@ -1089,6 +1091,7 @@ function hideSpinner() { document.getElementById("loadingSpinner").style.display
 
 function showToast(message, type = "success") {
     const container = document.getElementById("toastContainer");
+    if (!container) return;
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
     
@@ -1117,6 +1120,10 @@ function toggleUpiReferenceField() {
 }
 
 function logout() {
+    if (activeRealtimeListenerRef) {
+        activeRealtimeListenerRef.off();
+        activeRealtimeListenerRef = null;
+    }
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userEmail");
     window.location.href = "index.html";
@@ -1130,7 +1137,12 @@ function initializeRealtimeLedger() {
     const userDisplayNode = document.getElementById("topbarUserEmail");
     if(userDisplayNode) userDisplayNode.innerText = cachedUser;
 
-    db.ref().on("value", snapshot => {
+    if (activeRealtimeListenerRef) {
+        activeRealtimeListenerRef.off();
+    }
+
+    activeRealtimeListenerRef = db.ref();
+    activeRealtimeListenerRef.on("value", snapshot => {
         masterCashPaymentsDataset = [];
         let runningCollected = 0;
         let runningOutstanding = 0;
@@ -1142,7 +1154,7 @@ function initializeRealtimeLedger() {
 
         const seenKeys = new Set();
 
-        // 1. Fetch from students tree
+        // 1. Fetch from students tree: students/{studentId}/fees/{month}
         Object.keys(studentsData).forEach(studentKey => {
             const data = studentsData[studentKey];
             if (!data || typeof data !== "object") return;
@@ -1150,7 +1162,7 @@ function initializeRealtimeLedger() {
             if (data.fees && typeof data.fees === "object") {
                 Object.keys(data.fees).forEach(monthKey => {
                     const txn = data.fees[monthKey];
-                    if (!txn) return;
+                    if (!txn || typeof txn !== "object") return;
 
                     const amt = Number(txn.amount || data.monthlyfee || 0);
                     const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
@@ -1184,11 +1196,11 @@ function initializeRealtimeLedger() {
             }
         });
 
-        // 2. Fallback check for old standalone cashPayments node
+        // 2. Fallback check for standalone cashPayments node
         Object.keys(legacyPaymentsData).forEach(payKey => {
             if (seenKeys.has(payKey)) return;
             const txn = legacyPaymentsData[payKey];
-            if (!txn) return;
+            if (!txn || typeof txn !== "object") return;
 
             const amt = Number(txn.amount || 0);
             const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
@@ -1379,7 +1391,7 @@ async function handleFormSubmission(e) {
     const upiRefId = mode === 'UPI' ? document.getElementById("modalUpiRefId").value.trim() : "";
     const remarks = document.getElementById("modalRemarks").value.trim();
 
-    if (!studentId || amount < 0) {
+    if (!studentId || isNaN(amount) || amount < 0) {
         hideSpinner();
         showToast("Voucher submission rejected: Invalid values in fields.", "error");
         return;
@@ -1418,7 +1430,7 @@ async function handleFormSubmission(e) {
         }
 
         const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator Tool";
-        const targetTimestamp = existingTxn ? (existingTxn.transactionDate || firebase.database.ServerValue.TIMESTAMP) : firebase.database.ServerValue.TIMESTAMP;
+        const targetTimestamp = existingTxn ? (existingTxn.transactionDate || Date.now()) : Date.now();
         const assignedPaymentIdLink = `vch_${studentId}_${month}`;
 
         const atomicBatchedUpdates = {};
@@ -1485,4 +1497,84 @@ function actionPrintReceipt(paymentId) {
         return;
     }
 
-    const tDate = record.transactionDate && typeof record.transactionDate === 'number
+    const tDate = record.transactionDate && typeof record.transactionDate === 'number'
+        ? new Date(record.transactionDate).toLocaleDateString('en-IN')
+        : new Date().toLocaleDateString('en-IN');
+
+    const printContainer = document.getElementById("printableReceipt");
+    printContainer.innerHTML = `
+        <div style="border:2px solid #000; padding:20px; font-family:sans-serif; max-width:600px; margin:auto;">
+            <div style="text-align:center; border-bottom:1px solid #ccc; padding-bottom:10px; margin-bottom:15px;">
+                <h2 style="margin:0; font-size:18px;">SAI DRS KIDS SCHOOL</h2>
+                <p style="margin:4px 0 0; font-size:12px;">Official Fee Realization Receipt</p>
+            </div>
+            <table style="width:100%; font-size:13px; line-height:1.8;">
+                <tr><td><strong>Receipt No:</strong> ${record.receiptNo || '-'}</td><td style="text-align:right;"><strong>Date:</strong> ${tDate}</td></tr>
+                <tr><td><strong>Admission ID:</strong> ${record.studentId}</td><td style="text-align:right;"><strong>Class:</strong> ${record.class}</td></tr>
+                <tr><td colspan="2"><strong>Student Name:</strong> ${record.studentName}</td></tr>
+                <tr><td><strong>Allocation Month:</strong> ${record.month} (${record.academicYear})</td><td style="text-align:right;"><strong>Mode:</strong> ${record.paymentMode}</td></tr>
+                ${record.paymentMode === 'UPI' ? `<tr><td colspan="2"><strong>UPI Ref ID:</strong> ${record.upiRefId || 'N/A'}</td></tr>` : ''}
+                <tr><td colspan="2" style="border-top:1px solid #ccc; padding-top:8px; font-size:15px;"><strong>Amount Paid: ₹${Number(record.amount).toFixed(2)}</strong></td></tr>
+                <tr><td colspan="2"><strong>Status:</strong> ${record.status.toUpperCase()}</td></tr>
+            </table>
+            <div style="margin-top:30px; text-align:right; font-size:12px;">
+                <p>Authorized Signatory</p>
+            </div>
+        </div>
+    `;
+
+    printContainer.style.display = "block";
+    window.print();
+    printContainer.style.display = "none";
+}
+
+function exportToExcel() {
+    if (filteredDataset.length === 0) {
+        showToast("No data available to export.", "error");
+        return;
+    }
+
+    const exportData = filteredDataset.map(row => ({
+        "Receipt No": row.receiptNo,
+        "Admission ID": row.studentId,
+        "Student Name": row.studentName,
+        "Class": row.class,
+        "Academic Year": row.academicYear,
+        "Month": row.month,
+        "Amount (INR)": row.amount,
+        "Payment Mode": row.paymentMode,
+        "UPI Ref ID": row.upiRefId,
+        "Status": row.status,
+        "Collected By": row.collectedBy,
+        "Remarks": row.remarks
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Ledger");
+    XLSX.writeFile(workbook, `Fee_Ledger_Report_${Date.now()}.xlsx`);
+}
+
+function downloadLedgerPDF() {
+    const element = document.getElementById("pdfReportContainer");
+    if (!element) return;
+
+    const opt = {
+        margin:       0.3,
+        filename:     `Financial_Ledger_${Date.now()}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+
+    showSpinner();
+    html2pdf().set(opt).from(element).save().then(() => {
+        hideSpinner();
+    }).catch(err => {
+        hideSpinner();
+        showToast("PDF generation error: " + err.message, "error");
+    });
+}
+</script>
+</body>
+    </html>
