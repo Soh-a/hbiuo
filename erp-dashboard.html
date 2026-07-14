@@ -287,6 +287,7 @@ body {
 .btn-group {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .btn-corporate {
@@ -488,6 +489,8 @@ body {
     padding: 14px 24px;
     background-color: var(--bg-main);
     border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .pagination-metrics-text {
@@ -616,6 +619,7 @@ body {
     flex-direction: column;
     gap: 8px;
     width: 320px;
+    max-width: calc(100vw - 48px);
 }
 
 .toast {
@@ -674,7 +678,7 @@ body {
     color: #000000;
 }
 
-/* LAYOUT RESPONSIVE ADAPTABILITY RULES */
+/* LAYOUT RESPONSIVE ADAPTABILITY RULES FOR MOBILE DEVICES */
 @media(max-width: 992px) {
     .mobile-header-bar { display: flex; }
     .sidebar {
@@ -688,9 +692,45 @@ body {
         width: 100%;
     }
     .topbar { display: none; }
-    .search-control-panel { grid-template-columns: 1fr; }
-    .voucher-form-layout-grid { grid-template-columns: 1fr; }
+    .workspace-wrapper {
+        padding: 16px;
+    }
+    .search-control-panel { grid-template-columns: 1fr; padding: 14px; }
+    .voucher-form-layout-grid { grid-template-columns: 1fr; gap: 12px; }
     .span-all-columns { grid-column: span 1; }
+    
+    .action-ribbon {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .btn-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .btn-corporate {
+        flex: 1;
+        justify-content: center;
+        padding: 10px;
+    }
+    .modal-overlay {
+        padding: 10px;
+    }
+    .voucher-modal-canvas {
+        max-height: 95vh;
+    }
+    .voucher-modal-header {
+        padding: 14px 16px;
+    }
+    .voucher-modal-body {
+        padding: 16px;
+    }
+    .voucher-modal-footer {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+    }
+    .voucher-modal-footer button {
+        width: 100%;
+    }
 }
 </style>
 </head>
@@ -704,7 +744,7 @@ body {
 <div class="notification-container" id="toastContainer"></div>
 
 <div class="mobile-header-bar">
-    <div style="font-weight:700; font-size:14px; letter-spacing:0.5px;">ERP ACCOUNTING SUITE</div>
+    <div style="font-weight:700; font-size:14px; letter-spacing:0.5px;">SAI DRS KIDS SCHOOL ERP</div>
     <button class="drawer-trigger-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
     </button>
@@ -989,13 +1029,19 @@ body {
                     </div>
                     <div class="control-input-group span-all-columns">
                         <label for="modalPaymentMode">Target Asset Ledger Pool *</label>
-                        <select id="modalPaymentMode" class="form-control-field" required>
+                        <select id="modalPaymentMode" class="form-control-field" required onchange="toggleUpiReferenceField()">
                             <option value="Cash">Cash Account Balance</option>
                             <option value="UPI">UPI Electronic Liquid Pool</option>
                             <option value="Bank Transfer">Bank Transfer Vault Clearance</option>
                             <option value="Cheque">Cheque / Clearing House Queue</option>
                         </select>
                     </div>
+
+                    <div class="control-input-group span-all-columns" id="modalUpiRefGroup" style="display: none;">
+                        <label for="modalUpiRefId">UPI Payment / Transaction Ref ID *</label>
+                        <input type="text" id="modalUpiRefId" class="form-control-field" placeholder="Enter UPI Transaction / Ref ID (e.g., 401234567890)">
+                    </div>
+
                     <div class="control-input-group span-all-columns">
                         <label for="modalRemarks">Transaction Narration / Audit Notes</label>
                         <textarea id="modalRemarks" class="form-control-field" rows="2" placeholder="Provide formal transaction narration trail or clearing reference notes here..."></textarea>
@@ -1054,6 +1100,22 @@ function showToast(message, type = "success") {
     setTimeout(() => { toast.remove(); }, 4000);
 }
 
+/* DYNAMIC UPI TRANSACTION ID FIELD TOGGLE */
+function toggleUpiReferenceField() {
+    const selectedMode = document.getElementById("modalPaymentMode").value;
+    const upiGroup = document.getElementById("modalUpiRefGroup");
+    const upiInput = document.getElementById("modalUpiRefId");
+
+    if (selectedMode === "UPI") {
+        upiGroup.style.display = "flex";
+        upiInput.required = true;
+    } else {
+        upiGroup.style.display = "none";
+        upiInput.required = false;
+        upiInput.value = "";
+    }
+}
+
 /* UNIFIED EXTRACTION STRATEGY: COMPUTE SOLELY VIA STUDENT ACCOUNTS MATRICES */
 function initializeRealtimeLedger() {
     showSpinner();
@@ -1099,6 +1161,7 @@ function initializeRealtimeLedger() {
                             month: monthKey,
                             amount: amt,
                             paymentMode: txn.paymentMode || "Cash",
+                            upiRefId: txn.upiRefId || "",
                             status: currentStatus,
                             collectedBy: txn.collectedBy || "System Admin",
                             transactionDate: txn.transactionDate || 1741132800000,
@@ -1138,7 +1201,8 @@ function filterAndPaginateData() {
         const matchesSearch = !searchVal || 
             (item.studentName && item.studentName.toLowerCase().includes(searchVal)) ||
             (item.studentId && item.studentId.toLowerCase().includes(searchVal)) ||
-            (item.receiptNo && item.receiptNo.toLowerCase().includes(searchVal));
+            (item.receiptNo && item.receiptNo.toLowerCase().includes(searchVal)) ||
+            (item.upiRefId && item.upiRefId.toLowerCase().includes(searchVal));
 
         const matchesClass = !classVal || String(item.class) === String(classVal);
         const matchesMonth = !monthVal || item.month === monthVal;
@@ -1178,6 +1242,10 @@ function renderPaginatedTable() {
     const paginatedSlice = filteredDataset.slice(startIndex, endIndex);
 
     paginatedSlice.forEach(row => {
+        const modeDisplay = row.paymentMode === 'UPI' && row.upiRefId 
+            ? `<i class="fa-solid fa-mobile-screen"></i> UPI <span style="font-size:11px; color: var(--text-muted); font-family: monospace;">(${row.upiRefId})</span>` 
+            : `<i class="fa-solid fa-building-columns"></i> ${row.paymentMode}`;
+
         tbody.innerHTML += `
             <tr>
                 <td><strong style="color: var(--primary); font-family: monospace; font-size: 13px;">${row.receiptNo || '-'}</strong></td>
@@ -1186,7 +1254,7 @@ function renderPaginatedTable() {
                 <td>Class ${row.class} <span style="color: var(--text-muted); font-size: 11px;">(${row.academicYear})</span></td>
                 <td><span style="font-weight: 500;">${row.month}</span></td>
                 <td style="text-align: right; font-weight: 700; color: #0F172A;">₹${Number(row.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                <td><span style="font-size: 12px; font-weight: 500; color: var(--secondary);"><i class="fa-solid fa-building-columns"></i> ${row.paymentMode}</span></td>
+                <td><span style="font-size: 12px; font-weight: 500; color: var(--secondary);">${modeDisplay}</span></td>
                 <td><span class="badge-status ${row.status}">${row.status}</span></td>
                 <td class="no-pdf-print">
                     <div class="table-inline-actions">
@@ -1212,6 +1280,7 @@ function changePaginationPage(direction) {
 function openPaymentModal(mode, paymentId = null) {
     const form = document.getElementById("feeForm");
     form.reset();
+    toggleUpiReferenceField();
     
     if (mode === 'create') {
         document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> Process Financial Revenue Receipt Voucher';
@@ -1234,6 +1303,12 @@ function openPaymentModal(mode, paymentId = null) {
             document.getElementById("modalAmount").value = target.amount;
             document.getElementById("modalStatus").value = target.status;
             document.getElementById("modalPaymentMode").value = target.paymentMode;
+            
+            toggleUpiReferenceField();
+            if (target.paymentMode === 'UPI') {
+                document.getElementById("modalUpiRefId").value = target.upiRefId || "";
+            }
+            
             document.getElementById("modalRemarks").value = target.remarks || "";
         }
     }
@@ -1243,6 +1318,7 @@ function openPaymentModal(mode, paymentId = null) {
 function closeModal() {
     document.getElementById("feeModal").style.display = "none";
     document.getElementById("feeForm").reset();
+    toggleUpiReferenceField();
 }
 
 /* ATOMIC TRANSACTION PIPELINE - BLOCKS OVERWRITING OF EXISTENT MONTHLY RECORDS */
@@ -1257,11 +1333,18 @@ async function handleFormSubmission(e) {
     const amount = Number(document.getElementById("modalAmount").value);
     const status = document.getElementById("modalStatus").value;
     const mode = document.getElementById("modalPaymentMode").value;
+    const upiRefId = mode === 'UPI' ? document.getElementById("modalUpiRefId").value.trim() : "";
     const remarks = document.getElementById("modalRemarks").value.trim();
 
     if (!studentId || amount < 0) {
         hideSpinner();
         showToast("Voucher submission rejected: Invalid value dimensions inside asset payload fields.", "error");
+        return;
+    }
+
+    if (mode === 'UPI' && !upiRefId) {
+        hideSpinner();
+        showToast("Please enter a valid UPI Payment Transaction Reference ID.", "error");
         return;
     }
 
@@ -1315,6 +1398,7 @@ async function handleFormSubmission(e) {
             paymentIdLink: assignedPaymentIdLink,
             receiptNo: assignedReceiptNo,
             paymentMode: mode,
+            upiRefId: upiRefId,
             academicYear: year,
             collectedBy: currentUserEmail,
             remarks: remarks,
@@ -1371,6 +1455,10 @@ function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
     }
 
     const tDate = record.transactionDate && typeof record.transactionDate === 'number' ? new Date(record.transactionDate).toLocaleString('en-IN') : "Live Balance Runtime Verification";
+    const paymentModeLabel = record.paymentMode === 'UPI' && record.upiRefId 
+        ? `UPI (Ref ID: ${record.upiRefId})` 
+        : record.paymentMode;
+
     const receiptTemplateHTML = `
         <div style="font-family:'Inter', sans-serif; padding: 40px; border: 1px solid #111827; max-width:720px; margin:0 auto; background-color:#FFFFFF; color:#111827;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px;">
@@ -1380,145 +1468,4 @@ function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
                 </div>
                 <div style="text-align:right;">
                     <h2 style="font-size:16px; font-weight:700; color:#0F172A; margin-bottom:4px;">REVENUE RECEIPT VOUCHER</h2>
-                    <p style="font-size:12px; font-family:monospace; color:#475569;">${record.receiptNo || 'N/A'}</p>
-                </div>
-            </div>
-            
-            <hr style="border:0; border-top:1px solid #E2E8F0; margin-bottom:24px;">
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; font-size:13px; margin-bottom:30px; line-height:1.6;">
-                <div>
-                    <span style="color:#64748B; font-weight:500; text-transform:uppercase; font-size:11px; display:block; margin-bottom:2px;">Debited Subsidiary Account</span>
-                    <strong>${record.studentName}</strong><br>
-                    ID/Ref: <span style="font-family:monospace;">${record.studentId}</span><br>
-                    Classification Level: Class ${record.class}
-                </div>
-                <div style="text-align:right;">
-                    <span style="color:#64748B; font-weight:500; text-transform:uppercase; font-size:11px; display:block; margin-bottom:2px;">Voucher Audits</span>
-                    Posting Period: <strong>${record.month} (${record.academicYear})</strong><br>
-                    Realization Stamp: <span style="font-family:monospace;">${tDate}</span><br>
-                    Clearing Target Pool: ${record.paymentMode}
-                </div>
-            </div>
-
-            <table style="width:100%; border-collapse:collapse; margin-bottom:30px; font-size:13px;">
-                <thead>
-                    <tr style="background-color:#F8FAFC;">
-                        <th style="border:1px solid #E2E8F0; padding:12px; text-align:left; color:#334155;">Ledger Allocation Line Item Description</th>
-                        <th style="border:1px solid #E2E8F0; padding:12px; text-align:center; color:#334155; width:120px;">Voucher Status</th>
-                        <th style="border:1px solid #E2E8F0; padding:12px; text-align:right; color:#334155; width:150px;">Realized Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="border:1px solid #E2E8F0; padding:14px; color:#111827;">Institutional Tuition Fees and Dynamic Accruals Allocation Row Entry</td>
-                        <td style="border:1px solid #E2E8F0; padding:14px; text-align:center; text-transform:uppercase; font-weight:700; color:#16A34A;">${record.status}</td>
-                        <td style="border:1px solid #E2E8F0; padding:14px; text-align:right; font-weight:700; color:#0F172A;">₹${Number(record.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    </tr>
-                    <tr style="background-color:#F8FAFC;">
-                        <td colspan="2" style="border:1px solid #E2E8F0; padding:12px; text-align:right; font-weight:600; color:#334155;">Net Aggregate Balance Realized (INR):</td>
-                        <td style="border:1px solid #E2E8F0; padding:12px; text-align:right; font-weight:700; color:#1E3A5F; font-size:14px;">₹${Number(record.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div style="font-size:12px; color:#475569; margin-bottom:40px; line-height:1.5; background-color:#F8FAFC; padding:16px; border-radius:4px;">
-                <strong>Voucher Narration/Remarks:</strong> ${record.remarks || 'No explicit narration trail documented by handling accountant.'}<br>
-                <span style="font-size:11px; color:#94A3B8; margin-top:6px; display:block;">Authorization Security Audit User Email Context: ${record.collectedBy || 'Corporate Operator'}</span>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; margin-top:60px; font-size:12px;">
-                <div style="border-top:1px solid #94A3B8; width:180px; text-align:center; padding-top:8px; color:#475569;">Internal Review Accountant</div>
-                <div style="border-top:1px solid #94A3B8; width:180px; text-align:center; padding-top:8px; color:#1E3A5F; font-weight:600;">Authorized Controller Signatory</div>
-            </div>
-        </div>
-    `;
-
-    const printTargetNode = document.getElementById("printableReceipt");
-    printTargetNode.innerHTML = receiptTemplateHTML;
-
-    if (triggerDirectDownload) {
-        const options = {
-            margin:       [10, 10, 10, 10],
-            filename:     `Corporate_Voucher_${record.receiptNo || 'FX'}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(options).from(printTargetNode).save();
-    } else {
-        window.print();
-    }
-}
-
-/* HIGH COMPILATION OUTPUT FORMAT CONVERTER HANDLERS */
-function downloadLedgerPDF() {
-    showSpinner();
-    
-    const actionElements = document.querySelectorAll('.no-pdf-print');
-    actionElements.forEach(el => el.style.display = 'none');
-
-    const element = document.getElementById('pdfReportContainer');
-    const options = {
-        margin:       [8, 8, 8, 8],
-        filename:     `Corporate_Fee_Ledger_Export_${new Date().toISOString().slice(0,10)}.pdf`,
-        image:        { type: 'jpeg', quality: 0.99 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
-    
-    html2pdf().set(options).from(element).save().then(() => {
-        actionElements.forEach(el => el.style.display = '');
-        hideSpinner();
-        showToast("PDF balance sheet matrix compiled successfully.");
-    }).catch(err => {
-        actionElements.forEach(el => el.style.display = '');
-        hideSpinner();
-        showToast("PDF rendering tracking failure: " + err.message, "error");
-    });
-}
-
-function exportToExcel() {
-    if (filteredDataset.length === 0) {
-        showToast("Export operation cancelled: Array content grid isolation contains 0 entries.", "error");
-        return;
-    }
-
-    const flatExcelRows = filteredDataset.map(item => ({
-        "Voucher/Receipt Number": item.receiptNo || "N/A",
-        "Student Ledger ID Mapping": item.studentId,
-        "Customer Entity Name": item.studentName,
-        "Class Structural Tier": item.class,
-        "Fiscal Year Allocation": item.academicYear,
-        "Revenue Accounting Month": item.month,
-        "Net Realized Amount (INR)": item.amount,
-        "Asset Target Clearing Ledger": item.paymentMode,
-        "Voucher Realization Status": item.status,
-        "Authorized Auditor User": item.collectedBy,
-        "System Chronological Stamp": item.transactionDate && typeof item.transactionDate === 'number' ? new Date(item.transactionDate).toLocaleString('en-IN') : "N/A",
-        "Voucher Narration Trail": item.remarks || ""
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(flatExcelRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Ledger Accounts");
-    XLSX.writeFile(workbook, `ERP_Corporate_Ledger_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
-    showToast("Microsoft Excel accounting sheet structure written out successfully.");
-}
-
-function logout(){
-    localStorage.clear();
-    window.location.href = "login.html";
-}
-
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById("feeModal");
-    if (e.target === modal) closeModal();
-});
-
-window.onload = initializeRealtimeLedger;
-</script>
-
-</body>
-</html>
-
+                    <p style="font-size:12px; font-family:monospace; color:#475
