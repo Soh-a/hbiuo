@@ -772,8 +772,8 @@ body {
             <a href="payroll.html"><i class="fa-solid fa-money-check-dollar"></i> <span>Payroll Disbursements</span></a>
             <a href="reports.html"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Financial Statements</span></a>
             <a href="master-setup.html"><i class="fa-solid fa-gears"></i> <span>System Master Config</span></a>
-            <a href="add-staff.html"><i class="fa-solid fa-gears"></i> <span>add staff</span></a>
-            <a href="receipt.html"><i class="fa-solid fa-triangle-exclamation"></i> <span>receipt Generator</span></a>
+            <a href="add-staff.html"><i class="fa-solid fa-gears"></i> <span>Add Staff</span></a>
+            <a href="receipt.html"><i class="fa-solid fa-triangle-exclamation"></i> <span>Receipt Generator</span></a>
         </div>
     </div>
 
@@ -1073,19 +1073,20 @@ const db = firebase.database();
 let masterCashPaymentsDataset = [];
 let filteredDataset = [];
 
-/* SUBSIDIARY INTERNAL CLIENT CONTROLS AND MEMORY CELL STATE SETTINGS */
 let currentPage = 1;
 const recordsPerPage = 10;
+
+document.addEventListener("DOMContentLoaded", () => {
+    initializeRealtimeLedger();
+});
 
 function toggleSidebar() {
     document.getElementById("appSidebar").classList.toggle("open");
 }
 
-/* APP ENGINE SCREEN RENDERING SPINNER METHODS */
 function showSpinner() { document.getElementById("loadingSpinner").style.display = "flex"; }
 function hideSpinner() { document.getElementById("loadingSpinner").style.display = "none"; }
 
-/* TOAST ALERT OVERLAY MESSAGE QUEUE MANAGER */
 function showToast(message, type = "success") {
     const container = document.getElementById("toastContainer");
     const toast = document.createElement("div");
@@ -1100,7 +1101,6 @@ function showToast(message, type = "success") {
     setTimeout(() => { toast.remove(); }, 4000);
 }
 
-/* DYNAMIC UPI TRANSACTION ID FIELD TOGGLE */
 function toggleUpiReferenceField() {
     const selectedMode = document.getElementById("modalPaymentMode").value;
     const upiGroup = document.getElementById("modalUpiRefGroup");
@@ -1116,7 +1116,13 @@ function toggleUpiReferenceField() {
     }
 }
 
-/* UNIFIED EXTRACTION STRATEGY: COMPUTE SOLELY VIA STUDENT ACCOUNTS MATRICES */
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userEmail");
+    window.location.href = "index.html";
+}
+
+/* UNIFIED EXTRACTION STRATEGY: PARSES BOTH STUDENT FEES & LEGACY CASH PAYMENTS */
 function initializeRealtimeLedger() {
     showSpinner();
     
@@ -1124,53 +1130,93 @@ function initializeRealtimeLedger() {
     const userDisplayNode = document.getElementById("topbarUserEmail");
     if(userDisplayNode) userDisplayNode.innerText = cachedUser;
 
-    db.ref("students").on("value", snapshot => {
+    db.ref().on("value", snapshot => {
         masterCashPaymentsDataset = [];
         let runningCollected = 0;
         let runningOutstanding = 0;
         let totalCount = 0;
 
-        const studentsData = snapshot.val();
-        if (studentsData) {
-            Object.keys(studentsData).forEach(studentKey => {
-                const data = studentsData[studentKey];
-                if (!data || typeof data !== "object") return;
+        const rootData = snapshot.val() || {};
+        const studentsData = rootData.students || {};
+        const legacyPaymentsData = rootData.cashPayments || {};
 
-                if (data.fees && typeof data.fees === "object") {
-                    Object.keys(data.fees).forEach(monthKey => {
-                        const txn = data.fees[monthKey];
-                        if (!txn) return;
+        const seenKeys = new Set();
 
-                        const amt = Number(txn.amount || data.monthlyfee || 0);
-                        const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
+        // 1. Fetch from students tree
+        Object.keys(studentsData).forEach(studentKey => {
+            const data = studentsData[studentKey];
+            if (!data || typeof data !== "object") return;
 
-                        if (currentStatus === "paid") {
-                            runningCollected += amt;
-                        } else {
-                            runningOutstanding += amt;
-                        }
-                        totalCount++;
+            if (data.fees && typeof data.fees === "object") {
+                Object.keys(data.fees).forEach(monthKey => {
+                    const txn = data.fees[monthKey];
+                    if (!txn) return;
 
-                        masterCashPaymentsDataset.push({
-                            paymentId: txn.paymentIdLink || `vch_${studentKey}_${monthKey}`,
-                            receiptNo: txn.receiptNo || "LEGACY_VCH",
-                            studentId: studentKey,
-                            studentName: data.name || studentKey,
-                            class: data.class || "N/A",
-                            academicYear: txn.academicYear || data.academicYear || "2026-2027",
-                            month: monthKey,
-                            amount: amt,
-                            paymentMode: txn.paymentMode || "Cash",
-                            upiRefId: txn.upiRefId || "",
-                            status: currentStatus,
-                            collectedBy: txn.collectedBy || "System Admin",
-                            transactionDate: txn.transactionDate || 1741132800000,
-                            remarks: txn.remarks || ""
-                        });
+                    const amt = Number(txn.amount || data.monthlyfee || 0);
+                    const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
+                    const pId = txn.paymentIdLink || `vch_${studentKey}_${monthKey}`;
+
+                    if (currentStatus === "paid") {
+                        runningCollected += amt;
+                    } else {
+                        runningOutstanding += amt;
+                    }
+                    totalCount++;
+                    seenKeys.add(pId);
+
+                    masterCashPaymentsDataset.push({
+                        paymentId: pId,
+                        receiptNo: txn.receiptNo || "LEGACY_VCH",
+                        studentId: studentKey,
+                        studentName: data.name || studentKey,
+                        class: data.class || "N/A",
+                        academicYear: txn.academicYear || data.academicYear || "2026-2027",
+                        month: monthKey,
+                        amount: amt,
+                        paymentMode: txn.paymentMode || "Cash",
+                        upiRefId: txn.upiRefId || "",
+                        status: currentStatus,
+                        collectedBy: txn.collectedBy || "System Admin",
+                        transactionDate: txn.transactionDate || 1741132800000,
+                        remarks: txn.remarks || ""
                     });
-                }
+                });
+            }
+        });
+
+        // 2. Fallback check for old standalone cashPayments node
+        Object.keys(legacyPaymentsData).forEach(payKey => {
+            if (seenKeys.has(payKey)) return;
+            const txn = legacyPaymentsData[payKey];
+            if (!txn) return;
+
+            const amt = Number(txn.amount || 0);
+            const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
+
+            if (currentStatus === "paid") {
+                runningCollected += amt;
+            } else {
+                runningOutstanding += amt;
+            }
+            totalCount++;
+
+            masterCashPaymentsDataset.push({
+                paymentId: payKey,
+                receiptNo: txn.receiptNo || "LEGACY_VCH",
+                studentId: txn.studentId || "N/A",
+                studentName: txn.studentName || txn.studentId || "N/A",
+                class: txn.class || "N/A",
+                academicYear: txn.academicYear || "2025-2026",
+                month: txn.month || "N/A",
+                amount: amt,
+                paymentMode: txn.paymentMode || "Cash",
+                upiRefId: txn.upiRefId || "",
+                status: currentStatus,
+                collectedBy: txn.collectedBy || "System Admin",
+                transactionDate: txn.transactionDate || 1741132800000,
+                remarks: txn.remarks || ""
             });
-        }
+        });
 
         updateDashboardUI(runningCollected, runningOutstanding, totalCount);
         filterAndPaginateData();
@@ -1187,7 +1233,6 @@ function updateDashboardUI(collected, outstanding, totalCount) {
     document.getElementById("totalTransactions").innerText = totalCount;
 }
 
-/* COMPREHENSIVE SUB-SYSTEM QUERY ENGINE PATTERN FILTERS */
 function filterAndPaginateData() {
     const searchVal = document.getElementById("feeSearch").value.toLowerCase().trim();
     const classVal = document.getElementById("classFilter").value;
@@ -1223,7 +1268,6 @@ function filterAndPaginateData() {
     renderPaginatedTable();
 }
 
-/* HIGH DENSITY RECORD REGISTRATION INTERACTIVE DOM BUILDER */
 function renderPaginatedTable() {
     const tbody = document.getElementById("masterFeesTable");
     tbody.innerHTML = "";
@@ -1258,8 +1302,9 @@ function renderPaginatedTable() {
                 <td><span class="badge-status ${row.status}">${row.status}</span></td>
                 <td class="no-pdf-print">
                     <div class="table-inline-actions">
-                        <button class="btn-table-action" onclick="openPaymentModal('edit', '${row.paymentId}')" title="Modify Transaction Audit Fields"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-table-action delete-row" onclick="actionDeletePayment('${row.paymentId}')" title="Purge Record Safely From Balances"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="btn-table-action" onclick="actionPrintReceipt('${row.paymentId}')" title="Print Receipt"><i class="fa-solid fa-print"></i></button>
+                        <button class="btn-table-action" onclick="openPaymentModal('edit', '${row.paymentId}')" title="Modify Voucher"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn-table-action delete-row" onclick="actionDeletePayment('${row.paymentId}')" title="Delete Record"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
                 </td>
             </tr>
@@ -1276,7 +1321,6 @@ function changePaginationPage(direction) {
     renderPaginatedTable();
 }
 
-/* TRANSACTION ARCHITECTURE ACCOUNTING VOUCHER FRAME WORKERS */
 function openPaymentModal(mode, paymentId = null) {
     const form = document.getElementById("feeForm");
     form.reset();
@@ -1321,7 +1365,6 @@ function closeModal() {
     toggleUpiReferenceField();
 }
 
-/* ATOMIC TRANSACTION PIPELINE - BLOCKS OVERWRITING OF EXISTENT MONTHLY RECORDS */
 async function handleFormSubmission(e) {
     e.preventDefault();
     showSpinner();
@@ -1338,7 +1381,7 @@ async function handleFormSubmission(e) {
 
     if (!studentId || amount < 0) {
         hideSpinner();
-        showToast("Voucher submission rejected: Invalid value dimensions inside asset payload fields.", "error");
+        showToast("Voucher submission rejected: Invalid values in fields.", "error");
         return;
     }
 
@@ -1349,30 +1392,24 @@ async function handleFormSubmission(e) {
     }
 
     try {
-        // 1. Verify student structure profile exists
         const studentSnapshot = await db.ref(`students/${studentId}`).once("value");
         if (!studentSnapshot.exists()) {
             hideSpinner();
-            showToast("Validation Exception: Student structural identity mapping not found.", "error");
+            showToast("Validation Exception: Student identity mapping not found.", "error");
             return;
         }
 
-        // 2. CRITICAL LOCK: Check if this specific target month node already contains data
         const monthNodeSnapshot = await db.ref(`students/${studentId}/fees/${month}`).once("value");
-        
-        // Isolate historical tracking reference if we are coming from an 'edit' action
         const existingTxn = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
 
-        // If the month node exists, AND either it's a brand new entry OR the user shifted an entry to a month that is already occupied
         if (monthNodeSnapshot.exists() && (!existingTxn || existingTxn.month !== month)) {
             hideSpinner();
-            showToast(`Audit Protection: An active ledger node already exists for ${month}. Overwrites are strictly prohibited.`, "error");
+            showToast(`Audit Protection: An active ledger node already exists for ${month}. Overwrites are prohibited.`, "error");
             return;
         }
 
         let assignedReceiptNo = document.getElementById("editReceiptNo").value;
 
-        // Generate unique incremental voucher sequence if it's completely new
         if (!assignedReceiptNo || assignedReceiptNo === "LEGACY_VCH") {
             const currentCounterRef = db.ref("metaProperties/receiptCounter");
             const counterTransaction = await currentCounterRef.transaction(current => (current || 0) + 1);
@@ -1386,12 +1423,10 @@ async function handleFormSubmission(e) {
 
         const atomicBatchedUpdates = {};
 
-        // If a user changed the month to an empty/unoccupied slot, drop the older month record cleanly
         if (existingTxn && existingTxn.month !== month) {
             atomicBatchedUpdates[`/students/${studentId}/fees/${existingTxn.month}`] = null;
         }
 
-        // Commit cleanly to the unoccupied or current target month node map
         atomicBatchedUpdates[`/students/${studentId}/fees/${month}`] = {
             amount: amount,
             status: status,
@@ -1405,7 +1440,6 @@ async function handleFormSubmission(e) {
             transactionDate: targetTimestamp
         };
 
-        // Active sweep out of legacy tracking nodes across old database layouts
         if (paymentId) {
             atomicBatchedUpdates[`/cashPayments/${paymentId}`] = null;
         }
@@ -1416,29 +1450,27 @@ async function handleFormSubmission(e) {
         closeModal();
         showToast(`Transaction Voucher ${assignedReceiptNo} successfully written to ledger for ${month}.`);
     } catch (err) {
-        showToast("Atomic initialization mutation error: " + err.message, "error");
+        showToast("Atomic update error: " + err.message, "error");
     } finally {
         hideSpinner();
     }
 }
 
-/* TRANSACTION PURGE TARGETS */
 async function actionDeletePayment(paymentId) {
-    const confirmation = confirm("CRITICAL AUDIT NOTICE: Are you certain you want to permanently purge this financial entry? Balances will dynamically recompute.");
+    const confirmation = confirm("Are you certain you want to permanently purge this financial entry?");
     if (!confirmation) return;
 
     showSpinner();
     try {
         const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
-        if (!target) throw new Error("Target ledger node context tracking failed.");
+        if (!target) throw new Error("Target node context tracking failed.");
 
         const purgeBatchedUpdates = {};
-        // Structural removal mapping fields
         purgeBatchedUpdates[`/students/${target.studentId}/fees/${target.month}`] = null;
         purgeBatchedUpdates[`/cashPayments/${paymentId}`] = null;
 
         await db.ref().update(purgeBatchedUpdates);
-        showToast("Voucher record purged from balance indices successfully.");
+        showToast("Voucher record purged from ledger successfully.");
     } catch (e) {
         showToast("Purge execution failed: " + e.message, "error");
     } finally {
@@ -1446,26 +1478,11 @@ async function actionDeletePayment(paymentId) {
     }
 }
 
-/* HIGH GRAPHICS CORPORATE FISCAL INVOICE PRINT RECONCILER */
-function actionPrintReceipt(paymentId, triggerDirectDownload = false) {
+function actionPrintReceipt(paymentId) {
     const record = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
     if (!record) {
-        showToast("Unable to isolate record pointer for invoice formatting.", "error");
+        showToast("Unable to find record for receipt output.", "error");
         return;
     }
 
-    const tDate = record.transactionDate && typeof record.transactionDate === 'number' ? new Date(record.transactionDate).toLocaleString('en-IN') : "Live Balance Runtime Verification";
-    const paymentModeLabel = record.paymentMode === 'UPI' && record.upiRefId 
-        ? `UPI (Ref ID: ${record.upiRefId})` 
-        : record.paymentMode;
-
-    const receiptTemplateHTML = `
-        <div style="font-family:'Inter', sans-serif; padding: 40px; border: 1px solid #111827; max-width:720px; margin:0 auto; background-color:#FFFFFF; color:#111827;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px;">
-                <div>
-                    <h1 style="font-size:22px; font-weight:700; color:#1E3A5F; margin-bottom:4px;">SAI DRS KIDS SCHOOL</h1>
-                    <p style="font-size:12px; color:#475569; line-height:1.4;">Guwahati, Assam, India<br>Corporate Accounts Operations Office</p>
-                </div>
-                <div style="text-align:right;">
-                    <h2 style="font-size:16px; font-weight:700; color:#0F172A; margin-bottom:4px;">REVENUE RECEIPT VOUCHER</h2>
-                    <p style="font-size:12px; font-family:monospace; color:#475
+    const tDate = record.transactionDate && typeof record.transactionDate === 'number
