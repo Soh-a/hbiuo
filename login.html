@@ -272,7 +272,7 @@ button:active {
     <div class="switch" onclick="toggleRole()">
       <div class="slider" id="slider"></div>
       <span id="teacherLbl">Teacher Portal</span>
-      <span id="dvLbl">DV System</span>
+      <span id="accountsLbl">Accounts</span>
     </div>
   </div>
 
@@ -367,8 +367,8 @@ function login(){
   }
 
   /* ===== DV LOGIN GATEWAY ===== */
-  if(role === "dv"){
-    if(user === "6002425951" && pass === "sai_drs"){
+  if(role === "accounts"){
+    if(user === "Accounts" && pass === "sai_drs"){
       localStorage.setItem("isLoggedIn","true");
       localStorage.setItem("erpRole","dv");
       window.location.href = "erp-dashboard.html";
