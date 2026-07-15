@@ -5,13 +5,11 @@
 <title>ERP Portal - Clay Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Modern Typography & Icons -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -24,7 +22,6 @@
 }
 
 body {
-  /* Soft, playful pastel gradient background */
   background: linear-gradient(135deg, #e0e9f5 0%, #f1f5f9 50%, #f5eef7 100%);
   display: flex;
   justify-content: center;
@@ -36,7 +33,6 @@ body {
 /* The Claymorphism Container */
 .box {
   background: #fdfdfd;
-  /* Double inset shadows give it the characteristic soft, rounded 3D clay look */
   box-shadow: 
     inset 4px 4px 8px rgba(255, 255, 255, 0.9),
     inset -4px -4px 8px rgba(163, 177, 198, 0.2),
@@ -53,7 +49,6 @@ body {
   margin-bottom: 32px;
 }
 
-/* Image Logo Container with Claymorphism style */
 .logo-container {
   width: 80px;
   height: 80px;
@@ -132,7 +127,7 @@ h2 {
 }
 
 #teacherLbl { color: #3b82f6; }
-#dvLbl { color: #94a3b8; }
+#accountsLbl { color: #94a3b8; }
 
 /* Clay Form Input Fields */
 .input-group {
@@ -258,7 +253,6 @@ button:active {
 
 <div class="box">
   <div class="header-area">
-    <!-- Clean Clay logo wrapper linking to your asset -->
     <div class="logo-container">
       <img src="logo.jpeg" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
       <i class="fa-solid fa-fingerprint" style="display:none; color: #3b82f6; font-size: 28px;"></i>
@@ -267,7 +261,6 @@ button:active {
     <p class="subtitle">Secure administrative interface gateway</p>
   </div>
 
-  <!-- Role Control Slider Switch -->
   <div class="switch-box">
     <div class="switch" onclick="toggleRole()">
       <div class="slider" id="slider"></div>
@@ -276,13 +269,11 @@ button:active {
     </div>
   </div>
 
-  <!-- Identity Node Input -->
   <div class="input-group">
     <input type="text" id="username" placeholder="Username or Contact ID">
     <i class="fa-regular fa-envelope input-icon"></i>
   </div>
 
-  <!-- Passphrase Module with Interactive Visibility Token -->
   <div class="input-group">
     <input type="password" id="password" placeholder="Access Password">
     <i class="fa-solid fa-shield-blank input-icon"></i>
@@ -309,7 +300,6 @@ firebase.initializeApp({
 const db = firebase.database();
 let role = "teacher";
 
-/* Clean UX Variant - Password state toggle element handler */
 function togglePasswordVisibility() {
   const passInput = document.getElementById("password");
   const toggleIcon = document.getElementById("togglePassBtn");
@@ -325,26 +315,25 @@ function togglePasswordVisibility() {
   }
 }
 
-/* Sliding role selection script logic */
+/* Fixed sliding role selection element mapping */
 function toggleRole(){
   const slider = document.getElementById("slider");
   const t = document.getElementById("teacherLbl");
-  const d = document.getElementById("dvLbl");
+  const a = document.getElementById("accountsLbl");
 
   if(role === "teacher"){
-    role = "dv";
-    slider.style.left = "calc(50% - 5px)";
+    role = "accounts";
+    slider.style.left = "calc(50% - 2px)";
     t.style.color = "#94a3b8";
-    d.style.color = "#3b82f6";
+    a.style.color = "#3b82f6";
   }else{
     role = "teacher";
     slider.style.left = "5px";
-    d.style.color = "#94a3b8";
+    a.style.color = "#94a3b8";
     t.style.color = "#3b82f6";
   }
 }
 
-/* Present dynamic notifications inside context alert box frame */
 function showError(msg) {
   const errorEl = document.getElementById("error");
   if(msg) {
@@ -355,7 +344,6 @@ function showError(msg) {
   }
 }
 
-/* SECURE LOGIN RUNTIME CORE */
 function login(){
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
@@ -366,14 +354,14 @@ function login(){
     return;
   }
 
-  /* ===== DV LOGIN GATEWAY ===== */
+  /* ===== ACCOUNTS LOGIN GATEWAY ===== */
   if(role === "accounts"){
     if(user === "Accounts" && pass === "sai_drs"){
       localStorage.setItem("isLoggedIn","true");
-      localStorage.setItem("erpRole","dv");
+      localStorage.setItem("erpRole","accounts");
       window.location.href = "erp-dashboard.html";
     }else{
-      showError("Invalid access permission signature for DV.");
+      showError("Invalid access permission signature for Accounts.");
     }
     return;
   }
@@ -411,4 +399,4 @@ function login(){
 </script>
 
 </body>
-  </html>
+</html>
