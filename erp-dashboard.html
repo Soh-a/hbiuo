@@ -14,8 +14,6 @@ if(isLoggedIn !== "true"){
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -310,12 +308,6 @@ body {
 }
 .btn-corporate-primary:hover { background-color: var(--primary-hover); }
 
-.btn-corporate-success {
-    background-color: var(--success);
-    color: white;
-}
-.btn-corporate-success:hover { background-color: #12823B; }
-
 .btn-corporate-secondary {
     background-color: white;
     border-color: var(--border-color);
@@ -498,7 +490,7 @@ body {
     color: var(--text-muted);
 }
 
-/* TRANSACTION ARCHITECTURE ACCOUNTING VOUCHER MODAL */
+/* MOBILE OPTIMIZED VOUCHER MODAL CANVAS */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -551,6 +543,7 @@ body {
 .voucher-modal-body {
     padding: 24px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .voucher-form-section-title {
@@ -697,8 +690,46 @@ body {
         padding: 16px;
     }
     .search-control-panel { grid-template-columns: 1fr; padding: 14px; }
-    .voucher-form-layout-grid { grid-template-columns: 1fr; gap: 12px; }
+    
+    /* VOUCHER MODAL MOBILE OPTIMIZATION OVERRIDES */
+    .modal-overlay {
+        padding: 8px;
+    }
+    .voucher-modal-canvas {
+        max-height: 95vh;
+        width: 100%;
+    }
+    .voucher-modal-header {
+        padding: 14px 16px;
+    }
+    .voucher-modal-header h2 {
+        font-size: 14px;
+    }
+    .voucher-modal-body {
+        padding: 16px;
+    }
+    .voucher-form-layout-grid { 
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+        margin-bottom: 18px;
+    }
     .span-all-columns { grid-column: span 1; }
+    
+    .form-control-field {
+        padding: 10px 12px; /* Enhanced touch target size */
+        font-size: 14px; /* Eliminates iOS input zooming */
+    }
+    
+    .voucher-modal-footer {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .voucher-modal-footer button {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+    }
     
     .action-ribbon {
         flex-direction: column;
@@ -712,25 +743,6 @@ body {
         flex: 1;
         justify-content: center;
         padding: 10px;
-    }
-    .modal-overlay {
-        padding: 10px;
-    }
-    .voucher-modal-canvas {
-        max-height: 95vh;
-    }
-    .voucher-modal-header {
-        padding: 14px 16px;
-    }
-    .voucher-modal-body {
-        padding: 16px;
-    }
-    .voucher-modal-footer {
-        padding: 12px 16px;
-        flex-direction: column-reverse;
-    }
-    .voucher-modal-footer button {
-        width: 100%;
     }
 }
 </style>
@@ -838,12 +850,6 @@ body {
                     </button>
                 </div>
                 <div class="btn-group">
-                    <button class="btn-corporate btn-corporate-secondary" onclick="exportToExcel()">
-                        <i class="fa-solid fa-file-excel"></i> Export Selected (.XLSX)
-                    </button>
-                    <button class="btn-corporate btn-corporate-secondary" onclick="downloadLedgerPDF()">
-                        <i class="fa-solid fa-file-pdf"></i> Compile System PDF Report
-                    </button>
                     <button class="btn-corporate btn-corporate-danger" onclick="logout()">
                         <i class="fa-solid fa-power-off"></i> Terminate Session
                     </button>
@@ -1129,7 +1135,6 @@ function logout() {
     window.location.href = "index.html";
 }
 
-/* UNIFIED EXTRACTION STRATEGY: PARSES BOTH STUDENT FEES & LEGACY CASH PAYMENTS */
 function initializeRealtimeLedger() {
     showSpinner();
     
@@ -1154,7 +1159,6 @@ function initializeRealtimeLedger() {
 
         const seenKeys = new Set();
 
-        // 1. Fetch from students tree: students/{studentId}/fees/{month}
         Object.keys(studentsData).forEach(studentKey => {
             const data = studentsData[studentKey];
             if (!data || typeof data !== "object") return;
@@ -1196,7 +1200,6 @@ function initializeRealtimeLedger() {
             }
         });
 
-        // 2. Fallback check for standalone cashPayments node
         Object.keys(legacyPaymentsData).forEach(payKey => {
             if (seenKeys.has(payKey)) return;
             const txn = legacyPaymentsData[payKey];
@@ -1339,15 +1342,15 @@ function openPaymentModal(mode, paymentId = null) {
     toggleUpiReferenceField();
     
     if (mode === 'create') {
-        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> Process Financial Revenue Receipt Voucher';
+        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> Process Financial Fee Voucher';
         document.getElementById("editPaymentId").value = "";
         document.getElementById("editReceiptNo").value = "";
         document.getElementById("modalStudentId").disabled = false;
         document.getElementById("modalSubmitButton").innerText = "Commit Ledger Transaction";
     } else if (mode === 'edit' && paymentId) {
-        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-pen"></i> Amortize / Modify Existing Voucher Record';
+        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-pen"></i> Amortize / Modify Voucher Record';
         document.getElementById("modalStudentId").disabled = true;
-        document.getElementById("modalSubmitButton").innerText = "Save Authorized Modifications";
+        document.getElementById("modalSubmitButton").innerText = "Save Modifications";
         
         const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
         if (target) {
@@ -1526,54 +1529,6 @@ function actionPrintReceipt(paymentId) {
     printContainer.style.display = "block";
     window.print();
     printContainer.style.display = "none";
-}
-
-function exportToExcel() {
-    if (filteredDataset.length === 0) {
-        showToast("No data available to export.", "error");
-        return;
-    }
-
-    const exportData = filteredDataset.map(row => ({
-        "Receipt No": row.receiptNo,
-        "Admission ID": row.studentId,
-        "Student Name": row.studentName,
-        "Class": row.class,
-        "Academic Year": row.academicYear,
-        "Month": row.month,
-        "Amount (INR)": row.amount,
-        "Payment Mode": row.paymentMode,
-        "UPI Ref ID": row.upiRefId,
-        "Status": row.status,
-        "Collected By": row.collectedBy,
-        "Remarks": row.remarks
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Fee Ledger");
-    XLSX.writeFile(workbook, `Fee_Ledger_Report_${Date.now()}.xlsx`);
-}
-
-function downloadLedgerPDF() {
-    const element = document.getElementById("pdfReportContainer");
-    if (!element) return;
-
-    const opt = {
-        margin:       0.3,
-        filename:     `Financial_Ledger_${Date.now()}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-
-    showSpinner();
-    html2pdf().set(opt).from(element).save().then(() => {
-        hideSpinner();
-    }).catch(err => {
-        hideSpinner();
-        showToast("PDF generation error: " + err.message, "error");
-    });
 }
 </script>
 </body>
