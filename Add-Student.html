@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add Student</title>
+
   <style>
     :root {
       --primary-color: #4a90e2;
@@ -53,7 +54,8 @@
       font-weight: 600;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border-color);
@@ -62,7 +64,8 @@
       font-size: 14px;
     }
 
-    input:focus, select:focus {
+    input:focus,
+    select:focus {
       outline: none;
       border-color: var(--primary-color);
     }
@@ -110,79 +113,177 @@
     }
   </style>
 </head>
+
 <body>
 
 <div class="form-container">
+
   <h2>Add New Student</h2>
 
   <div id="alertBox" class="alert"></div>
 
   <form id="addStudentForm">
+
+    <!-- Student Name -->
     <div class="form-group">
       <label for="name">Full Name *</label>
-      <input type="text" id="name" required placeholder="Enter student name">
+      <input
+        type="text"
+        id="name"
+        required
+        placeholder="Enter student name"
+      >
     </div>
 
+    <!-- Mobile -->
     <div class="form-group">
       <label for="mobile">Mobile Number (Firebase Key) *</label>
-      <input type="tel" id="mobile" required pattern="[0-9]{10}" placeholder="10-digit mobile number">
+      <input
+        type="tel"
+        id="mobile"
+        required
+        pattern="[0-9]{10}"
+        maxlength="10"
+        placeholder="10-digit mobile number"
+      >
     </div>
 
+    <!-- Class -->
     <div class="form-group">
       <label for="class">Class *</label>
-      <input type="text" id="class" required placeholder="e.g. Playgroup, Class 1">
+      <input
+        type="text"
+        id="class"
+        required
+        placeholder="e.g. Playgroup, Class 1"
+      >
     </div>
 
+    <!-- Father Name -->
     <div class="form-group">
-      <label for="email">Email Address</label>
-      <input type="email" id="email" placeholder="Optional">
+      <label for="fatherName">Father's Name</label>
+      <input
+        type="text"
+        id="fatherName"
+        placeholder="Enter father's name"
+      >
     </div>
 
+    <!-- Mother Name -->
+    <div class="form-group">
+      <label for="motherName">Mother's Name</label>
+      <input
+        type="text"
+        id="motherName"
+        placeholder="Enter mother's name"
+      >
+    </div>
+
+    <!-- Parent / Guardian -->
     <div class="form-group">
       <label for="parents">Parent/Guardian Name</label>
-      <input type="text" id="parents" placeholder="Optional">
+      <input
+        type="text"
+        id="parents"
+        placeholder="Optional"
+      >
     </div>
 
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Optional"
+      >
+    </div>
+
+    <!-- Password -->
     <div class="form-group">
       <label for="password">Password *</label>
-      <input type="password" id="password" required placeholder="Set student password">
+      <input
+        type="password"
+        id="password"
+        required
+        placeholder="Set student password"
+      >
     </div>
 
+    <!-- Monthly Fee -->
     <div class="form-group">
       <label for="monthlyfee">Monthly Fee (₹) *</label>
-      <input type="number" id="monthlyfee" required min="0" step="any" placeholder="e.g. 1500">
+      <input
+        type="number"
+        id="monthlyfee"
+        required
+        min="0"
+        step="any"
+        placeholder="e.g. 1500"
+      >
     </div>
 
+    <!-- Academic Session -->
     <div class="form-group">
       <label for="session">Academic Session *</label>
-      <input type="text" id="session" required placeholder="e.g. 2026-2027">
+      <input
+        type="text"
+        id="session"
+        required
+        placeholder="e.g. 2026-2027"
+      >
     </div>
 
-    <button type="submit" id="submitBtn">Save Student</button>
+    <button type="submit" id="submitBtn">
+      Save Student
+    </button>
+
   </form>
 </div>
 
-<!-- Firebase SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // TODO: Replace with your Firebase Configuration
+<!-- Firebase SDK -->
+<script type="module">
+
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+  import {
+    getDatabase,
+    ref,
+    get,
+    set
+  }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+
+  /* -----------------------------------------
+     FIREBASE CONFIGURATION
+  ----------------------------------------- */
+
   const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271",
-  storageBucket: "students-6e271.firebasestorage.app",
-  messagingSenderId: "336382170224",
-  appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271",
+    storageBucket: "students-6e271.firebasestorage.app",
+    messagingSenderId: "336382170224",
+    appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
   };
 
-  // Initialize Firebase
+
+  /* -----------------------------------------
+     INITIALIZE FIREBASE
+  ----------------------------------------- */
+
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Exact 12-month array matching your specification
+
+  /* -----------------------------------------
+     ACADEMIC MONTHS
+  ----------------------------------------- */
+
   const months = [
     "April",
     "May",
@@ -198,96 +299,251 @@
     "march"
   ];
 
-  // Helper for UI Alert Feedback
+
+  /* -----------------------------------------
+     ALERT FUNCTIONS
+  ----------------------------------------- */
+
   function showAlert(message, type) {
+
     const alertBox = document.getElementById("alertBox");
+
     alertBox.textContent = message;
+
     alertBox.className = `alert ${type}`;
+
     alertBox.style.display = "block";
   }
 
+
   function hideAlert() {
+
     const alertBox = document.getElementById("alertBox");
+
     alertBox.style.display = "none";
   }
 
-  // Form Submission Logic
-  document.getElementById("addStudentForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    hideAlert();
 
-    const submitBtn = document.getElementById("submitBtn");
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Checking & Saving...";
+  /* -----------------------------------------
+     FORM SUBMISSION
+  ----------------------------------------- */
 
-    // 1. Gather and sanitize input fields
-    const mobile = document.getElementById("mobile").value.trim();
-    const name = document.getElementById("name").value.trim();
-    const studentClass = document.getElementById("class").value.trim();
-    const email = document.getElementById("email").value.trim() || "";
-    const parents = document.getElementById("parents").value.trim() || "";
-    const password = document.getElementById("password").value;
-    const monthlyfee = Number(document.getElementById("monthlyfee").value) || 0;
-    const session = document.getElementById("session").value.trim();
+  document
+    .getElementById("addStudentForm")
+    .addEventListener("submit", async (e) => {
 
-    try {
-      // 2. Uniqueness check for mobile number
-      const studentRef = ref(db, `students/${mobile}`);
-      const snapshot = await get(studentRef);
+      e.preventDefault();
 
-      if (snapshot.exists()) {
-        showAlert(`Error: A student with mobile number ${mobile} already exists!`, "error");
+      hideAlert();
+
+      const submitBtn =
+        document.getElementById("submitBtn");
+
+      submitBtn.disabled = true;
+
+      submitBtn.textContent = "Checking & Saving...";
+
+
+      /* -----------------------------------------
+         GET FORM VALUES
+      ----------------------------------------- */
+
+      const mobile =
+        document.getElementById("mobile")
+          .value
+          .trim();
+
+      const name =
+        document.getElementById("name")
+          .value
+          .trim();
+
+      const studentClass =
+        document.getElementById("class")
+          .value
+          .trim();
+
+      const fatherName =
+        document.getElementById("fatherName")
+          .value
+          .trim();
+
+      const motherName =
+        document.getElementById("motherName")
+          .value
+          .trim();
+
+      const parents =
+        document.getElementById("parents")
+          .value
+          .trim() || "";
+
+      const email =
+        document.getElementById("email")
+          .value
+          .trim() || "";
+
+      const password =
+        document.getElementById("password")
+          .value;
+
+      const monthlyfee =
+        Number(
+          document.getElementById("monthlyfee").value
+        ) || 0;
+
+      const session =
+        document.getElementById("session")
+          .value
+          .trim();
+
+
+      try {
+
+        /* -----------------------------------------
+           CHECK MOBILE NUMBER
+        ----------------------------------------- */
+
+        const studentRef =
+          ref(db, `students/${mobile}`);
+
+        const snapshot =
+          await get(studentRef);
+
+
+        if (snapshot.exists()) {
+
+          showAlert(
+            `Error: A student with mobile number ${mobile} already exists!`,
+            "error"
+          );
+
+          submitBtn.disabled = false;
+
+          submitBtn.textContent = "Save Student";
+
+          return;
+        }
+
+
+        /* -----------------------------------------
+           DEFAULT FEE STRUCTURE
+        ----------------------------------------- */
+
+        const fees = {};
+
+        const defaultMonthStructure = {
+
+          academicYear: "",
+
+          amount: 0,
+
+          collectedBy: "",
+
+          paymentIdLink: "",
+
+          paymentMode: "",
+
+          receiptNo: "",
+
+          remarks: "",
+
+          status: "Pending",
+
+          transactionDate: 0
+
+        };
+
+
+        months.forEach((month) => {
+
+          fees[month] = {
+            ...defaultMonthStructure
+          };
+
+        });
+
+
+        /* -----------------------------------------
+           STUDENT DATA
+        ----------------------------------------- */
+
+        const studentPayload = {
+
+          class: studentClass,
+
+          email: email,
+
+          fees: fees,
+
+          mobile: mobile,
+
+          monthlyfee: monthlyfee,
+
+          name: name,
+
+          fatherName: fatherName,
+
+          motherName: motherName,
+
+          parents: parents,
+
+          password: password,
+
+          session: session
+
+        };
+
+
+        /* -----------------------------------------
+           SAVE TO FIREBASE
+        ----------------------------------------- */
+
+        await set(
+          studentRef,
+          studentPayload
+        );
+
+
+        /* -----------------------------------------
+           SUCCESS
+        ----------------------------------------- */
+
+        showAlert(
+          `Success! Student ${name} successfully added.`,
+          "success"
+        );
+
+
+        document
+          .getElementById("addStudentForm")
+          .reset();
+
+
+      } catch (error) {
+
+        console.error(
+          "Firebase Error:",
+          error
+        );
+
+        showAlert(
+          `Failed to save student: ${error.message}`,
+          "error"
+        );
+
+      } finally {
+
         submitBtn.disabled = false;
+
         submitBtn.textContent = "Save Student";
-        return;
+
       }
 
-      // 3. Construct default fees structure with all 12 specified months
-      const fees = {};
-      const defaultMonthStructure = {
-        academicYear: "",
-        amount: 0,
-        collectedBy: "",
-        paymentIdLink: "",
-        paymentMode: "",
-        receiptNo: "",
-        remarks: "",
-        status: "Pending",
-        transactionDate: 0
-      };
+    });
 
-      months.forEach((month) => {
-        fees[month] = { ...defaultMonthStructure };
-      });
-
-      // 4. Construct complete payload
-      const studentPayload = {
-        class: studentClass,
-        email: email,
-        fees: fees,
-        mobile: mobile,
-        monthlyfee: monthlyfee, // Saved as Number
-        name: name,
-        parents: parents,
-        password: password,
-        session: session
-      };
-
-      // 5. Save directly to Firebase Realtime Database
-      await set(studentRef, studentPayload);
-
-      showAlert(`Success! Student ${name} successfully added.`, "success");
-      document.getElementById("addStudentForm").reset();
-
-    } catch (error) {
-      console.error("Firebase Error: ", error);
-      showAlert(`Failed to save student: ${error.message}`, "error");
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Save Student";
-    }
-  });
 </script>
 
 </body>
 </html>
+
