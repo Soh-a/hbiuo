@@ -23,12 +23,15 @@
 :root {
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --dark-bg: #1f2937;
-    --light-bg: #f3f4f6;
-    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --primary-light: #eff6ff;
+    --border-blue: #3b82f6;
+    --border-light-blue: #bfdbfe;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --dark-bg: #0f172a;
+    --light-bg: #f8fafc;
+    --card-shadow: 0 4px 20px rgba(37, 99, 235, 0.08);
 }
 
 *{
@@ -63,6 +66,7 @@ body {
     align-items: center;
     box-shadow: var(--card-shadow);
     margin-bottom: 25px;
+    border: 2px solid var(--border-light-blue);
 }
 
 .topbar-brand {
@@ -74,21 +78,24 @@ body {
 .topbar-logo {
     width: 55px;
     height: 55px;
-    border-radius: 8px;
+    border-radius: 10px;
     object-fit: cover;
-    border: 1px solid #e5e7eb;
+    border: 2px solid var(--border-blue);
+    padding: 2px;
+    background: white;
 }
 
 .topbar h1 {
     font-size: 24px;
-    color: #111827;
+    color: #1e3a8a;
     font-weight: 700;
     line-height: 1.2;
 }
 
 .topbar p {
-    color: #6b7280;
+    color: #3b82f6;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .topbar-actions {
@@ -100,22 +107,42 @@ body {
     padding: 10px 18px;
     border-radius: 10px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    border: none;
-    transition: background 0.2s ease, transform 0.1s ease;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
 .btn:active { transform: scale(0.98); }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-hover); }
-.btn-secondary { background: #4b5563; color: white; }
-.btn-secondary:hover { background: #374151; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-danger:hover { background: #dc2626; }
+.btn-primary { 
+    background: var(--primary); 
+    color: white; 
+    border-color: var(--primary-hover);
+}
+.btn-primary:hover { 
+    background: var(--primary-hover); 
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+.btn-secondary { 
+    background: white; 
+    color: #2563eb; 
+    border: 2px solid var(--border-blue);
+}
+.btn-secondary:hover { 
+    background: var(--primary-light); 
+}
+.btn-danger { 
+    background: #fef2f2; 
+    color: var(--danger); 
+    border: 2px solid #fca5a5;
+}
+.btn-danger:hover { 
+    background: var(--danger); 
+    color: white; 
+}
 
 /* DASHBOARD CARDS */
 .report-grid-summary {
@@ -130,33 +157,41 @@ body {
     padding: 22px;
     border-radius: 16px;
     box-shadow: var(--card-shadow);
-    border-left: 5px solid transparent;
+    border: 2px solid var(--border-light-blue);
+    border-left: 6px solid var(--border-blue);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analytics-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
 }
 
 .card-collected { border-left-color: var(--success); }
 .card-outstanding { border-left-color: var(--warning); }
-.card-invoices { border-left-color: var(--primary); }
+.card-invoices { border-left-color: var(--border-blue); }
 .card-rate { border-left-color: #8b5cf6; }
 .card-pending { border-left-color: #ec4899; }
 
 .analytics-card h3 {
-    color: #6b7280;
-    font-size: 13px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     margin-bottom: 6px;
 }
 
 .analytics-card h2 {
     font-size: 28px;
-    color: #111827;
+    color: #1e3a8a;
     font-weight: 700;
 }
 
 .analytics-card .meta-indicator {
     margin-top: 6px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .text-success { color: var(--success); }
@@ -175,6 +210,7 @@ body {
     gap: 15px;
     align-items: center;
     justify-content: space-between;
+    border: 2px solid var(--border-light-blue);
 }
 
 .search-filter-group {
@@ -186,29 +222,39 @@ body {
 
 .search-input {
     padding: 10px 16px;
-    border: 1px solid #d1d5db;
+    border: 2px solid var(--border-light-blue);
     border-radius: 10px;
     font-size: 14px;
     outline: none;
     width: 100%;
     max-width: 280px;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
+    background: white;
 }
 
-.search-input:focus { border-color: var(--primary); }
+.search-input:focus { 
+    border-color: var(--border-blue); 
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
 
 .report-select {
     padding: 10px 14px;
-    border: 1px solid #d1d5db;
+    border: 2px solid var(--border-light-blue);
     border-radius: 10px;
     font-size: 14px;
-    background: #f9fafb;
+    background: white;
     outline: none;
     cursor: pointer;
     min-width: 140px;
+    font-weight: 500;
+    color: #1e293b;
+    transition: all 0.2s ease;
 }
 
-.report-select:focus { border-color: var(--primary); }
+.report-select:focus { 
+    border-color: var(--border-blue); 
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
 
 /* SECTIONS WRAPPER */
 .report-sections {
@@ -226,24 +272,27 @@ body {
     padding: 25px;
     border-radius: 16px;
     box-shadow: var(--card-shadow);
+    border: 2px solid var(--border-light-blue);
 }
 
 .panel-header {
     margin-bottom: 20px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 2px solid #eff6ff;
     padding-bottom: 12px;
 }
 
 .panel-header h2 {
     font-size: 18px;
-    color: #111827;
-    font-weight: 600;
+    color: #1e3a8a;
+    font-weight: 700;
 }
 
 /* TABLES STYLING */
 .table-container {
     overflow-x: auto;
     width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border-light-blue);
 }
 
 .modern-table {
@@ -253,33 +302,51 @@ body {
 }
 
 .modern-table th {
-    background: #f8fafc;
-    color: #4b5563;
+    background: #eff6ff;
+    color: #1e40af;
     padding: 14px 16px;
     font-size: 13px;
-    font-weight: 600;
-    border-bottom: 2px solid #e2e8f0;
+    font-weight: 700;
+    border-bottom: 2px solid var(--border-light-blue);
 }
 
 .modern-table td {
     padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
     color: #334155;
     font-size: 13px;
 }
 
-.modern-table tr:hover { background: #f8fafc; }
+.modern-table tr:last-child td {
+    border-bottom: none;
+}
+
+.modern-table tr:hover { 
+    background: #f8fafc; 
+}
 
 /* REUSABLE MICRO BADGES */
 .badge {
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
 }
-.badge.paid { background: #dcfce7; color: #15803d; }
-.badge.unpaid { background: #fee2e2; color: #b91c1c; }
+
+.badge.paid { 
+    background: #dcfce7; 
+    color: #14532d; 
+    border: 1px solid #86efac;
+}
+
+.badge.unpaid { 
+    background: #fee2e2; 
+    color: #7f1d1d; 
+    border: 1px solid #fca5a5;
+}
 
 /* MULTI-MEDIA / PRINT BREAKPOINTS */
 @media(max-width: 768px) {
@@ -294,7 +361,7 @@ body {
     .topbar-actions, .controls-panel, .btn { display: none !important; }
     body { background: white; }
     .main { padding: 0; }
-    .report-panel { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+    .report-panel { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
 }
 </style>
 </head>
@@ -347,7 +414,7 @@ body {
     <div class="controls-panel">
         <div class="search-filter-group">
             <input type="text" id="repSearch" class="search-input" placeholder="Search Student Name or ID..." oninput="processLocalDatasetFilter()">
-            
+
             <select id="repClass" class="report-select" onchange="processLocalDatasetFilter()">
                 <option value="">All Classes</option>
                 <option value="IK-1">IK-1</option>
@@ -385,7 +452,7 @@ body {
     </div>
 
     <div class="report-sections">
-        
+
         <div class="report-panel">
             <div class="panel-header">
                 <h2>Master Transaction Audit Log</h2>
@@ -461,14 +528,14 @@ const targetClassesOrdered = ["IK-1", "IK-2", "IK-3", "1", "2", "3", "4", "5"];
 function initManagementReportsEngine() {
     db.ref("students").on("value", snapshot => {
         const studentsData = snapshot.val();
-        
+
         let grossCollected = 0;
         let grossOutstanding = 0;
         let invoiceCounter = 0;
         let unpaidDefaultersCount = 0;
-        
+
         localReportsCache = [];
-        
+
         // Zero-fill Class Data Distribution Struct Maps
         localClassSummaryCache = {};
         targetClassesOrdered.forEach(cls => {
@@ -586,7 +653,7 @@ function renderClassDistributionMatrixTable(matrix) {
     targetClassesOrdered.forEach(cls => {
         const item = matrix[cls];
         if(!item || item.count === 0) return; 
-        
+
         totalClassCollected += item.collected;
         totalClassPending += item.pending;
         totalClassInvoices += item.count;
@@ -608,7 +675,7 @@ function renderClassDistributionMatrixTable(matrix) {
     } else {
         // Add Grand Totals Foot Row to Matrix Interface
         tbody.innerHTML += `
-            <tr style="background:#f1f5f9; font-weight:700; border-top:2px solid #cbd5e1;">
+            <tr style="background:#eff6ff; font-weight:700; border-top:2px solid #bfdbfe;">
                 <td>Grand Total</td>
                 <td class="text-success">₹${totalClassCollected.toLocaleString('en-IN')}</td>
                 <td class="text-warning">₹${totalClassPending.toLocaleString('en-IN')}</td>
@@ -632,18 +699,18 @@ function processLocalDatasetFilter() {
         const matchClass = targetClass === "" || String(record.class) === String(targetClass);
         const matchStatus = targetStatus === "" || record.status === targetStatus;
         const matchMonth = targetMonth === "" || record.month.toLowerCase() === targetMonth.toLowerCase();
-        
+
         return matchSearch && matchClass && matchStatus && matchMonth;
     });
 
     displayMasterLogTable(filteredResult);
 }
 
-/* JSPDFAUTOTABLE ENTERPRISE MONOCHROME ENGINE */
+/* JSPDFAUTOTABLE ENTERPRISE BLUE-BORDERED ENGINE */
 function exportDataToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'mm', 'a4'); // A4 Landscape Layout (297mm x 210mm)
-    
+
     const today = new Date();
     const dateFormatted = today.toISOString().split('T')[0];
     const timestampString = today.toLocaleString('en-IN');
@@ -695,60 +762,86 @@ function exportDataToPDF() {
     const baseTableStyles = {
         font: 'helvetica',
         fontSize: 8.5,
-        textColor: [30, 30, 30],
-        lineColor: [0, 0, 0],
+        textColor: [30, 41, 59],
+        lineColor: [191, 219, 254],
         lineWidth: 0.15,
         cellPadding: 2.5
     };
 
     const accountingHeadStyles = {
-        fillColor: [0, 0, 0],
+        fillColor: [37, 99, 235],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9,
         lineWidth: 0.15,
-        lineColor: [0, 0, 0]
+        lineColor: [37, 99, 235]
     };
 
     const alternatingRowConfig = {
-        fillColor: [248, 248, 248]
+        fillColor: [248, 250, 252]
     };
 
-    // --- 1. CORPORATE TITLE BANNER ---
-    doc.setFillColor(0, 0, 0);
+    // --- HELPER FOR LOGO PLACEMENT ---
+    const addLogoToPage = () => {
+        try {
+            const logoImg = document.querySelector('.topbar-logo');
+            if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+                doc.addImage(logoImg, 'JPEG', baseMargin + 3, 13.5, 15, 15);
+            }
+        } catch (e) {
+            console.warn("PDF Logo embedding fallback:", e);
+        }
+    };
+
+    // --- 1. CORPORATE TITLE BANNER & HEADER ---
+    doc.setFillColor(37, 99, 235);
     doc.rect(baseMargin, 12, printableWidth, 18, 'F');
+
+    addLogoToPage();
 
     doc.setTextColor(255, 255, 255);
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("SCHOOL ERP FINANCIAL AUDIT MANAGEMENT REPORT", baseMargin + 4, 23);
+    doc.setFontSize(12);
+    doc.text("SCHOOL ERP FINANCIAL MANAGEMENT REPORT", baseMargin + 22, 21);
 
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont("Helvetica", "normal");
-    doc.text("CONFIDENTIAL ENTERPRISE STATEMENT", 297 - baseMargin - 4, 23, { align: 'right' });
+    doc.text("Session: 2026–27 | CONFIDENTIAL REPORT", baseMargin + 22, 26);
+    doc.text("OFFICIAL ENTERPRISE STATEMENT", 297 - baseMargin - 4, 23, { align: 'right' });
 
-    // --- 2. APPLIED REPORT METADATA ---
-    doc.setTextColor(60, 60, 60);
+    // --- 2. APPLIED REPORT METADATA & STATUS LEGEND ---
+    doc.setTextColor(71, 85, 105);
     doc.setFontSize(8.5);
     doc.setFont("Helvetica", "bold");
     doc.text("Generation Date:", baseMargin, 36);
     doc.setFont("Helvetica", "normal");
     doc.text(timestampString, baseMargin + 25, 36);
 
-    const filterInfo = `Class Focus: ${activeClassFilter || 'All'} | Status Match: ${activeStatusFilter || 'All'} | Term Month: ${activeMonthFilter || 'All'}${activeSearchQuery ? ` | Query Matrix: "${activeSearchQuery}"` : ''}`;
+    const filterInfo = `Class Focus: ${activeClassFilter || 'All'} | Status Match: ${activeStatusFilter || 'All'} | Term Month: ${activeMonthFilter || 'All'}${activeSearchQuery ? ` | Query: "${activeSearchQuery}"` : ''}`;
     doc.setFont("Helvetica", "bold");
     doc.text("Scope Filters:", baseMargin, 41);
     doc.setFont("Helvetica", "normal");
     doc.text(filterInfo, baseMargin + 22, 41);
 
+    // Render Status Legend
+    const legendX = 297 - baseMargin - 55;
+    doc.setFont("Helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text("Legend:", legendX - 14, 38);
+
+    doc.setTextColor(22, 163, 74);
+    doc.text("● PAID", legendX, 38);
+    doc.setTextColor(220, 38, 38);
+    doc.text("● UNPAID", legendX + 22, 38);
+
     // --- 3. AUDIT REVENUE EXECUTIVE SUMMARY ---
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text("I. EXECUTIVE OVERVIEW METRICS", baseMargin, 49);
+    doc.setTextColor(30, 58, 138);
+    doc.text("I. EXECUTIVE OVERVIEW METRICS", baseMargin, 48);
 
     doc.autoTable({
-        startY: 52,
+        startY: 51,
         head: [['Financial Operational Parameters', 'Consolidated Value Assessment']],
         body: [
             ['Gross Institutional Revenue Funds Collected', `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`],
@@ -799,11 +892,11 @@ function exportDataToPDF() {
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text("II. CLASS ALLOCATION REVENUE MATRIX SUMMARY", baseMargin, doc.autoTable.previous.finalY + 9);
+    doc.setTextColor(30, 58, 138);
+    doc.text("II. CLASS ALLOCATION REVENUE MATRIX SUMMARY", baseMargin, doc.autoTable.previous.finalY + 8);
 
     doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 12,
+        startY: doc.autoTable.previous.finalY + 11,
         head: [['Class Division Specification', 'Aggregated Revenue Collected', 'Aggregated Arrears Deficit', 'Issued Logs']],
         body: distributionRows,
         theme: 'grid',
@@ -812,16 +905,19 @@ function exportDataToPDF() {
         alternateRowStyles: alternatingRowConfig,
         columnStyles: {
             0: { fontStyle: 'bold' },
-            1: { halign: 'right' },
-            2: { halign: 'right' },
+            1: { halign: 'right', textColor: [22, 163, 74], fontStyle: 'bold' },
+            2: { halign: 'right', textColor: [220, 38, 38], fontStyle: 'bold' },
             3: { halign: 'right' }
         },
         margin: { left: baseMargin, right: baseMargin },
         didParseCell: function(data) {
             if (data.row.index === distributionRows.length - 1) {
                 data.cell.styles.fontStyle = 'bold';
-                data.cell.styles.fillColor = [230, 230, 230];
-                data.cell.styles.textColor = [0, 0, 0];
+                data.cell.styles.fillColor = [219, 234, 254];
+                if (data.column.index === 0) data.cell.styles.textColor = [30, 58, 138];
+                if (data.column.index === 1) data.cell.styles.textColor = [22, 163, 74];
+                if (data.column.index === 2) data.cell.styles.textColor = [220, 38, 38];
+                if (data.column.index === 3) data.cell.styles.textColor = [30, 58, 138];
             }
         }
     });
@@ -840,12 +936,12 @@ function exportDataToPDF() {
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text("III. DETAILED TRANSACTION AUDIT LEDGER ITEMIZATION", baseMargin, doc.autoTable.previous.finalY + 9);
+    doc.setTextColor(30, 58, 138);
+    doc.text("III. DETAILED TRANSACTION AUDIT LEDGER ITEMIZATION", baseMargin, doc.autoTable.previous.finalY + 8);
 
     doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 12,
-        head: [['ID Reference', 'Student Ledger Name', 'Class Branch', 'Billing Term', 'Base Fee Value', 'Late Premium Fine', 'Statement Total', 'Status Tag']],
+        startY: doc.autoTable.previous.finalY + 11,
+        head: [['ID Reference', 'Student Ledger Name', 'Class Branch', 'Billing Term', 'Base Fee Value', 'Late Premium Fine', 'Statement Total', 'Payment Status']],
         body: auditRows,
         theme: 'grid',
         styles: baseTableStyles,
@@ -861,26 +957,43 @@ function exportDataToPDF() {
             6: { cellWidth: 42, halign: 'right', fontStyle: 'bold' },
             7: { cellWidth: 34, halign: 'center', fontStyle: 'bold' }
         },
-        margin: { left: baseMargin, right: baseMargin }
+        margin: { left: baseMargin, right: baseMargin },
+        didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 7) {
+                const statusValue = String(data.cell.raw || '').trim().toUpperCase();
+                if (statusValue === 'PAID') {
+                    data.cell.styles.fillColor = [220, 252, 231];
+                    data.cell.styles.textColor = [20, 83, 45];
+                } else if (statusValue === 'UNPAID') {
+                    data.cell.styles.fillColor = [254, 226, 226];
+                    data.cell.styles.textColor = [127, 29, 29];
+                }
+            }
+        }
     });
 
-    // --- 6. GLOBAL DECORATIVE FRAMES & DYNAMIC RUNNING FOOTERS ---
+    // --- 6. GLOBAL BLUE BORDERS & DYNAMIC RUNNING FOOTERS ---
     const totalPagesCount = doc.internal.getNumberOfPages();
     for (let currentTrackPage = 1; currentTrackPage <= totalPagesCount; currentTrackPage++) {
         doc.setPage(currentTrackPage);
 
-        // Standardized Accounting Structural Frame Line
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.2);
+        // Standardized Accounting Royal Blue Frame Line
+        doc.setDrawColor(37, 99, 235);
+        doc.setLineWidth(0.3);
         doc.rect(6, 6, 285, 198, 'D');
 
-        // Corporate Confidential Systems Footer Injection
+        // Render Top Logo on secondary pages
+        if (currentTrackPage > 1) {
+            addLogoToPage();
+        }
+
+        // Corporate Confidential Systems Footer
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(7.5);
-        doc.setTextColor(100, 100, 100);
-        
+        doc.setTextColor(100, 116, 139);
+
         doc.text("Confidential • Generated by School ERP Financial Management System", baseMargin, 200.5);
-        doc.text(`Page Summary ${currentTrackPage} of ${totalPagesCount}`, 297 - baseMargin, 200.5, { align: 'right' });
+        doc.text(`Page ${currentTrackPage} of ${totalPagesCount}`, 297 - baseMargin, 200.5, { align: 'right' });
     }
 
     doc.save(`ERP_Financial_Audit_Log_${dateFormatted}.pdf`);
@@ -898,4 +1011,4 @@ window.onload = initManagementReportsEngine;
 </script>
 
 </body>
-    </html>
+</html>
