@@ -716,7 +716,7 @@ function exportDataToPDF() {
     const PAGE_WIDTH = 210;
     const PAGE_HEIGHT = 297;
     const MARGIN = 12;
-    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2);
+    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2); // 186mm
 
     // Restrained Professional Institutional Color Palette
     const COLOR_NAVY = [0, 33, 71];        // Deep Navy Blue #002147
@@ -727,7 +727,7 @@ function exportDataToPDF() {
     const COLOR_MUTED_TEXT = [71, 85, 105]; // Secondary Text #475569
     const COLOR_BORDER = [203, 213, 225];   // Light Border #cbd5e1
 
-    // Status Colors (Subtle & Professional Muted Tones)
+    // Status Colors (Muted Professional Tones)
     const STATUS_PAID_TEXT = [21, 128, 61];     // Dark Green #15803d
     const STATUS_PAID_BG = [240, 253, 244];      // Soft Light Green #f0fdf4
     const STATUS_UNPAID_TEXT = [185, 28, 28];   // Dark Red #b91c1c
@@ -789,13 +789,13 @@ function exportDataToPDF() {
         }
     });
 
+    // Standard Currency Formatter using 'Rs.' for jsPDF Helvetica support
     function fmtMoney(val) {
-        return "₹" + Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return "Rs. " + Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Official School Letterhead Header Component
+    // Header Letterhead Component
     function renderLetterhead(y) {
-        // Attempt logo extraction from page DOM if visible
         const logoImg = document.getElementById("schoolLogoImg");
         let hasLogo = false;
         
@@ -828,7 +828,7 @@ function exportDataToPDF() {
         doc.setFontSize(8.5);
         doc.text("Jonali, Zoo Road, Guwahati – 781024 | Email: sai.drs.kids.school@gmail.com", textCenterX, y + 14.5, { align: "center" });
 
-        // Institutional Divider Line
+        // Divider Line
         const lineY = y + 18;
         doc.setDrawColor(...COLOR_ROYAL);
         doc.setLineWidth(0.8);
@@ -838,7 +838,7 @@ function exportDataToPDF() {
         doc.setLineWidth(0.2);
         doc.line(MARGIN, lineY + 1.2, PAGE_WIDTH - MARGIN, lineY + 1.2);
 
-        // Official Title Banner
+        // Title Banner
         const bannerY = lineY + 5;
         doc.setFillColor(...COLOR_LIGHT_BLUE);
         doc.rect(MARGIN, bannerY, CONTENT_WIDTH, 10, "F");
@@ -929,17 +929,14 @@ function exportDataToPDF() {
         styles: { font: "helvetica", fontSize: 8.5, textColor: COLOR_DARK_TEXT, lineColor: COLOR_BORDER, lineWidth: 0.2, cellPadding: 2.5 },
         headStyles: { fillColor: COLOR_NAVY, textColor: [255, 255, 255], fontStyle: "bold", halign: "left" },
         columnStyles: {
-            0: { cellWidth: 126 },
-            1: { cellWidth: 60, halign: "right", fontStyle: "bold" }
+            0: { cellWidth: 120 },
+            1: { cellWidth: 66, halign: "right", fontStyle: "bold" }
         },
         margin: { left: MARGIN, right: MARGIN },
         didParseCell: function(data) {
             if (data.section === "body") {
-                if (data.row.index === 1) { // Total Fee Collected
-                    data.cell.styles.textColor = STATUS_PAID_TEXT;
-                } else if (data.row.index === 3) { // Total Outstanding
-                    data.cell.styles.textColor = STATUS_UNPAID_TEXT;
-                }
+                if (data.row.index === 1) data.cell.styles.textColor = STATUS_PAID_TEXT;
+                if (data.row.index === 3) data.cell.styles.textColor = STATUS_UNPAID_TEXT;
             }
         }
     });
@@ -980,10 +977,10 @@ function exportDataToPDF() {
         styles: { font: "helvetica", fontSize: 8, textColor: COLOR_DARK_TEXT, lineColor: COLOR_BORDER, lineWidth: 0.2, cellPadding: 2 },
         headStyles: { fillColor: COLOR_NAVY, textColor: [255, 255, 255], fontStyle: "bold", halign: "center" },
         columnStyles: {
-            0: { cellWidth: 46, halign: "left" },
-            1: { cellWidth: 46, halign: "right" },
-            2: { cellWidth: 47, halign: "right" },
-            3: { cellWidth: 47, halign: "right" }
+            0: { cellWidth: 42, halign: "left" },
+            1: { cellWidth: 48, halign: "right" },
+            2: { cellWidth: 48, halign: "right" },
+            3: { cellWidth: 48, halign: "right" }
         },
         margin: { left: MARGIN, right: MARGIN },
         didParseCell: function(data) {
@@ -991,7 +988,6 @@ function exportDataToPDF() {
                 if (data.column.index === 2) data.cell.styles.textColor = STATUS_PAID_TEXT;
                 if (data.column.index === 3) data.cell.styles.textColor = STATUS_UNPAID_TEXT;
 
-                // Total Row Styling
                 if (data.row.index === monthRows.length - 1) {
                     data.cell.styles.fontStyle = "bold";
                     data.cell.styles.fillColor = COLOR_LIGHT_BLUE;
@@ -1022,11 +1018,11 @@ function exportDataToPDF() {
             item.name,
             clsLabel,
             item.month,
-            "₹" + fee,
-            "₹" + fine,
-            "₹" + total,
-            "₹" + paid,
-            "₹" + balance,
+            "Rs. " + fee,
+            "Rs. " + fine,
+            "Rs. " + total,
+            "Rs. " + paid,
+            "Rs. " + balance,
             item.status.toUpperCase()
         ];
     });
@@ -1034,11 +1030,11 @@ function exportDataToPDF() {
     // Append Total Row
     studentTableBody.push([
         "", "TOTAL", "", "",
-        "₹" + grossDemand,
-        "₹" + grossFine,
-        "₹" + grossDemand,
-        "₹" + grossCollected,
-        "₹" + grossOutstanding,
+        "Rs. " + grossDemand,
+        "Rs. " + grossFine,
+        "Rs. " + grossDemand,
+        "Rs. " + grossCollected,
+        "Rs. " + grossOutstanding,
         ""
     ]);
 
@@ -1067,7 +1063,6 @@ function exportDataToPDF() {
         rowPageBreak: "avoid",
         didParseCell: function(data) {
             if (data.section === "body") {
-                // Status Cell Specific Styling
                 if (data.column.index === 9) {
                     const status = String(data.cell.raw || "").toUpperCase();
                     data.cell.styles.fontStyle = "bold";
@@ -1083,7 +1078,6 @@ function exportDataToPDF() {
                     }
                 }
 
-                // Final Total Row Formatting
                 if (data.row.index === studentTableBody.length - 1) {
                     data.cell.styles.fontStyle = "bold";
                     data.cell.styles.fillColor = COLOR_LIGHT_BLUE;
@@ -1095,7 +1089,6 @@ function exportDataToPDF() {
 
     currentY = doc.lastAutoTable.finalY + 6;
 
-    // Check page space for trailing observations & signature block
     if (currentY > PAGE_HEIGHT - 65) {
         doc.addPage();
         currentY = 20;
@@ -1111,7 +1104,6 @@ function exportDataToPDF() {
     doc.setLineWidth(0.3);
     doc.rect(MARGIN, currentY + 2, CONTENT_WIDTH, 18);
 
-    // Ruled lines for handwritten notes
     doc.setDrawColor(...COLOR_BORDER);
     doc.setLineWidth(0.2);
     doc.line(MARGIN + 2, currentY + 8, MARGIN + CONTENT_WIDTH - 2, currentY + 8);
@@ -1135,7 +1127,7 @@ function exportDataToPDF() {
 
     currentY += 16;
 
-    // Section 7: Formal Institutional Signature Block
+    // Section 7: Signature Block
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(...COLOR_NAVY);
@@ -1181,12 +1173,11 @@ function exportDataToPDF() {
     doc.text("Signature: _____________", col3X, currentY + 19);
     doc.text("Date: ____ / ____ / _______", col3X, currentY + 23);
 
-    // Footer Page Numbers & Institutional Header Rule on every page
+    // Footer Page Numbers
     const totalPages = doc.internal.getNumberOfPages();
     for (let page = 1; page <= totalPages; page++) {
         doc.setPage(page);
 
-        // Thin Navy Footer Line
         doc.setDrawColor(...COLOR_NAVY);
         doc.setLineWidth(0.4);
         doc.line(MARGIN, 283, PAGE_WIDTH - MARGIN, 283);
@@ -1199,14 +1190,6 @@ function exportDataToPDF() {
     }
 
     doc.save(`Sai_DRS_Kids_School_Financial_Report_${fileDate}.pdf`);
-}
-
-function logout(){
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("erpRole");
-    localStorage.removeItem("teacherId");
-    localStorage.removeItem("teacherName");
-    window.location.href = "index.html";
 }
 
 window.onload = initManagementReportsEngine;
