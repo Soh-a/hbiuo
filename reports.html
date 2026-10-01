@@ -706,297 +706,1032 @@ function processLocalDatasetFilter() {
     displayMasterLogTable(filteredResult);
 }
 
-/* JSPDFAUTOTABLE ENTERPRISE BLUE-BORDERED ENGINE */
+/* =========================================================
+   PROFESSIONAL ERP FINANCIAL REPORT PDF
+========================================================= */
 function exportDataToPDF() {
+
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // A4 Landscape Layout (297mm x 210mm)
+
+    const doc = new jsPDF("l", "mm", "a4");
+
+    const PAGE_WIDTH = 297;
+    const PAGE_HEIGHT = 210;
+    const MARGIN = 12;
+    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2);
+
+    const BLUE = [30, 64, 175];
+    const LIGHT_BLUE = [239, 246, 255];
+    const BORDER_BLUE = [191, 219, 254];
+
+    const DARK = [30, 41, 59];
+    const MUTED = [100, 116, 139];
+
+    const GREEN = [22, 163, 74];
+    const GREEN_LIGHT = [220, 252, 231];
+
+    const RED = [220, 38, 38];
+    const RED_LIGHT = [254, 226, 226];
+
+    const WHITE = [255, 255, 255];
+
+    /* -----------------------------------------------------
+       DATE / FILTER DATA
+    ----------------------------------------------------- */
 
     const today = new Date();
-    const dateFormatted = today.toISOString().split('T')[0];
-    const timestampString = today.toLocaleString('en-IN');
 
-    const activeSearchQuery = document.getElementById("repSearch").value.toLowerCase().trim();
-    const activeClassFilter = document.getElementById("repClass").value;
-    const activeStatusFilter = document.getElementById("repStatus").value;
-    const activeMonthFilter = document.getElementById("repMonth").value;
+    const dateFormatted =
+        today.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
 
-    const currentlyFilteredDataset = localReportsCache.filter(record => {
-        const matchSearch = activeSearchQuery === "" || record.name.toLowerCase().includes(activeSearchQuery) || record.id.toLowerCase().includes(activeSearchQuery);
-        const matchClass = activeClassFilter === "" || String(record.class) === String(activeClassFilter);
-        const matchStatus = activeStatusFilter === "" || record.status === activeStatusFilter;
-        const matchMonth = activeMonthFilter === "" || record.month.toLowerCase() === activeMonthFilter.toLowerCase();
-        return matchSearch && matchClass && matchStatus && matchMonth;
+    const timeFormatted =
+        today.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+    const fileDate =
+        today.toISOString().split("T")[0];
+
+    const activeSearchQuery =
+        document.getElementById("repSearch").value.trim();
+
+    const activeClassFilter =
+        document.getElementById("repClass").value;
+
+    const activeStatusFilter =
+        document.getElementById("repStatus").value;
+
+    const activeMonthFilter =
+        document.getElementById("repMonth").value;
+
+
+    /* -----------------------------------------------------
+       FILTER CURRENT DATASET
+    ----------------------------------------------------- */
+
+    const currentlyFilteredDataset =
+        localReportsCache.filter(record => {
+
+            const query =
+                activeSearchQuery.toLowerCase();
+
+            const matchSearch =
+                query === "" ||
+                String(record.name || "")
+                    .toLowerCase()
+                    .includes(query) ||
+                String(record.id || "")
+                    .toLowerCase()
+                    .includes(query);
+
+            const matchClass =
+                activeClassFilter === "" ||
+                String(record.class) ===
+                String(activeClassFilter);
+
+            const matchStatus =
+                activeStatusFilter === "" ||
+                record.status === activeStatusFilter;
+
+            const matchMonth =
+                activeMonthFilter === "" ||
+                String(record.month)
+                    .toLowerCase() ===
+                activeMonthFilter.toLowerCase();
+
+            return (
+                matchSearch &&
+                matchClass &&
+                matchStatus &&
+                matchMonth
+            );
+        });
+
+
+    /* -----------------------------------------------------
+       CALCULATE REPORT METRICS
+    ----------------------------------------------------- */
+
+    let collected = 0;
+    let outstanding = 0;
+    let pendingCount = 0;
+
+    const classMatrix = {};
+
+    targetClassesOrdered.forEach(cls => {
+
+        classMatrix[cls] = {
+            collected: 0,
+            pending: 0,
+            invoices: 0
+        };
+
     });
 
-    let pdfGrossCollected = 0;
-    let pdfGrossOutstanding = 0;
-    let pdfInvoiceCount = currentlyFilteredDataset.length;
-    let pdfPendingCount = 0;
-
-    let classPdfMatrix = {};
-    targetClassesOrdered.forEach(cls => { classPdfMatrix[cls] = { collected: 0, pending: 0, count: 0 }; });
 
     currentlyFilteredDataset.forEach(item => {
-        if (item.status === 'paid') {
-            pdfGrossCollected += item.amount;
-            if(classPdfMatrix[item.class]) {
-                classPdfMatrix[item.class].collected += item.amount;
-                classPdfMatrix[item.class].count++;
+
+        const amount = Number(item.amount || 0);
+
+        if (item.status === "paid") {
+
+            collected += amount;
+
+            if (classMatrix[item.class]) {
+                classMatrix[item.class].collected += amount;
+                classMatrix[item.class].invoices++;
             }
+
         } else {
-            pdfGrossOutstanding += item.amount;
-            pdfPendingCount++;
-            if(classPdfMatrix[item.class]) {
-                classPdfMatrix[item.class].pending += item.amount;
-                classPdfMatrix[item.class].count++;
+
+            outstanding += amount;
+            pendingCount++;
+
+            if (classMatrix[item.class]) {
+                classMatrix[item.class].pending += amount;
+                classMatrix[item.class].invoices++;
             }
         }
+
     });
 
-    const pdfTotalExpected = pdfGrossCollected + pdfGrossOutstanding;
-    const pdfCollectionRate = pdfTotalExpected > 0 ? ((pdfGrossCollected / pdfTotalExpected) * 100).toFixed(1) : "0.0";
 
-    const baseMargin = 12;
-    const printableWidth = 297 - (baseMargin * 2);
+    const invoiceCount =
+        currentlyFilteredDataset.length;
 
-    const baseTableStyles = {
-        font: 'helvetica',
-        fontSize: 8.5,
-        textColor: [30, 41, 59],
-        lineColor: [191, 219, 254],
-        lineWidth: 0.15,
-        cellPadding: 2.5
-    };
+    const expected =
+        collected + outstanding;
 
-    const accountingHeadStyles = {
-        fillColor: [37, 99, 235],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 9,
-        lineWidth: 0.15,
-        lineColor: [37, 99, 235]
-    };
+    const collectionRate =
+        expected > 0
+            ? ((collected / expected) * 100).toFixed(1)
+            : "0.0";
 
-    const alternatingRowConfig = {
-        fillColor: [248, 250, 252]
-    };
 
-    // --- HELPER FOR LOGO PLACEMENT ---
-    const addLogoToPage = () => {
-        try {
-            const logoImg = document.querySelector('.topbar-logo');
-            if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
-                doc.addImage(logoImg, 'JPEG', baseMargin + 3, 13.5, 15, 15);
-            }
-        } catch (e) {
-            console.warn("PDF Logo embedding fallback:", e);
-        }
-    };
+    /* -----------------------------------------------------
+       HELPERS
+    ----------------------------------------------------- */
 
-    // --- 1. CORPORATE TITLE BANNER & HEADER ---
-    doc.setFillColor(37, 99, 235);
-    doc.rect(baseMargin, 12, printableWidth, 18, 'F');
+    function money(value) {
 
-    addLogoToPage();
+        return "₹" +
+            Number(value || 0)
+                .toLocaleString("en-IN");
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("SCHOOL ERP FINANCIAL MANAGEMENT REPORT", baseMargin + 22, 21);
-
-    doc.setFontSize(8.5);
-    doc.setFont("Helvetica", "normal");
-    doc.text("Session: 2026–27 | CONFIDENTIAL REPORT", baseMargin + 22, 26);
-    doc.text("OFFICIAL ENTERPRISE STATEMENT", 297 - baseMargin - 4, 23, { align: 'right' });
-
-    // --- 2. APPLIED REPORT METADATA & STATUS LEGEND ---
-    doc.setTextColor(71, 85, 105);
-    doc.setFontSize(8.5);
-    doc.setFont("Helvetica", "bold");
-    doc.text("Generation Date:", baseMargin, 36);
-    doc.setFont("Helvetica", "normal");
-    doc.text(timestampString, baseMargin + 25, 36);
-
-    const filterInfo = `Class Focus: ${activeClassFilter || 'All'} | Status Match: ${activeStatusFilter || 'All'} | Term Month: ${activeMonthFilter || 'All'}${activeSearchQuery ? ` | Query: "${activeSearchQuery}"` : ''}`;
-    doc.setFont("Helvetica", "bold");
-    doc.text("Scope Filters:", baseMargin, 41);
-    doc.setFont("Helvetica", "normal");
-    doc.text(filterInfo, baseMargin + 22, 41);
-
-    // Render Status Legend
-    const legendX = 297 - baseMargin - 55;
-    doc.setFont("Helvetica", "bold");
-    doc.setTextColor(30, 41, 59);
-    doc.text("Legend:", legendX - 14, 38);
-
-    doc.setTextColor(22, 163, 74);
-    doc.text("● PAID", legendX, 38);
-    doc.setTextColor(220, 38, 38);
-    doc.text("● UNPAID", legendX + 22, 38);
-
-    // --- 3. AUDIT REVENUE EXECUTIVE SUMMARY ---
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 58, 138);
-    doc.text("I. EXECUTIVE OVERVIEW METRICS", baseMargin, 48);
-
-    doc.autoTable({
-        startY: 51,
-        head: [['Financial Operational Parameters', 'Consolidated Value Assessment']],
-        body: [
-            ['Gross Institutional Revenue Funds Collected', `INR ${pdfGrossCollected.toLocaleString('en-IN')}.00`],
-            ['Total Outstanding Arrears Balance Deficit', `INR ${pdfGrossOutstanding.toLocaleString('en-IN')}.00`],
-            ['Total Invoices Under Active Parameters', `${pdfInvoiceCount} Records`],
-            ['Institutional Yield Matrix Collection Rate', `${pdfCollectionRate}%`],
-            ['Active Defaulter Delinquent Invoices Outstanding', `${pdfPendingCount} Pending Logs`]
-        ],
-        theme: 'grid',
-        styles: baseTableStyles,
-        headStyles: accountingHeadStyles,
-        alternateRowStyles: alternatingRowConfig,
-        columnStyles: {
-            0: { cellWidth: 160 },
-            1: { cellWidth: printableWidth - 160, fontStyle: 'bold', halign: 'right' }
-        },
-        margin: { left: baseMargin, right: baseMargin }
-    });
-
-    // --- 4. BREAKDOWN CLASS SUMMARY MATRIX ---
-    let summaryTotalCollected = 0;
-    let summaryTotalPending = 0;
-    let summaryTotalInvoices = 0;
-
-    const distributionRows = [];
-    targetClassesOrdered.forEach(cls => {
-        const item = classPdfMatrix[cls];
-        if (!item || item.count === 0) return;
-
-        summaryTotalCollected += item.collected;
-        summaryTotalPending += item.pending;
-        summaryTotalInvoices += item.count;
-
-        distributionRows.push([
-            (cls.startsWith("IK") ? cls : `Class Level ${cls}`),
-            `INR ${item.collected.toLocaleString('en-IN')}.00`,
-            `INR ${item.pending.toLocaleString('en-IN')}.00`,
-            `${item.count}`
-        ]);
-    });
-
-    distributionRows.push([
-        'Grand Total Calculation',
-        `INR ${summaryTotalCollected.toLocaleString('en-IN')}.00`,
-        `INR ${summaryTotalPending.toLocaleString('en-IN')}.00`,
-        `${summaryTotalInvoices}`
-    ]);
-
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 58, 138);
-    doc.text("II. CLASS ALLOCATION REVENUE MATRIX SUMMARY", baseMargin, doc.autoTable.previous.finalY + 8);
-
-    doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 11,
-        head: [['Class Division Specification', 'Aggregated Revenue Collected', 'Aggregated Arrears Deficit', 'Issued Logs']],
-        body: distributionRows,
-        theme: 'grid',
-        styles: baseTableStyles,
-        headStyles: accountingHeadStyles,
-        alternateRowStyles: alternatingRowConfig,
-        columnStyles: {
-            0: { fontStyle: 'bold' },
-            1: { halign: 'right', textColor: [22, 163, 74], fontStyle: 'bold' },
-            2: { halign: 'right', textColor: [220, 38, 38], fontStyle: 'bold' },
-            3: { halign: 'right' }
-        },
-        margin: { left: baseMargin, right: baseMargin },
-        didParseCell: function(data) {
-            if (data.row.index === distributionRows.length - 1) {
-                data.cell.styles.fontStyle = 'bold';
-                data.cell.styles.fillColor = [219, 234, 254];
-                if (data.column.index === 0) data.cell.styles.textColor = [30, 58, 138];
-                if (data.column.index === 1) data.cell.styles.textColor = [22, 163, 74];
-                if (data.column.index === 2) data.cell.styles.textColor = [220, 38, 38];
-                if (data.column.index === 3) data.cell.styles.textColor = [30, 58, 138];
-            }
-        }
-    });
-
-    // --- 5. MASTER LEDGER TRANSACTION LOG ---
-    const auditRows = currentlyFilteredDataset.map(item => [
-        `#${item.id}`,
-        item.name,
-        (item.class.startsWith("IK") ? item.class : `Class ${item.class}`),
-        item.month,
-        `INR ${item.monthlyfee.toLocaleString('en-IN')}.00`,
-        `INR ${item.fine.toLocaleString('en-IN')}.00`,
-        `INR ${item.amount.toLocaleString('en-IN')}.00`,
-        item.status.toUpperCase()
-    ]);
-
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 58, 138);
-    doc.text("III. DETAILED TRANSACTION AUDIT LEDGER ITEMIZATION", baseMargin, doc.autoTable.previous.finalY + 8);
-
-    doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 11,
-        head: [['ID Reference', 'Student Ledger Name', 'Class Branch', 'Billing Term', 'Base Fee Value', 'Late Premium Fine', 'Statement Total', 'Payment Status']],
-        body: auditRows,
-        theme: 'grid',
-        styles: baseTableStyles,
-        headStyles: accountingHeadStyles,
-        alternateRowStyles: alternatingRowConfig,
-        columnStyles: {
-            0: { cellWidth: 26, fontStyle: 'bold' },
-            1: { cellWidth: 55 },
-            2: { cellWidth: 26 },
-            3: { cellWidth: 28 },
-            4: { cellWidth: 32, halign: 'right' },
-            5: { cellWidth: 30, halign: 'right' },
-            6: { cellWidth: 42, halign: 'right', fontStyle: 'bold' },
-            7: { cellWidth: 34, halign: 'center', fontStyle: 'bold' }
-        },
-        margin: { left: baseMargin, right: baseMargin },
-        didParseCell: function(data) {
-            if (data.section === 'body' && data.column.index === 7) {
-                const statusValue = String(data.cell.raw || '').trim().toUpperCase();
-                if (statusValue === 'PAID') {
-                    data.cell.styles.fillColor = [220, 252, 231];
-                    data.cell.styles.textColor = [20, 83, 45];
-                } else if (statusValue === 'UNPAID') {
-                    data.cell.styles.fillColor = [254, 226, 226];
-                    data.cell.styles.textColor = [127, 29, 29];
-                }
-            }
-        }
-    });
-
-    // --- 6. GLOBAL BLUE BORDERS & DYNAMIC RUNNING FOOTERS ---
-    const totalPagesCount = doc.internal.getNumberOfPages();
-    for (let currentTrackPage = 1; currentTrackPage <= totalPagesCount; currentTrackPage++) {
-        doc.setPage(currentTrackPage);
-
-        // Standardized Accounting Royal Blue Frame Line
-        doc.setDrawColor(37, 99, 235);
-        doc.setLineWidth(0.3);
-        doc.rect(6, 6, 285, 198, 'D');
-
-        // Render Top Logo on secondary pages
-        if (currentTrackPage > 1) {
-            addLogoToPage();
-        }
-
-        // Corporate Confidential Systems Footer
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(7.5);
-        doc.setTextColor(100, 116, 139);
-
-        doc.text("Confidential • Generated by School ERP Financial Management System", baseMargin, 200.5);
-        doc.text(`Page ${currentTrackPage} of ${totalPagesCount}`, 297 - baseMargin, 200.5, { align: 'right' });
     }
 
-    doc.save(`ERP_Financial_Audit_Log_${dateFormatted}.pdf`);
+
+    function addPageFrame() {
+
+        doc.setDrawColor(...BORDER_BLUE);
+        doc.setLineWidth(0.35);
+
+        doc.rect(
+            6,
+            6,
+            PAGE_WIDTH - 12,
+            PAGE_HEIGHT - 12
+        );
+
+    }
+
+
+    function addFooter() {
+
+        const pageCount =
+            doc.internal.getNumberOfPages();
+
+        for (
+            let page = 1;
+            page <= pageCount;
+            page++
+        ) {
+
+            doc.setPage(page);
+
+            addPageFrame();
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.setFontSize(7.5);
+
+            doc.setTextColor(...MUTED);
+
+            doc.text(
+                "Sai DRS Kids School • Financial Management Report",
+                MARGIN,
+                202
+            );
+
+            doc.text(
+                "Confidential",
+                PAGE_WIDTH / 2,
+                202,
+                { align: "center" }
+            );
+
+            doc.text(
+                `Page ${page} of ${pageCount}`,
+                PAGE_WIDTH - MARGIN,
+                202,
+                { align: "right" }
+            );
+
+        }
+    }
+
+
+    /* -----------------------------------------------------
+       LOGO
+    ----------------------------------------------------- */
+
+    function addLogo(x, y, width, height) {
+
+        try {
+
+            const logo =
+                document.querySelector(".topbar-logo");
+
+            if (
+                logo &&
+                logo.complete &&
+                logo.naturalWidth > 0
+            ) {
+
+                doc.addImage(
+                    logo,
+                    "JPEG",
+                    x,
+                    y,
+                    width,
+                    height
+                );
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Logo could not be added:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       PAGE 1 — PROFESSIONAL HEADER
+    ===================================================== */
+
+    addPageFrame();
+
+
+    /* HEADER BACKGROUND */
+
+    doc.setFillColor(...BLUE);
+
+    doc.roundedRect(
+        MARGIN,
+        12,
+        CONTENT_WIDTH,
+        30,
+        4,
+        4,
+        "F"
+    );
+
+
+    /* LOGO */
+
+    addLogo(
+        MARGIN + 5,
+        17,
+        20,
+        20
+    );
+
+
+    /* SCHOOL NAME */
+
+    doc.setTextColor(...WHITE);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(14);
+
+    doc.text(
+        "SAI DRS KIDS SCHOOL",
+        MARGIN + 31,
+        22
+    );
+
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setFontSize(8.5);
+
+    doc.text(
+        "School ERP • Financial Management System",
+        MARGIN + 31,
+        28
+    );
+
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+        "FINANCIAL MANAGEMENT REPORT",
+        PAGE_WIDTH - MARGIN - 5,
+        22,
+        { align: "right" }
+    );
+
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setFontSize(8);
+
+    doc.text(
+        "SESSION 2026–27",
+        PAGE_WIDTH - MARGIN - 5,
+        28,
+        { align: "right" }
+    );
+
+    doc.text(
+        "CONFIDENTIAL",
+        PAGE_WIDTH - MARGIN - 5,
+        34,
+        { align: "right" }
+    );
+
+
+    /* -----------------------------------------------------
+       REPORT INFORMATION
+    ----------------------------------------------------- */
+
+    doc.setTextColor(...DARK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(8.5);
+
+    doc.text(
+        "Report Generated",
+        MARGIN,
+        50
+    );
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setTextColor(...MUTED);
+
+    doc.text(
+        `${dateFormatted} • ${timeFormatted}`,
+        MARGIN + 29,
+        50
+    );
+
+
+    doc.setTextColor(...DARK);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.text(
+        "Report Scope",
+        MARGIN + 100,
+        50
+    );
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setTextColor(...MUTED);
+
+    let scopeText =
+        `Class: ${activeClassFilter || "All"} | ` +
+        `Status: ${activeStatusFilter || "All"} | ` +
+        `Month: ${activeMonthFilter || "All"}`;
+
+    if (activeSearchQuery) {
+
+        scopeText +=
+            ` | Search: ${activeSearchQuery}`;
+
+    }
+
+    doc.text(
+        scopeText,
+        MARGIN + 126,
+        50
+    );
+
+
+    /* =====================================================
+       KPI CARDS
+    ===================================================== */
+
+    const cardY = 56;
+    const cardGap = 4;
+    const cardWidth =
+        (CONTENT_WIDTH - (cardGap * 4)) / 5;
+
+    const cardHeight = 24;
+
+
+    const cards = [
+
+        {
+            title: "TOTAL COLLECTED",
+            value: money(collected),
+            color: GREEN
+        },
+
+        {
+            title: "OUTSTANDING",
+            value: money(outstanding),
+            color: RED
+        },
+
+        {
+            title: "TOTAL INVOICES",
+            value: String(invoiceCount),
+            color: BLUE
+        },
+
+        {
+            title: "COLLECTION RATE",
+            value: `${collectionRate}%`,
+            color: [124, 58, 237]
+        },
+
+        {
+            title: "PENDING INVOICES",
+            value: String(pendingCount),
+            color: [217, 119, 6]
+        }
+
+    ];
+
+
+    cards.forEach((card, index) => {
+
+        const x =
+            MARGIN +
+            index * (cardWidth + cardGap);
+
+
+        doc.setFillColor(
+            255,
+            255,
+            255
+        );
+
+        doc.setDrawColor(
+            ...BORDER_BLUE
+        );
+
+        doc.setLineWidth(0.3);
+
+        doc.roundedRect(
+            x,
+            cardY,
+            cardWidth,
+            cardHeight,
+            3,
+            3,
+            "FD"
+        );
+
+
+        /* TOP ACCENT */
+
+        doc.setFillColor(
+            ...card.color
+        );
+
+        doc.roundedRect(
+            x,
+            cardY,
+            cardWidth,
+            3,
+            1.5,
+            1.5,
+            "F"
+        );
+
+
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
+
+        doc.setFontSize(6.5);
+
+        doc.setTextColor(
+            ...MUTED
+        );
+
+        doc.text(
+            card.title,
+            x + 4,
+            cardY + 9
+        );
+
+
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
+
+        doc.setFontSize(12);
+
+        doc.setTextColor(
+            ...DARK
+        );
+
+        doc.text(
+            card.value,
+            x + 4,
+            cardY + 19
+        );
+
+    });
+
+
+    /* =====================================================
+       SECTION 1 — CLASS SUMMARY
+    ===================================================== */
+
+    doc.setTextColor(...BLUE);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(10);
+
+    doc.text(
+        "CLASS-WISE REVENUE SUMMARY",
+        MARGIN,
+        90
+    );
+
+
+    const classRows = [];
+
+    targetClassesOrdered.forEach(cls => {
+
+        const item = classMatrix[cls];
+
+        if (!item || item.invoices === 0) {
+            return;
+        }
+
+        classRows.push([
+
+            cls.startsWith("IK")
+                ? cls
+                : `Class ${cls}`,
+
+            money(item.collected),
+
+            money(item.pending),
+
+            String(item.invoices),
+
+            item.invoices > 0
+                ? (
+                    item.collected /
+                    (
+                        item.collected +
+                        item.pending
+                    ) * 100
+                  ).toFixed(1) + "%"
+                : "0%"
+
+        ]);
+
+    });
+
+
+    /* GRAND TOTAL */
+
+    let totalCollected = 0;
+    let totalPending = 0;
+    let totalInvoices = 0;
+
+    targetClassesOrdered.forEach(cls => {
+
+        const item = classMatrix[cls];
+
+        if (!item) return;
+
+        totalCollected += item.collected;
+        totalPending += item.pending;
+        totalInvoices += item.invoices;
+
+    });
+
+
+    classRows.push([
+
+        "GRAND TOTAL",
+
+        money(totalCollected),
+
+        money(totalPending),
+
+        String(totalInvoices),
+
+        (
+            totalCollected /
+            (
+                totalCollected +
+                totalPending
+            ) * 100
+        ).toFixed(1) + "%"
+
+    ]);
+
+
+    doc.autoTable({
+
+        startY: 94,
+
+        head: [[
+            "Class",
+            "Collected",
+            "Outstanding",
+            "Invoices",
+            "Collection Rate"
+        ]],
+
+        body: classRows,
+
+        theme: "grid",
+
+        styles: {
+
+            font: "helvetica",
+
+            fontSize: 8,
+
+            textColor: DARK,
+
+            lineColor: BORDER_BLUE,
+
+            lineWidth: 0.15,
+
+            cellPadding: 3,
+
+            valign: "middle"
+
+        },
+
+        headStyles: {
+
+            fillColor: BLUE,
+
+            textColor: WHITE,
+
+            fontStyle: "bold",
+
+            fontSize: 8
+
+        },
+
+        alternateRowStyles: {
+
+            fillColor: [248, 250, 252]
+
+        },
+
+        columnStyles: {
+
+            0: {
+                fontStyle: "bold",
+                cellWidth: 65
+            },
+
+            1: {
+                halign: "right",
+                textColor: GREEN,
+                fontStyle: "bold"
+            },
+
+            2: {
+                halign: "right",
+                textColor: RED,
+                fontStyle: "bold"
+            },
+
+            3: {
+                halign: "center"
+            },
+
+            4: {
+                halign: "center",
+                fontStyle: "bold"
+            }
+
+        },
+
+        margin: {
+
+            left: MARGIN,
+            right: MARGIN
+
+        },
+
+        didParseCell: function(data) {
+
+            if (
+                data.section === "body" &&
+                data.row.index ===
+                classRows.length - 1
+            ) {
+
+                data.cell.styles.fillColor =
+                    LIGHT_BLUE;
+
+                data.cell.styles.fontStyle =
+                    "bold";
+
+                if (data.column.index === 1) {
+                    data.cell.styles.textColor =
+                        GREEN;
+                }
+
+                if (data.column.index === 2) {
+                    data.cell.styles.textColor =
+                        RED;
+                }
+
+            }
+
+        }
+
+    });
+
+
+    /* =====================================================
+       SECTION 2 — TRANSACTION LEDGER
+    ===================================================== */
+
+    let ledgerStartY =
+        doc.lastAutoTable.finalY + 9;
+
+
+    doc.setTextColor(...BLUE);
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(10);
+
+    doc.text(
+        "DETAILED TRANSACTION LEDGER",
+        MARGIN,
+        ledgerStartY
+    );
+
+
+    const auditRows =
+        currentlyFilteredDataset.map(item => [
+
+            `#${item.id}`,
+
+            item.name,
+
+            item.class.startsWith("IK")
+                ? item.class
+                : `Class ${item.class}`,
+
+            item.month,
+
+            money(item.monthlyfee),
+
+            money(item.fine),
+
+            money(item.amount),
+
+            String(item.status)
+                .toUpperCase()
+
+        ]);
+
+
+    doc.autoTable({
+
+        startY: ledgerStartY + 4,
+
+        head: [[
+
+            "Student ID",
+
+            "Student Name",
+
+            "Class",
+
+            "Month",
+
+            "Fee",
+
+            "Fine",
+
+            "Total",
+
+            "Status"
+
+        ]],
+
+        body: auditRows,
+
+        theme: "grid",
+
+        styles: {
+
+            font: "helvetica",
+
+            fontSize: 7.5,
+
+            textColor: DARK,
+
+            lineColor: BORDER_BLUE,
+
+            lineWidth: 0.15,
+
+            cellPadding: 2.5,
+
+            valign: "middle"
+
+        },
+
+        headStyles: {
+
+            fillColor: BLUE,
+
+            textColor: WHITE,
+
+            fontStyle: "bold",
+
+            fontSize: 7.5
+
+        },
+
+        alternateRowStyles: {
+
+            fillColor: [248, 250, 252]
+
+        },
+
+        columnStyles: {
+
+            0: {
+                cellWidth: 23,
+                fontStyle: "bold"
+            },
+
+            1: {
+                cellWidth: 53
+            },
+
+            2: {
+                cellWidth: 25
+            },
+
+            3: {
+                cellWidth: 25
+            },
+
+            4: {
+                cellWidth: 27,
+                halign: "right"
+            },
+
+            5: {
+                cellWidth: 25,
+                halign: "right"
+            },
+
+            6: {
+                cellWidth: 29,
+                halign: "right",
+                fontStyle: "bold"
+            },
+
+            7: {
+                cellWidth: 25,
+                halign: "center",
+                fontStyle: "bold"
+            }
+
+        },
+
+        margin: {
+
+            left: MARGIN,
+            right: MARGIN,
+            bottom: 15
+
+        },
+
+        rowPageBreak: "avoid",
+
+        didParseCell: function(data) {
+
+            if (
+                data.section === "body" &&
+                data.column.index === 7
+            ) {
+
+                const status =
+                    String(
+                        data.cell.raw || ""
+                    ).toUpperCase();
+
+
+                if (status === "PAID") {
+
+                    data.cell.styles.fillColor =
+                        GREEN_LIGHT;
+
+                    data.cell.styles.textColor =
+                        [20, 83, 45];
+
+                }
+
+                else {
+
+                    data.cell.styles.fillColor =
+                        RED_LIGHT;
+
+                    data.cell.styles.textColor =
+                        [127, 29, 29];
+
+                }
+
+            }
+
+        }
+
+    });
+
+
+    /* =====================================================
+       FINAL FOOTER
+    ===================================================== */
+
+    addFooter();
+
+
+    /* =====================================================
+       SAVE PDF
+    ===================================================== */
+
+    doc.save(
+        `Sai_DRS_Financial_Report_${fileDate}.pdf`
+    );
+
 }
 
 function logout(){
