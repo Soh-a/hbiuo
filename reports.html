@@ -1,139 +1,714 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sai DRS Kids School - Financial Management Report</title>
-    <!-- jsPDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- jsPDF-AutoTable Plugin -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f1f5f9;
-            padding: 20px;
-            color: #0f172a;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #002147;
-            font-size: 20px;
-            margin-bottom: 16px;
-        }
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #475569;
-        }
-        input, select {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .btn-export {
-            background-color: #002147;
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .btn-export:hover {
-            background-color: #1e40af;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sai DRS Kids School - Financial Management ERP</title>
+
+<script>
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if(isLoggedIn !== "true"){
+        window.location.href = "login.html";
+    }
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+:root {
+    --primary: #1e40af;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --border-color: #e2e8f0;
+    --border-focus: #93c5fd;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --purple: #7c3aed;
+    --dark: #0f172a;
+    --text-muted: #64748b;
+    --bg-main: #f8fafc;
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    background: var(--bg-main);
+    color: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 30px 24px;
+}
+
+/* EXECUTIVE TOPBAR */
+.topbar {
+    background: white;
+    padding: 20px 28px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.topbar-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid var(--primary-light);
+    background: white;
+}
+
+.topbar h1 {
+    font-size: 22px;
+    color: var(--dark);
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+.topbar p {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary { 
+    background: var(--primary); 
+    color: white; 
+}
+.btn-primary:hover { 
+    background: var(--primary-hover); 
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+}
+
+.btn-secondary { 
+    background: white; 
+    color: var(--dark); 
+    border-color: var(--border-color);
+}
+.btn-secondary:hover { 
+    background: var(--bg-main); 
+    border-color: #cbd5e1;
+}
+
+.btn-danger { 
+    background: var(--danger-bg); 
+    color: var(--danger); 
+    border-color: #fca5a5;
+}
+.btn-danger:hover { 
+    background: var(--danger); 
+    color: white; 
+}
+
+/* ANALYTICS DASHBOARD CARDS */
+.report-grid-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.analytics-card {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.analytics-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.analytics-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+}
+
+.card-collected::before { background: var(--success); }
+.card-outstanding::before { background: var(--danger); }
+.card-invoices::before { background: var(--primary); }
+.card-rate::before { background: var(--purple); }
+.card-pending::before { background: var(--warning); }
+
+.analytics-card h3 {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+}
+
+.analytics-card h2 {
+    font-size: 26px;
+    color: var(--dark);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.analytics-card .meta-indicator {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-primary { color: var(--primary); }
+.text-purple { color: var(--purple); }
+
+/* FILTER & SEARCH PANEL */
+.controls-panel {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--border-color);
+}
+
+.search-input {
+    padding: 9.5px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 13.5px;
+    outline: none;
+    width: 100%;
+    max-width: 300px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-input:focus { 
+    border-color: var(--primary); 
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.report-select {
+    padding: 9.5px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 13.5px;
+    background: white;
+    outline: none;
+    cursor: pointer;
+    min-width: 150px;
+    font-weight: 500;
+    color: var(--dark);
+    transition: all 0.2s ease;
+}
+
+.report-select:focus { 
+    border-color: var(--primary); 
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+/* DATA SECTIONS GRID */
+.report-sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media(min-width: 1200px) {
+    .report-sections { grid-template-columns: 2.2fr 1fr; }
+}
+
+.report-panel {
+    background: white;
+    padding: 22px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+}
+
+.panel-header {
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h2 {
+    font-size: 16px;
+    color: var(--dark);
+    font-weight: 700;
+}
+
+/* MODERN TABLES */
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.modern-table th {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 12px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modern-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+    color: #334155;
+    font-size: 13px;
+}
+
+.modern-table tr:last-child td {
+    border-bottom: none;
+}
+
+.modern-table tr:hover { 
+    background: #f8fafc; 
+}
+
+/* STATUS BADGES */
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    display: inline-block;
+}
+
+.badge.paid { 
+    background: var(--success-bg); 
+    color: #14532d; 
+    border: 1px solid #86efac;
+}
+
+.badge.unpaid { 
+    background: var(--danger-bg); 
+    color: #7f1d1d; 
+    border: 1px solid #fca5a5;
+}
+
+/* RESPONSIVE LAYOUT */
+@media(max-width: 768px) {
+    .topbar { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .topbar-brand { width: 100%; }
+    .topbar-actions { width: 100%; justify-content: space-between; }
+    .controls-panel { flex-direction: column; align-items: stretch; }
+    .search-input { max-width: 100%; }
+}
+
+@media print {
+    .topbar-actions, .controls-panel, .btn { display: none !important; }
+    body { background: white; }
+    .main { padding: 0; }
+    .report-panel { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Sai DRS Kids School — Financial Management Report</h1>
-
-    <!-- Hidden image element if you use a logo -->
-    <img id="schoolLogoImg" src="" alt="School Logo" style="display:none;" />
-
-    <div class="controls">
-        <div class="control-group">
-            <label for="repSearch">Search Student / ID</label>
-            <input type="text" id="repSearch" placeholder="Type name..." oninput="exportDataToPDF ? null : null" />
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-brand">
+            <img src="logo.jpeg" id="schoolLogoImg" alt="School Logo" class="topbar-logo" onerror="this.style.display='none'">
+            <div>
+                <h1>Sai DRS Kids School ERP</h1>
+                <p>Real-time financial ledgers, fee collection analysis, and audit reports.</p>
+            </div>
         </div>
-        <div class="control-group">
-            <label for="repClass">Filter Class</label>
-            <select id="repClass">
-                <option value="">All Classes</option>
-                <option value="IK1">IK1</option>
-                <option value="IK2">IK2</option>
-                <option value="IK3">IK3</option>
-                <option value="1">Class 1</option>
-                <option value="2">Class 2</option>
-                <option value="3">Class 3</option>
-                <option value="4">Class 4</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label for="repStatus">Filter Payment Status</label>
-            <select id="repStatus">
-                <option value="">All Statuses</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label for="repMonth">Filter Month</label>
-            <select id="repMonth">
-                <option value="">All Months</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-            </select>
+        <div class="topbar-actions">
+            <button class="btn btn-primary" onclick="exportDataToPDF()">📄 Download PDF</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨 Print</button>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
         </div>
     </div>
 
-    <button class="btn-export" onclick="exportDataToPDF()">Export Financial Statement to PDF</button>
+    <div class="report-grid-summary">
+        <div class="analytics-card card-collected">
+            <h3>Gross Collected</h3>
+            <h2 id="grossCollected">₹0</h2>
+            <div class="meta-indicator text-success">Deposited Receipts</div>
+        </div>
+        <div class="analytics-card card-outstanding">
+            <h3>Gross Outstanding</h3>
+            <h2 id="grossOutstanding">₹0</h2>
+            <div class="meta-indicator text-danger">Arrears Deficit</div>
+        </div>
+        <div class="analytics-card card-invoices">
+            <h3>Total Invoices</h3>
+            <h2 id="invoiceCounter">0</h2>
+            <div class="meta-indicator text-primary">System Billed</div>
+        </div>
+        <div class="analytics-card card-rate">
+            <h3>Collection Rate</h3>
+            <h2 id="collectionRate">0%</h2>
+            <div class="meta-indicator text-purple">Yield Matrix Weight</div>
+        </div>
+        <div class="analytics-card card-pending">
+            <h3>Pending Invoices</h3>
+            <h2 id="pendingDefaulters">0</h2>
+            <div class="meta-indicator text-warning">Delinquent Logged</div>
+        </div>
+    </div>
+
+    <div class="controls-panel">
+        <input type="text" id="repSearch" class="search-input" placeholder="Search Student Name or ID..." oninput="processLocalDatasetFilter()">
+
+        <select id="repClass" class="report-select" onchange="processLocalDatasetFilter()">
+            <option value="">All Classes</option>
+            <option value="IK-1">IK-1</option>
+            <option value="IK-2">IK-2</option>
+            <option value="IK-3">IK-3</option>
+            <option value="1">Class 1</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4">Class 4</option>
+            <option value="5">Class 5</option>
+        </select>
+
+        <select id="repStatus" class="report-select" onchange="processLocalDatasetFilter()">
+            <option value="">All Statuses</option>
+            <option value="paid">Paid Only</option>
+            <option value="unpaid">Unpaid Only</option>
+        </select>
+
+        <select id="repMonth" class="report-select" onchange="processLocalDatasetFilter()">
+            <option value="">All Months</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+        </select>
+    </div>
+
+    <div class="report-sections">
+
+        <div class="report-panel">
+            <div class="panel-header">
+                <h2>Master Student Transaction Ledger</h2>
+            </div>
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Billing Month</th>
+                            <th>Monthly Fee</th>
+                            <th>Fine</th>
+                            <th>Total Bill</th>
+                            <th>Payment Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsLogTable">
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding: 25px;">Connecting to Firebase database...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="report-panel">
+            <div class="panel-header">
+                <h2>Class Revenue Breakdown</h2>
+            </div>
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Collected</th>
+                            <th>Pending</th>
+                            <th>Invoices</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classDistributionTable">
+                        <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 25px;">Calculating class matrix...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
-// Mock cached report data matching your school setup
-const localReportsCache = [
-    { id: "101", name: "Gourav Sarmah", class: "1", month: "April", monthlyfee: 1200, fine: 0, amount: 1200, status: "paid" },
-    { id: "101", name: "Gourav Sarmah", class: "1", month: "May", monthlyfee: 1200, fine: 0, amount: 1200, status: "unpaid" },
-    { id: "101", name: "Gourav Sarmah", class: "1", month: "June", monthlyfee: 1200, fine: 0, amount: 1200, status: "unpaid" },
-    { id: "101", name: "Gourav Sarmah", class: "1", month: "January", monthlyfee: 1200, fine: 0, amount: 1200, status: "unpaid" },
-    { id: "102", name: "Ananya Das", class: "IK1", month: "April", monthlyfee: 1500, fine: 0, amount: 1500, status: "paid" },
-    { id: "102", name: "Ananya Das", class: "IK1", month: "May", monthlyfee: 1500, fine: 0, amount: 1500, status: "paid" }
-];
+/* FIREBASE CONFIGURATION */
+const firebaseConfig = {
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271"
+};
 
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+let localReportsCache = [];
+let localClassSummaryCache = {};
+const targetClassesOrdered = ["IK-1", "IK-2", "IK-3", "1", "2", "3", "4", "5"];
+
+function initManagementReportsEngine() {
+    db.ref("students").on("value", snapshot => {
+        const studentsData = snapshot.val();
+
+        let grossCollected = 0;
+        let grossOutstanding = 0;
+        let invoiceCounter = 0;
+        let unpaidDefaultersCount = 0;
+
+        localReportsCache = [];
+        localClassSummaryCache = {};
+        
+        targetClassesOrdered.forEach(cls => {
+            localClassSummaryCache[cls] = { collected: 0, pending: 0, count: 0 };
+        });
+
+        if (studentsData) {
+            Object.keys(studentsData).forEach(studentId => {
+                const student = studentsData[studentId];
+                if (!student || typeof student !== 'object') return;
+
+                const baseFee = Number(student.monthlyfee || 0);
+                let studentClass = String(student.class || "").trim();
+
+                if (["6", "7", "8", "9", "10"].includes(studentClass)) return;
+
+                if (student.fees && typeof student.fees === 'object') {
+                    Object.keys(student.fees).forEach(month => {
+                        const trx = student.fees[month];
+                        if (!trx) return;
+
+                        const fineValue = Number(trx.fine || 0);
+                        const totalCalculatedBill = baseFee + fineValue;
+                        const parsedStatus = (trx.status || "unpaid").toLowerCase().trim();
+
+                        invoiceCounter++;
+
+                        if (parsedStatus === "paid") {
+                            grossCollected += totalCalculatedBill;
+                            if(localClassSummaryCache[studentClass]) {
+                                localClassSummaryCache[studentClass].collected += totalCalculatedBill;
+                                localClassSummaryCache[studentClass].count++;
+                            }
+                        } else {
+                            grossOutstanding += totalCalculatedBill;
+                            unpaidDefaultersCount++;
+                            if(localClassSummaryCache[studentClass]) {
+                                localClassSummaryCache[studentClass].pending += totalCalculatedBill;
+                                localClassSummaryCache[studentClass].count++;
+                            }
+                        }
+
+                        localReportsCache.push({
+                            id: studentId,
+                            name: student.name || studentId,
+                            class: studentClass || "-",
+                            month: month,
+                            monthlyfee: baseFee,
+                            fine: fineValue,
+                            amount: totalCalculatedBill,
+                            status: parsedStatus
+                        });
+                    });
+                }
+            });
+        }
+
+        document.getElementById("grossCollected").innerText = "₹" + grossCollected.toLocaleString('en-IN');
+        document.getElementById("grossOutstanding").innerText = "₹" + grossOutstanding.toLocaleString('en-IN');
+        document.getElementById("invoiceCounter").innerText = invoiceCounter;
+        document.getElementById("pendingDefaulters").innerText = unpaidDefaultersCount;
+
+        const totalExpected = grossCollected + grossOutstanding;
+        const computedRate = totalExpected > 0 ? ((grossCollected / totalExpected) * 100).toFixed(1) : 0;
+        document.getElementById("collectionRate").innerText = `${computedRate}%`;
+
+        renderClassDistributionMatrixTable(localClassSummaryCache);
+        processLocalDatasetFilter();
+    }, error => {
+        console.error("Firebase Sync Fault: ", error);
+    });
+}
+
+function displayMasterLogTable(dataset) {
+    const tbody = document.getElementById("reportsLogTable");
+    tbody.innerHTML = "";
+
+    if (dataset.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:30px;">No transaction records matched your search filters.</td></tr>`;
+        return;
+    }
+
+    dataset.forEach(item => {
+        const classLabel = (item.class.startsWith("IK") ? item.class : "Class " + item.class);
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>#${item.id}</strong></td>
+                <td>${item.name}</td>
+                <td>${classLabel}</td>
+                <td>${item.month}</td>
+                <td>₹${item.monthlyfee.toLocaleString('en-IN')}</td>
+                <td>₹${item.fine.toLocaleString('en-IN')}</td>
+                <td><strong>₹${item.amount.toLocaleString('en-IN')}</strong></td>
+                <td><span class="badge ${item.status}">${item.status.toUpperCase()}</span></td>
+            </tr>
+        `;
+    });
+}
+
+function renderClassDistributionMatrixTable(matrix) {
+    const tbody = document.getElementById("classDistributionTable");
+    tbody.innerHTML = "";
+
+    let totalClassCollected = 0;
+    let totalClassPending = 0;
+    let totalClassInvoices = 0;
+
+    targetClassesOrdered.forEach(cls => {
+        const item = matrix[cls];
+        if(!item || item.count === 0) return; 
+
+        totalClassCollected += item.collected;
+        totalClassPending += item.pending;
+        totalClassInvoices += item.count;
+
+        const classLabel = (cls.startsWith("IK") ? cls : "Class " + cls);
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${classLabel}</strong></td>
+                <td class="text-success">₹${item.collected.toLocaleString('en-IN')}</td>
+                <td class="text-danger">₹${item.pending.toLocaleString('en-IN')}</td>
+                <td>${item.count}</td>
+            </tr>
+        `;
+    });
+
+    if(tbody.innerHTML === "") {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:20px;">No active class data logs found.</td></tr>`;
+    } else {
+        tbody.innerHTML += `
+            <tr style="background:#f1f5f9; font-weight:700;">
+                <td>GRAND TOTAL</td>
+                <td class="text-success">₹${totalClassCollected.toLocaleString('en-IN')}</td>
+                <td class="text-danger">₹${totalClassPending.toLocaleString('en-IN')}</td>
+                <td>${totalClassInvoices}</td>
+            </tr>
+        `;
+    }
+}
+
+function processLocalDatasetFilter() {
+    const targetQuery = document.getElementById("repSearch").value.toLowerCase().trim();
+    const targetClass = document.getElementById("repClass").value;
+    const targetStatus = document.getElementById("repStatus").value;
+    const targetMonth = document.getElementById("repMonth").value;
+
+    const filteredResult = localReportsCache.filter(record => {
+        const matchSearch = targetQuery === "" || 
+                            record.name.toLowerCase().includes(targetQuery) || 
+                            record.id.toLowerCase().includes(targetQuery);
+        const matchClass = targetClass === "" || String(record.class) === String(targetClass);
+        const matchStatus = targetStatus === "" || record.status === targetStatus;
+        const matchMonth = targetMonth === "" || record.month.toLowerCase() === targetMonth.toLowerCase();
+
+        return matchSearch && matchClass && matchStatus && matchMonth;
+    });
+
+    displayMasterLogTable(filteredResult);
+}
+
+/* AUTHENTIC INDIAN PRIVATE SCHOOL FINANCIAL STATEMENT ENGINE */
 function exportDataToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("p", "mm", "a4");
@@ -141,30 +716,30 @@ function exportDataToPDF() {
     const PAGE_WIDTH = 210;
     const PAGE_HEIGHT = 297;
     const MARGIN = 12;
-    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2); // 186mm
+    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2);
 
-    // Professional Color Palette
-    const COLOR_NAVY = [0, 33, 71];        // Deep Navy Blue
-    const COLOR_ROYAL = [30, 64, 175];     // Royal Blue
-    const COLOR_LIGHT_BLUE = [224, 242, 254]; // Soft Accent Background
-    const COLOR_ALT_ROW = [248, 250, 252];  // Very Light Grey
-    const COLOR_DARK_TEXT = [15, 23, 42];   // Slate Dark
-    const COLOR_MUTED_TEXT = [71, 85, 105]; // Secondary Text
-    const COLOR_BORDER = [203, 213, 225];   // Light Border
+    // Restrained Professional Institutional Color Palette
+    const COLOR_NAVY = [0, 33, 71];        // Deep Navy Blue #002147
+    const COLOR_ROYAL = [30, 64, 175];     // Royal Blue #1e40af
+    const COLOR_LIGHT_BLUE = [224, 242, 254]; // Soft Accent Background #e0f2fe
+    const COLOR_ALT_ROW = [248, 250, 252];  // Very Light Grey #f8fafc
+    const COLOR_DARK_TEXT = [15, 23, 42];   // Slate Dark #0f172a
+    const COLOR_MUTED_TEXT = [71, 85, 105]; // Secondary Text #475569
+    const COLOR_BORDER = [203, 213, 225];   // Light Border #cbd5e1
 
-    // Status Colors
-    const STATUS_PAID_TEXT = [21, 128, 61];     // Dark Green
-    const STATUS_PAID_BG = [240, 253, 244];      // Light Green
-    const STATUS_UNPAID_TEXT = [185, 28, 28];   // Dark Red
-    const STATUS_UNPAID_BG = [254, 242, 242];    // Light Red
-    const STATUS_PENDING_TEXT = [180, 83, 9];   // Dark Orange
-    const STATUS_PENDING_BG = [255, 251, 235];  // Light Orange
+    // Status Colors (Subtle & Professional Muted Tones)
+    const STATUS_PAID_TEXT = [21, 128, 61];     // Dark Green #15803d
+    const STATUS_PAID_BG = [240, 253, 244];      // Soft Light Green #f0fdf4
+    const STATUS_UNPAID_TEXT = [185, 28, 28];   // Dark Red #b91c1c
+    const STATUS_UNPAID_BG = [254, 242, 242];    // Soft Light Red #fef2f2
+    const STATUS_PENDING_TEXT = [180, 83, 9];   // Dark Orange #b45309
+    const STATUS_PENDING_BG = [255, 251, 235];  // Soft Light Orange #fffbeb
 
     const today = new Date();
     const dateFormatted = today.toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" });
     const fileDate = today.toISOString().split("T")[0];
 
-    // Read UI Filter Controls
+    // Filter Active Dataset
     const activeSearchQuery = document.getElementById("repSearch").value.trim();
     const activeClassFilter = document.getElementById("repClass").value;
     const activeStatusFilter = document.getElementById("repStatus").value;
@@ -179,7 +754,7 @@ function exportDataToPDF() {
         return matchSearch && matchClass && matchStatus && matchMonth;
     });
 
-    // Calculate Summary Totals
+    // Calculate Summary Balances
     let grossDemand = 0;
     let grossCollected = 0;
     let grossFine = 0;
@@ -214,13 +789,13 @@ function exportDataToPDF() {
         }
     });
 
-    // Currency Formatter replacing Unicode Rupee with 'Rs.' to prevent corrupt font characters
     function fmtMoney(val) {
-        return "Rs. " + Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return "₹" + Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Header Letterhead
+    // Official School Letterhead Header Component
     function renderLetterhead(y) {
+        // Attempt logo extraction from page DOM if visible
         const logoImg = document.getElementById("schoolLogoImg");
         let hasLogo = false;
         
@@ -253,7 +828,7 @@ function exportDataToPDF() {
         doc.setFontSize(8.5);
         doc.text("Jonali, Zoo Road, Guwahati – 781024 | Email: sai.drs.kids.school@gmail.com", textCenterX, y + 14.5, { align: "center" });
 
-        // Divider Lines
+        // Institutional Divider Line
         const lineY = y + 18;
         doc.setDrawColor(...COLOR_ROYAL);
         doc.setLineWidth(0.8);
@@ -263,7 +838,7 @@ function exportDataToPDF() {
         doc.setLineWidth(0.2);
         doc.line(MARGIN, lineY + 1.2, PAGE_WIDTH - MARGIN, lineY + 1.2);
 
-        // Title Banner
+        // Official Title Banner
         const bannerY = lineY + 5;
         doc.setFillColor(...COLOR_LIGHT_BLUE);
         doc.rect(MARGIN, bannerY, CONTENT_WIDTH, 10, "F");
@@ -354,14 +929,17 @@ function exportDataToPDF() {
         styles: { font: "helvetica", fontSize: 8.5, textColor: COLOR_DARK_TEXT, lineColor: COLOR_BORDER, lineWidth: 0.2, cellPadding: 2.5 },
         headStyles: { fillColor: COLOR_NAVY, textColor: [255, 255, 255], fontStyle: "bold", halign: "left" },
         columnStyles: {
-            0: { cellWidth: 120 },
-            1: { cellWidth: 66, halign: "right", fontStyle: "bold" }
+            0: { cellWidth: 126 },
+            1: { cellWidth: 60, halign: "right", fontStyle: "bold" }
         },
         margin: { left: MARGIN, right: MARGIN },
         didParseCell: function(data) {
             if (data.section === "body") {
-                if (data.row.index === 1) data.cell.styles.textColor = STATUS_PAID_TEXT;
-                if (data.row.index === 3) data.cell.styles.textColor = STATUS_UNPAID_TEXT;
+                if (data.row.index === 1) { // Total Fee Collected
+                    data.cell.styles.textColor = STATUS_PAID_TEXT;
+                } else if (data.row.index === 3) { // Total Outstanding
+                    data.cell.styles.textColor = STATUS_UNPAID_TEXT;
+                }
             }
         }
     });
@@ -402,10 +980,10 @@ function exportDataToPDF() {
         styles: { font: "helvetica", fontSize: 8, textColor: COLOR_DARK_TEXT, lineColor: COLOR_BORDER, lineWidth: 0.2, cellPadding: 2 },
         headStyles: { fillColor: COLOR_NAVY, textColor: [255, 255, 255], fontStyle: "bold", halign: "center" },
         columnStyles: {
-            0: { cellWidth: 42, halign: "left" },
-            1: { cellWidth: 48, halign: "right" },
-            2: { cellWidth: 48, halign: "right" },
-            3: { cellWidth: 48, halign: "right" }
+            0: { cellWidth: 46, halign: "left" },
+            1: { cellWidth: 46, halign: "right" },
+            2: { cellWidth: 47, halign: "right" },
+            3: { cellWidth: 47, halign: "right" }
         },
         margin: { left: MARGIN, right: MARGIN },
         didParseCell: function(data) {
@@ -413,6 +991,7 @@ function exportDataToPDF() {
                 if (data.column.index === 2) data.cell.styles.textColor = STATUS_PAID_TEXT;
                 if (data.column.index === 3) data.cell.styles.textColor = STATUS_UNPAID_TEXT;
 
+                // Total Row Styling
                 if (data.row.index === monthRows.length - 1) {
                     data.cell.styles.fontStyle = "bold";
                     data.cell.styles.fillColor = COLOR_LIGHT_BLUE;
@@ -443,11 +1022,11 @@ function exportDataToPDF() {
             item.name,
             clsLabel,
             item.month,
-            "Rs. " + fee,
-            "Rs. " + fine,
-            "Rs. " + total,
-            "Rs. " + paid,
-            "Rs. " + balance,
+            "₹" + fee,
+            "₹" + fine,
+            "₹" + total,
+            "₹" + paid,
+            "₹" + balance,
             item.status.toUpperCase()
         ];
     });
@@ -455,11 +1034,11 @@ function exportDataToPDF() {
     // Append Total Row
     studentTableBody.push([
         "", "TOTAL", "", "",
-        "Rs. " + grossDemand,
-        "Rs. " + grossFine,
-        "Rs. " + grossDemand,
-        "Rs. " + grossCollected,
-        "Rs. " + grossOutstanding,
+        "₹" + grossDemand,
+        "₹" + grossFine,
+        "₹" + grossDemand,
+        "₹" + grossCollected,
+        "₹" + grossOutstanding,
         ""
     ]);
 
@@ -488,6 +1067,7 @@ function exportDataToPDF() {
         rowPageBreak: "avoid",
         didParseCell: function(data) {
             if (data.section === "body") {
+                // Status Cell Specific Styling
                 if (data.column.index === 9) {
                     const status = String(data.cell.raw || "").toUpperCase();
                     data.cell.styles.fontStyle = "bold";
@@ -503,6 +1083,7 @@ function exportDataToPDF() {
                     }
                 }
 
+                // Final Total Row Formatting
                 if (data.row.index === studentTableBody.length - 1) {
                     data.cell.styles.fontStyle = "bold";
                     data.cell.styles.fillColor = COLOR_LIGHT_BLUE;
@@ -514,6 +1095,7 @@ function exportDataToPDF() {
 
     currentY = doc.lastAutoTable.finalY + 6;
 
+    // Check page space for trailing observations & signature block
     if (currentY > PAGE_HEIGHT - 65) {
         doc.addPage();
         currentY = 20;
@@ -529,6 +1111,7 @@ function exportDataToPDF() {
     doc.setLineWidth(0.3);
     doc.rect(MARGIN, currentY + 2, CONTENT_WIDTH, 18);
 
+    // Ruled lines for handwritten notes
     doc.setDrawColor(...COLOR_BORDER);
     doc.setLineWidth(0.2);
     doc.line(MARGIN + 2, currentY + 8, MARGIN + CONTENT_WIDTH - 2, currentY + 8);
@@ -552,7 +1135,7 @@ function exportDataToPDF() {
 
     currentY += 16;
 
-    // Section 7: Signature Block
+    // Section 7: Formal Institutional Signature Block
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(...COLOR_NAVY);
@@ -598,11 +1181,12 @@ function exportDataToPDF() {
     doc.text("Signature: _____________", col3X, currentY + 19);
     doc.text("Date: ____ / ____ / _______", col3X, currentY + 23);
 
-    // Footer & Page Numbers
+    // Footer Page Numbers & Institutional Header Rule on every page
     const totalPages = doc.internal.getNumberOfPages();
     for (let page = 1; page <= totalPages; page++) {
         doc.setPage(page);
 
+        // Thin Navy Footer Line
         doc.setDrawColor(...COLOR_NAVY);
         doc.setLineWidth(0.4);
         doc.line(MARGIN, 283, PAGE_WIDTH - MARGIN, 283);
@@ -616,6 +1200,16 @@ function exportDataToPDF() {
 
     doc.save(`Sai_DRS_Kids_School_Financial_Report_${fileDate}.pdf`);
 }
+
+function logout(){
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("erpRole");
+    localStorage.removeItem("teacherId");
+    localStorage.removeItem("teacherName");
+    window.location.href = "index.html";
+}
+
+window.onload = initManagementReportsEngine;
 </script>
 
 </body>
