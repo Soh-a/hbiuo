@@ -9,14 +9,21 @@
     <style>
         :root {
             --bg: #f8fafc;
+            --sidebar-bg: #111827;
+            --sidebar-text: #9ca3af;
+            --sidebar-text-hover: #ffffff;
+            --sidebar-active-bg: #1f2937;
             --card: #ffffff;
-            --text-main: #000000;
-            --text-muted: #555555;
-            --border: #cccccc;
-            --border-dark: #000000;
-            --radius-md: 6px;
-            --radius-sm: 4px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --border-dark: #111827;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             --transition: all 0.2s ease-in-out;
         }
 
@@ -29,41 +36,295 @@
 
         body {
             background: var(--bg);
-            padding: 40px 20px;
             color: var(--text-main);
             line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
         }
 
+        /* ================================
+           1. SIDEBAR NAVIGATION
+        ================================ */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-brand span {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .sidebar-menu a:hover {
+            color: var(--sidebar-text-hover);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .sidebar-menu li.active a {
+            color: #ffffff;
+            background: var(--sidebar-active-bg);
+            font-weight: 600;
+            border-left: 3px solid var(--primary);
+        }
+
+        .sidebar-menu svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        /* ================================
+           MAIN LAYOUT WRAPPER
+        ================================ */
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* ================================
+           2. CLEAN TOP HEADER
+        ================================ */
+        .top-header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-title-group h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+
+        .header-title-group p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .academic-badge {
+            background: #eff6ff;
+            color: var(--primary);
+            border: 1px solid #bfdbfe;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+        }
+
+        /* ================================
+           CONTAINER & DASHBOARD BODY
+        ================================ */
         .container {
-            max-width: 1200px;
+            padding: 32px;
+            max-width: 1350px;
+            width: 100%;
             margin: auto;
         }
 
-        .header-wrapper {
-            margin-bottom: 30px;
+        /* ================================
+           3. SUMMARY CARDS
+        ================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
         }
 
-        .title {
-            font-size: 26px;
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .stat-info span {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
             font-weight: 700;
-            color: #000;
+            color: var(--text-main);
+            margin-top: 6px;
             letter-spacing: -0.5px;
         }
 
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 4px;
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
+        .stat-icon.total { background: #eff6ff; color: #2563eb; }
+        .stat-icon.paid { background: #f0fdf4; color: #16a34a; }
+        .stat-icon.pending { background: #fefce8; color: #ca8a04; }
+        .stat-icon.salary { background: #f5f3ff; color: #7c3aed; }
+
+        .stat-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* ================================
+           TOOLBAR & SEARCH STAFF (9)
+        ================================ */
         .card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
             overflow: hidden;
-            box-shadow: var(--shadow);
         }
 
+        .dashboard-toolbar {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: #ffffff;
+        }
+
+        .search-wrapper {
+            position: relative;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .search-wrapper svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            fill: var(--text-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 9px 12px 9px 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-main);
+            background: #f8fafc;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .toolbar-info {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ================================
+           4 & 5. BETTER EMPLOYEE TABLE & AVATARS
+        ================================ */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -76,110 +337,193 @@
         }
 
         table th {
-            background: #f1f1f1;
-            color: #000;
-            font-size: 12px;
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-dark);
+            letter-spacing: 0.6px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
         }
 
         table td {
-            padding: 16px 24px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border);
-            font-size: 14px;
-            color: #000;
+            font-size: 13px;
+            color: var(--text-main);
             vertical-align: middle;
         }
 
-        table tr:hover td {
-            background-color: #f9f9f9;
+        table tr:last-child td {
+            border-bottom: none;
         }
 
-        .emp-name {
+        table tr:hover td {
+            background-color: #fafbfc;
+        }
+
+        .staff-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .staff-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .staff-info-block .emp-name {
             font-weight: 600;
             color: var(--text-main);
+            display: block;
+            font-size: 14px;
+        }
+
+        .staff-info-block .emp-username {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: monospace;
         }
 
         .emp-role {
-            background: #e2e2e2;
-            color: #000;
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status {
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            border: 1px solid #000;
-        }
-
-        .paid {
-            background: #000;
-            color: #fff;
-        }
-
-        .pending {
-            background: #fff;
-            color: #000;
-        }
-
-        .btns {
-            display: flex;
-            gap: 8px;
-        }
-
-        button {
-            border: 1px solid #000;
-            padding: 8px 14px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
             font-size: 13px;
-            font-weight: 600;
-            transition: var(--transition);
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
-        .mark-btn {
-            background: #000;
-            color: #fff;
-        }
-
-        .mark-btn:hover {
-            background: #333;
-        }
-
-        .slip-btn {
-            background: white;
-            color: #000;
-        }
-
-        .slip-btn:hover {
-            background: #eee;
-        }
-
-        select {
-            padding: 8px 12px;
-            border: 1px solid var(--border-dark);
+        /* ================================
+           6. CLEANER MONTH SELECTOR
+        ================================ */
+        .month-select {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            background: white;
+            background: #ffffff;
             font-size: 13px;
+            font-weight: 500;
             color: var(--text-main);
             outline: none;
             cursor: pointer;
+            transition: var(--transition);
         }
 
-        /* BLACK AND WHITE SLIP BOX */
+        .month-select:hover {
+            border-color: #94a3b8;
+        }
+
+        .month-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* ================================
+           7. STATUS BADGES
+        ================================ */
+        .status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .status.paid {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status.pending {
+            background: #fef9c3;
+            color: #854d0e;
+            border: 1px solid #fef08a;
+        }
+
+        /* ================================
+           8. ICON-STYLE ACTION BUTTONS
+        ================================ */
+        .action-btns {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .icon-btn svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor;
+        }
+
+        .icon-btn.mark-paid-btn {
+            background: var(--text-main);
+            color: #ffffff;
+            border-color: var(--text-main);
+        }
+
+        .icon-btn.mark-paid-btn:hover {
+            background: #374151;
+        }
+
+        /* Tooltip */
+        .icon-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111827;
+            color: #ffffff;
+            padding: 4px 8px;
+            font-size: 10px;
+            white-space: nowrap;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ================================
+           UNCHANGED PAYSLIP BOX CONTAINER
+        ================================ */
         #payslip {
             display: none;
-            margin-top: 50px;
+            margin-top: 40px;
             animation: fadeIn 0.4s ease-out;
         }
 
@@ -199,7 +543,6 @@
             position: relative;
         }
 
-        /* Header Layout */
         .school-header-container {
             display: flex;
             align-items: center;
@@ -262,7 +605,6 @@
             flex-shrink: 0;
         }
 
-        /* Strict sizing for QR code canvas/img */
         #qrcode {
             width: 75px !important;
             height: 75px !important;
@@ -397,21 +739,74 @@
             background: #333333;
         }
 
+        /* ================================
+           10. MOBILE RESPONSIVE LAYOUT
+        ================================ */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .top-header {
+                padding: 14px 16px;
+            }
+
+            .container {
+                padding: 16px 12px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .dashboard-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-wrapper {
+                max-width: 100%;
+            }
+        }
+
         /* STRICT BLACK & WHITE PRINT CSS */
         @media print {
             body {
                 background: #ffffff !important;
                 color: #000000 !important;
-                padding: 0;
+                display: block !important;
             }
 
-            .container > *:not(#payslip) {
+            .sidebar, .top-header, .container > *:not(#payslip) {
                 display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
             }
 
             #payslip {
                 display: block !important;
-                margin-top: 0;
+                margin-top: 0 !important;
             }
 
             .school-slip-box {
@@ -452,115 +847,225 @@
 
 <body>
 
-    <div class="container">
-        <div class="header-wrapper">
-            <h1 class="title">Staff Payroll Ledger</h1>
-            <p class="subtitle">Academic Year 2026-27 Management System</p>
+    <!-- 1. LEFT SIDEBAR NAVIGATION -->
+    <aside class="sidebar" id="appSidebar">
+        <div class="sidebar-brand">
+            <span>DRS</span>
+            Sai DRS Kids School
         </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    Staff
+                </a>
+            </li>
+            <li class="active">
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    Payroll
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    Salary History
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v7zm4 0h-2v-4h2v4z"/></svg>
+                    Reports
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </aside>
 
-        <div class="card">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Username</th>
-                            <th>Designation</th>
-                            <th>Phone</th>
-                            <th>Month</th>
-                            <th>Salary</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employeeTable"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="payslip">
-            <div class="school-slip-box">
-                <div class="school-header-container">
-                    <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.visibility='hidden'">
-
-                    <div class="school-header-text">
-                        <div class="school-name">SAI DRS SCHOOL</div>
-                        <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
-                        <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
-                        <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
-                    </div>
-
-                    <div class="qr-container">
-                        <div id="qrcode"></div>
-                        <span class="qr-label">VERIFIED SLIP</span>
-                    </div>
-                </div>
-
-                <div class="school-meta-grid">
-                    <div class="meta-item">
-                        <label>Employee Name</label>
-                        <span id="slipName"></span>
-                    </div>
-                    <div class="meta-item">
-                        <label>Ref / Receipt No</label>
-                        <span id="slipReceiptId"></span>
-                    </div>
-                    <div class="meta-item">
-                        <label>Designation / Role</label>
-                        <span id="slipRole"></span>
-                    </div>
-                    <div class="meta-item">
-                        <label>Pay Period</label>
-                        <span id="slipMonth"></span>
-                    </div>
-                    <div class="meta-item">
-                        <label>Staff ID / User</label>
-                        <span id="slipUsername"></span>
-                    </div>
-                    <div class="meta-item">
-                        <label>Disbursal Date</label>
-                        <span id="slipDate"></span>
-                    </div>
-                </div>
-
-                <table class="particulars-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 70%; text-align: left;">Earnings Particulars</th>
-                            <th style="width: 30%; text-align: right;">Amount (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Basic Pay Scale & Allowances</td>
-                            <td style="text-align: right; font-weight: 700;">₹<span id="slipSalary">0</span></td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>Net Disbursed Amount</td>
-                            <td style="text-align: right;">₹<span id="slipTotalSalary">0</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div style="font-size: 11px; color: #000000; font-style: italic; margin-bottom: 20px;">
-                    * This is a secure computer-generated document. Scan the QR code to verify verification data.
-                </div>
-
-                <div class="signatures-area">
-                    <div class="digital-sig-box">
-                        <div class="digital-sig-title">✓ Digitally Signed By</div>
-                        <div style="font-size: 11px; font-weight: 700; margin-top:2px;">OFFICE ACCOUNTANT</div>
-                        <div class="digital-sig-sub" id="sigTimestamp">Date: --/--/----</div>
-                    </div>
-                </div>
-
-                <button class="print-btn" onclick="window.print()">
-                    Print / Save as PDF
+    <!-- MAIN CONTAINER -->
+    <div class="main-content">
+        <!-- 2. CLEAN TOP HEADER -->
+        <header class="top-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="mobile-menu-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
                 </button>
+                <div class="header-title-group">
+                    <h1>Staff Payroll Management</h1>
+                    <p>Sai DRS Kids School, Guwahati</p>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="academic-badge">Academic Year 2026–27</div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- 3. SUMMARY CARDS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span>Total Staff</span>
+                        <h3 id="statTotalStaff">0</h3>
+                    </div>
+                    <div class="stat-icon total">
+                        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span>Paid Staff</span>
+                        <h3 id="statPaidStaff">0</h3>
+                    </div>
+                    <div class="stat-icon paid">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span>Pending Disbursals</span>
+                        <h3 id="statPendingStaff">0</h3>
+                    </div>
+                    <div class="stat-icon pending">
+                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span>Total Monthly Payout</span>
+                        <h3 id="statTotalSalary">₹0</h3>
+                    </div>
+                    <div class="stat-icon salary">
+                        <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE CARD WITH SEARCH (9) -->
+            <div class="card">
+                <div class="dashboard-toolbar">
+                    <div class="search-wrapper">
+                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        <input type="text" id="staffSearchInput" class="search-input" placeholder="Search staff by name or role...">
+                    </div>
+                    <div class="toolbar-info" id="recordCountText">Showing all staff records</div>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Staff</th>
+                                <th>Designation</th>
+                                <th>Monthly Salary</th>
+                                <th>Month</th>
+                                <th>Payment Date</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- UNTOUCHED PAYSLIP SECTION -->
+            <div id="payslip">
+                <div class="school-slip-box">
+                    <div class="school-header-container">
+                        <img src="logo.jpeg" class="school-logo" alt="School Logo" onerror="this.style.visibility='hidden'">
+
+                        <div class="school-header-text">
+                            <div class="school-name">SAI DRS SCHOOL</div>
+                            <div class="school-sub"><b>Address:</b> 83, Jonali, Guwahati, Assam</div>
+                            <div class="school-sub"><b>Email:</b> sai.drs.kids.school@gmail.com</div>
+                            <div class="slip-title-badge">Staff Salary Statement / Payslip</div>
+                        </div>
+
+                        <div class="qr-container">
+                            <div id="qrcode"></div>
+                            <span class="qr-label">VERIFIED SLIP</span>
+                        </div>
+                    </div>
+
+                    <div class="school-meta-grid">
+                        <div class="meta-item">
+                            <label>Employee Name</label>
+                            <span id="slipName"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Ref / Receipt No</label>
+                            <span id="slipReceiptId"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Designation / Role</label>
+                            <span id="slipRole"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Pay Period</label>
+                            <span id="slipMonth"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Staff ID / User</label>
+                            <span id="slipUsername"></span>
+                        </div>
+                        <div class="meta-item">
+                            <label>Disbursal Date</label>
+                            <span id="slipDate"></span>
+                        </div>
+                    </div>
+
+                    <table class="particulars-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70%; text-align: left;">Earnings Particulars</th>
+                                <th style="width: 30%; text-align: right;">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Basic Pay Scale & Allowances</td>
+                                <td style="text-align: right; font-weight: 700;">₹<span id="slipSalary">0</span></td>
+                            </tr>
+                            <tr class="total-row">
+                                <td>Net Disbursed Amount</td>
+                                <td style="text-align: right;">₹<span id="slipTotalSalary">0</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="font-size: 11px; color: #000000; font-style: italic; margin-bottom: 20px;">
+                        * This is a secure computer-generated document. Scan the QR code to verify verification data.
+                    </div>
+
+                    <div class="signatures-area">
+                        <div class="digital-sig-box">
+                            <div class="digital-sig-title">✓ Digitally Signed By</div>
+                            <div style="font-size: 11px; font-weight: 700; margin-top:2px;">OFFICE ACCOUNTANT</div>
+                            <div class="digital-sig-sub" id="sigTimestamp">Date: --/--/----</div>
+                        </div>
+                    </div>
+
+                    <button class="print-btn" onclick="window.print()">
+                        Print / Save as PDF
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPT LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -584,52 +1089,130 @@
             "October", "November", "December", "January", "February", "March"
         ];
 
+        let globalStaffData = {};
+
+        // Toggle Sidebar on mobile
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('appSidebar').classList.toggle('mobile-open');
+        });
+
         onValue(staffRef, (snapshot) => {
-            const data = snapshot.val();
-            const table = document.getElementById("employeeTable");
-            table.innerHTML = "";
+            globalStaffData = snapshot.val() || {};
+            renderTable(globalStaffData);
+            updateSummaryCards(globalStaffData);
+        });
+
+        function getInitials(name) {
+            if (!name) return "ST";
+            const parts = name.trim().split(" ");
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function updateSummaryCards(data) {
+            let totalStaff = 0;
+            let paidCount = 0;
+            let pendingCount = 0;
+            let totalSalarySum = 0;
 
             for (let key in data) {
                 let emp = data[key];
-                let monthOptions = "";
+                totalStaff++;
+                totalSalarySum += Number(emp.salary || 0);
+                if (emp.paymentStatus === 'Paid') {
+                    paidCount++;
+                } else {
+                    pendingCount++;
+                }
+            }
 
+            document.getElementById("statTotalStaff").innerText = totalStaff;
+            document.getElementById("statPaidStaff").innerText = paidCount;
+            document.getElementById("statPendingStaff").innerText = pendingCount;
+            document.getElementById("statTotalSalary").innerText = "₹" + totalSalarySum.toLocaleString('en-IN');
+        }
+
+        function renderTable(data, filterText = "") {
+            const table = document.getElementById("employeeTable");
+            table.innerHTML = "";
+            let count = 0;
+
+            for (let key in data) {
+                let emp = data[key];
+                let name = emp.name || "";
+                let role = emp.role || "";
+                let username = emp.username || "";
+
+                if (filterText && !name.toLowerCase().includes(filterText.toLowerCase()) && !role.toLowerCase().includes(filterText.toLowerCase()) && !username.toLowerCase().includes(filterText.toLowerCase())) {
+                    continue;
+                }
+
+                count++;
+                let monthOptions = "";
                 months.forEach(month => {
-                    monthOptions += `<option value="${month}">${month}</option>`;
+                    let selected = (emp.paidMonth === month) ? "selected" : "";
+                    monthOptions += `<option value="${month}" ${selected}>${month}</option>`;
                 });
+
+                let isPaid = emp.paymentStatus === 'Paid';
+                let statusClass = isPaid ? 'paid' : 'pending';
+                let statusText = isPaid ? 'Paid' : 'Pending';
+                let initials = getInitials(name);
+                let paymentDateVal = emp.paidDate || "—";
 
                 table.innerHTML += `
                     <tr>
-                        <td><span class="emp-name">${emp.name || ""}</span></td>
-                        <td><span style="color: var(--text-muted); font-family: monospace;">${emp.username || ""}</span></td>
-                        <td><span class="emp-role">${emp.role || ""}</span></td>
-                        <td>${emp.phone || ""}</td>
                         <td>
-                            <select id="month-${key}">
+                            <div class="staff-cell">
+                                <div class="staff-avatar">${initials}</div>
+                                <div class="staff-info-block">
+                                    <span class="emp-name">${name}</span>
+                                    <span class="emp-username">@${username}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="emp-role">${role}</span></td>
+                        <td><b>₹${Number(emp.salary || 0).toLocaleString('en-IN')}</b></td>
+                        <td>
+                            <select class="month-select" id="month-${key}">
                                 ${monthOptions}
                             </select>
                         </td>
-                        <td><b>₹${Number(emp.salary || 0).toLocaleString('en-IN')}</b></td>
+                        <td style="color: var(--text-muted); font-size: 12px;">${paymentDateVal}</td>
                         <td>
-                            <span class="status ${emp.paymentStatus === 'Paid' ? 'paid' : 'pending'}">
-                                ${emp.paymentStatus || "Pending"}
+                            <span class="status ${statusClass}">
+                                ${statusText}
                             </span>
                         </td>
                         <td>
-                            <div class="btns">
-                                <button class="mark-btn" onclick="markPaid('${key}')">Mark Paid</button>
-                                <button class="slip-btn" onclick="generatePayslip(
+                            <div class="action-btns" style="justify-content: flex-end;">
+                                <button class="icon-btn mark-paid-btn" title="Mark Paid" onclick="markPaid('${key}')">
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                </button>
+                                <button class="icon-btn" title="View / Generate Payslip" onclick="generatePayslip(
                                     '${key}',
-                                    '${emp.name || ""}',
-                                    '${emp.username || ""}',
-                                    '${emp.role || ""}',
+                                    '${name}',
+                                    '${username}',
+                                    '${role}',
                                     '${emp.salary || 0}',
                                     document.getElementById('month-${key}').value
-                                )">Payslip</button>
+                                )">
+                                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
                 `;
             }
+
+            document.getElementById("recordCountText").innerText = `Showing ${count} staff record(s)`;
+        }
+
+        // Live search filter listener
+        document.getElementById("staffSearchInput").addEventListener("input", (e) => {
+            renderTable(globalStaffData, e.target.value);
         });
 
         window.markPaid = function (key) {
@@ -642,7 +1225,6 @@
             alert("Marked As Paid Successfully");
         };
 
-        // Helper function to generate a fixed code per employee key
         function getConsistentCode(key) {
             let hash = 0;
             for (let i = 0; i < key.length; i++) {
@@ -655,8 +1237,7 @@
 
         window.generatePayslip = function (key, name, username, role, salary, month) {
             document.getElementById("payslip").style.display = "block";
-            
-            // Fixed receipt number generated deterministically based on employee's unique DB key
+
             const empCode = getConsistentCode(key);
             const receiptId = `SDS/${empCode}/26-27`;
 
@@ -669,16 +1250,16 @@
             document.getElementById("slipSalary").innerText = formattedSalary;
             document.getElementById("slipTotalSalary").innerText = formattedSalary;
             document.getElementById("slipMonth").innerText = month;
-            
+
             document.getElementById("slipReceiptId").innerText = receiptId;
             document.getElementById("slipDate").innerText = currentDate;
             document.getElementById("sigTimestamp").innerText = "Date: " + currentDate;
 
             const qrText = `SAI DRS SCHOOL\nName: ${name}\nMonth: ${month}\nAmount: INR ${formattedSalary}\nReceipt ID: ${receiptId}`;
-            
+
             const qrContainer = document.getElementById("qrcode");
             qrContainer.innerHTML = ""; 
-            
+
             new QRCode(qrContainer, {
                 text: qrText,
                 width: 75,
@@ -696,4 +1277,4 @@
     </script>
 </body>
 
-    </html>
+</html>
