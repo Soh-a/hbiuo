@@ -262,7 +262,7 @@
         }
 
         /* ================================
-           TOOLBAR & SEARCH STAFF (9)
+           TOOLBAR & SEARCH STAFF
         ================================ */
         .card {
             background: var(--card);
@@ -323,7 +323,7 @@
         }
 
         /* ================================
-           4 & 5. BETTER EMPLOYEE TABLE & AVATARS
+           BETTER EMPLOYEE TABLE & AVATARS
         ================================ */
         .table-responsive {
             width: 100%;
@@ -404,7 +404,7 @@
         }
 
         /* ================================
-           6. CLEANER MONTH SELECTOR
+           CLEANER MONTH SELECTOR
         ================================ */
         .month-select {
             padding: 7px 12px;
@@ -429,7 +429,7 @@
         }
 
         /* ================================
-           7. STATUS BADGES
+           STATUS BADGES
         ================================ */
         .status {
             padding: 4px 10px;
@@ -456,7 +456,7 @@
         }
 
         /* ================================
-           8. ICON-STYLE ACTION BUTTONS
+           ICON-STYLE ACTION BUTTONS
         ================================ */
         .action-btns {
             display: flex;
@@ -740,7 +740,7 @@
         }
 
         /* ================================
-           10. MOBILE RESPONSIVE LAYOUT
+           MOBILE RESPONSIVE LAYOUT
         ================================ */
         @media (max-width: 1024px) {
             .stats-grid {
@@ -847,7 +847,7 @@
 
 <body>
 
-    <!-- 1. LEFT SIDEBAR NAVIGATION -->
+    <!-- LEFT SIDEBAR NAVIGATION -->
     <aside class="sidebar" id="appSidebar">
         <div class="sidebar-brand">
             <span>DRS</span>
@@ -895,7 +895,7 @@
 
     <!-- MAIN CONTAINER -->
     <div class="main-content">
-        <!-- 2. CLEAN TOP HEADER -->
+        <!-- CLEAN TOP HEADER -->
         <header class="top-header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <button class="mobile-menu-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
@@ -912,7 +912,7 @@
         </header>
 
         <div class="container">
-            <!-- 3. SUMMARY CARDS -->
+            <!-- SUMMARY CARDS -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-info">
@@ -952,12 +952,28 @@
                 </div>
             </div>
 
-            <!-- TABLE CARD WITH SEARCH (9) -->
+            <!-- TABLE CARD WITH SEARCH -->
             <div class="card">
                 <div class="dashboard-toolbar">
-                    <div class="search-wrapper">
-                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <input type="text" id="staffSearchInput" class="search-input" placeholder="Search staff by name or role...">
+                    <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 500px;">
+                        <div class="search-wrapper" style="flex: 1;">
+                            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            <input type="text" id="staffSearchInput" class="search-input" placeholder="Search staff by name or role...">
+                        </div>
+                        <select id="globalMonthFilter" class="month-select" style="min-width: 130px;" title="Dashboard Payroll Month">
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                        </select>
                     </div>
                     <div class="toolbar-info" id="recordCountText">Showing all staff records</div>
                 </div>
@@ -1096,10 +1112,49 @@
             document.getElementById('appSidebar').classList.toggle('mobile-open');
         });
 
+        // Setup Month-wise Fallback parsing
+        function getPayrollInfo(emp, month) {
+            // Priority: Check new month-specific structure
+            if (emp.payroll && emp.payroll[month]) {
+                return {
+                    status: emp.payroll[month].status || 'Pending',
+                    paidDate: emp.payroll[month].paidDate || '—'
+                };
+            }
+            // Backward Compatibility Fallback
+            if (emp.paidMonth === month && emp.paymentStatus === 'Paid') {
+                return {
+                    status: 'Paid',
+                    paidDate: emp.paidDate || '—'
+                };
+            }
+            // Default response
+            return {
+                status: 'Pending',
+                paidDate: '—'
+            };
+        }
+
         onValue(staffRef, (snapshot) => {
             globalStaffData = snapshot.val() || {};
-            renderTable(globalStaffData);
-            updateSummaryCards(globalStaffData);
+            let currentGlobalMonth = document.getElementById("globalMonthFilter").value || "April";
+            // Normal firebase updates preserve individual row selections
+            renderTable(globalStaffData, document.getElementById("staffSearchInput").value, currentGlobalMonth, false);
+            updateSummaryCards(globalStaffData, currentGlobalMonth);
+        });
+
+        // Global Month Filter Listener
+        document.getElementById("globalMonthFilter").addEventListener("change", (e) => {
+            const selectedMonth = e.target.value;
+            // Force table to re-render everyone with the new dashboard month
+            renderTable(globalStaffData, document.getElementById("staffSearchInput").value, selectedMonth, true);
+            updateSummaryCards(globalStaffData, selectedMonth);
+        });
+
+        // Live search filter listener
+        document.getElementById("staffSearchInput").addEventListener("input", (e) => {
+            let currentGlobalMonth = document.getElementById("globalMonthFilter").value || "April";
+            renderTable(globalStaffData, e.target.value, currentGlobalMonth, false);
         });
 
         function getInitials(name) {
@@ -1111,7 +1166,7 @@
             return name.substring(0, 2).toUpperCase();
         }
 
-        function updateSummaryCards(data) {
+        function updateSummaryCards(data, filterMonth) {
             let totalStaff = 0;
             let paidCount = 0;
             let pendingCount = 0;
@@ -1121,7 +1176,9 @@
                 let emp = data[key];
                 totalStaff++;
                 totalSalarySum += Number(emp.salary || 0);
-                if (emp.paymentStatus === 'Paid') {
+
+                let info = getPayrollInfo(emp, filterMonth);
+                if (info.status === 'Paid') {
                     paidCount++;
                 } else {
                     pendingCount++;
@@ -1134,8 +1191,19 @@
             document.getElementById("statTotalSalary").innerText = "₹" + totalSalarySum.toLocaleString('en-IN');
         }
 
-        function renderTable(data, filterText = "") {
+        function renderTable(data, filterText = "", defaultMonth = "April", forceGlobal = false) {
             const table = document.getElementById("employeeTable");
+            
+            // Preserve user's row-level selections unless the global filter forced a change
+            let currentSelections = {};
+            if (!forceGlobal) {
+                const existingSelects = document.querySelectorAll(".row-month-select");
+                existingSelects.forEach(sel => {
+                    let k = sel.id.replace('month-', '');
+                    currentSelections[k] = sel.value;
+                });
+            }
+
             table.innerHTML = "";
             let count = 0;
 
@@ -1150,17 +1218,21 @@
                 }
 
                 count++;
+                
+                let rowMonth = forceGlobal ? defaultMonth : (currentSelections[key] || defaultMonth);
+
                 let monthOptions = "";
                 months.forEach(month => {
-                    let selected = (emp.paidMonth === month) ? "selected" : "";
+                    let selected = (rowMonth === month) ? "selected" : "";
                     monthOptions += `<option value="${month}" ${selected}>${month}</option>`;
                 });
 
-                let isPaid = emp.paymentStatus === 'Paid';
+                let payrollInfo = getPayrollInfo(emp, rowMonth);
+                let isPaid = payrollInfo.status === 'Paid';
                 let statusClass = isPaid ? 'paid' : 'pending';
                 let statusText = isPaid ? 'Paid' : 'Pending';
+                let paymentDateVal = payrollInfo.paidDate || "—";
                 let initials = getInitials(name);
-                let paymentDateVal = emp.paidDate || "—";
 
                 table.innerHTML += `
                     <tr>
@@ -1176,13 +1248,13 @@
                         <td><span class="emp-role">${role}</span></td>
                         <td><b>₹${Number(emp.salary || 0).toLocaleString('en-IN')}</b></td>
                         <td>
-                            <select class="month-select" id="month-${key}">
+                            <select class="month-select row-month-select" id="month-${key}" onchange="handleRowMonthChange('${key}')">
                                 ${monthOptions}
                             </select>
                         </td>
-                        <td style="color: var(--text-muted); font-size: 12px;">${paymentDateVal}</td>
+                        <td style="color: var(--text-muted); font-size: 12px;" id="payment-date-${key}">${paymentDateVal}</td>
                         <td>
-                            <span class="status ${statusClass}">
+                            <span class="status ${statusClass}" id="status-badge-${key}">
                                 ${statusText}
                             </span>
                         </td>
@@ -1210,19 +1282,39 @@
             document.getElementById("recordCountText").innerText = `Showing ${count} staff record(s)`;
         }
 
-        // Live search filter listener
-        document.getElementById("staffSearchInput").addEventListener("input", (e) => {
-            renderTable(globalStaffData, e.target.value);
-        });
+        // Handles immediate DOM updates when a specific row's month dropdown changes
+        window.handleRowMonthChange = function(key) {
+            let emp = globalStaffData[key];
+            if (!emp) return;
+            let month = document.getElementById(`month-${key}`).value;
+            let info = getPayrollInfo(emp, month);
+
+            let badge = document.getElementById(`status-badge-${key}`);
+            if (info.status === 'Paid') {
+                badge.className = 'status paid';
+                badge.innerText = 'Paid';
+            } else {
+                badge.className = 'status pending';
+                badge.innerText = 'Pending';
+            }
+            
+            document.getElementById(`payment-date-${key}`).innerText = info.paidDate;
+        };
 
         window.markPaid = function (key) {
             let month = document.getElementById(`month-${key}`).value;
-            update(ref(db, `staff/${key}`), {
-                paymentStatus: "Paid",
-                paidMonth: month,
-                paidDate: new Date().toLocaleDateString()
+            let currentDate = new Date().toLocaleDateString();
+
+            // Update only the specific month's record nested inside 'payroll'
+            update(ref(db, `staff/${key}/payroll/${month}`), {
+                status: "Paid",
+                paidDate: currentDate
+            }).then(() => {
+                alert(`${month} salary marked as Paid successfully.`);
+            }).catch((error) => {
+                console.error("Error marking as paid: ", error);
+                alert("Failed to update status. Please try again.");
             });
-            alert("Marked As Paid Successfully");
         };
 
         function getConsistentCode(key) {
