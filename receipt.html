@@ -167,6 +167,7 @@ button:disabled {
     border-radius: 7px;
     font-size: 13px;
     line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .message.error {
@@ -397,25 +398,34 @@ footer {
 
 <header>
     <div class="header-content">
-        <img src="logo.jpeg"
-             alt="Sai DRS School Logo"
-             onerror="this.style.display='none'">
+
+        <img
+            src="logo.jpeg"
+            alt="Sai DRS School Logo"
+            onerror="this.style.display='none'">
 
         <div>
             <h1>SAI DRS SCHOOL</h1>
             <p>Fee Receipt & Payment Verification System</p>
             <div class="session">Academic Session 2026–2027</div>
         </div>
+
     </div>
 </header>
 
 <main class="container">
 
-    <!-- SEARCH -->
+    <!-- SEARCH STUDENT -->
+
     <section class="card">
-        <h2><i class="fa-solid fa-magnifying-glass"></i> Find Student</h2>
+
+        <h2>
+            <i class="fa-solid fa-magnifying-glass"></i>
+            Find Student
+        </h2>
 
         <div class="search-row">
+
             <input
                 type="tel"
                 id="mobileInput"
@@ -423,19 +433,33 @@ footer {
                 inputmode="numeric"
                 autocomplete="tel">
 
-            <button class="btn-primary" id="searchButton" onclick="findStudent()">
-                <i class="fa-solid fa-search"></i> Search Student
+            <button
+                class="btn-primary"
+                id="searchButton"
+                onclick="findStudent()">
+
+                <i class="fa-solid fa-search"></i>
+                Search Student
+
             </button>
+
         </div>
 
         <div id="searchMessage" class="message"></div>
+
     </section>
 
     <!-- STUDENT DETAILS -->
+
     <section class="card hidden" id="studentSection">
-        <h2><i class="fa-solid fa-user-graduate"></i> Student Details</h2>
+
+        <h2>
+            <i class="fa-solid fa-user-graduate"></i>
+            Student Details
+        </h2>
 
         <div class="student-grid">
+
             <div class="detail">
                 <span>Student Name</span>
                 <strong id="studentName">—</strong>
@@ -465,14 +489,22 @@ footer {
                 <span>Academic Session</span>
                 <strong>2026–2027</strong>
             </div>
+
         </div>
+
     </section>
 
-    <!-- FEE STATUS -->
+    <!-- MONTHLY FEE STATUS -->
+
     <section class="card hidden" id="feesSection">
-        <h2><i class="fa-solid fa-money-check-dollar"></i> Monthly Fee Status</h2>
+
+        <h2>
+            <i class="fa-solid fa-money-check-dollar"></i>
+            Monthly Fee Status
+        </h2>
 
         <div class="summary">
+
             <div class="summary-item">
                 <span>Paid Months</span>
                 <strong id="paidCount">0</strong>
@@ -487,6 +519,7 @@ footer {
                 <span>Selected Receipts</span>
                 <strong id="selectedCount">0</strong>
             </div>
+
         </div>
 
         <div id="monthGrid" class="month-grid"></div>
@@ -494,19 +527,38 @@ footer {
         <div id="feeMessage" class="message"></div>
 
         <div class="actions">
-            <button class="btn-light" onclick="selectAllPaid()">
-                <i class="fa-solid fa-check-double"></i> Select All Paid
+
+            <button
+                class="btn-light"
+                onclick="selectAllPaid()">
+
+                <i class="fa-solid fa-check-double"></i>
+                Select All Paid
+
             </button>
 
-            <button class="btn-light" onclick="clearSelection()">
-                <i class="fa-solid fa-xmark"></i> Clear Selection
+            <button
+                class="btn-light"
+                onclick="clearSelection()">
+
+                <i class="fa-solid fa-xmark"></i>
+                Clear Selection
+
             </button>
 
-            <button class="btn-success" id="generateButton"
-                    onclick="generateReceipts()" disabled>
-                <i class="fa-solid fa-file-pdf"></i> Generate PDF Receipts
+            <button
+                class="btn-success"
+                id="generateButton"
+                onclick="generateReceipts()"
+                disabled>
+
+                <i class="fa-solid fa-file-pdf"></i>
+                Generate PDF Receipts
+
             </button>
+
         </div>
+
     </section>
 
 </main>
@@ -591,7 +643,23 @@ function escapeHTML(value) {
 
 function formatMoney(value) {
     const number = Number(value);
-    return CURRENCY + (Number.isFinite(number) ? number : 0).toLocaleString("en-IN");
+
+    return CURRENCY + (
+        Number.isFinite(number) ? number : 0
+    ).toLocaleString("en-IN");
+}
+
+/*
+ * jsPDF's standard Helvetica font may not support ₹.
+ * Use Rs. in PDF text to prevent missing-glyph issues.
+ */
+
+function formatPDFMoney(value) {
+    const number = Number(value);
+
+    return "Rs. " + (
+        Number.isFinite(number) ? number : 0
+    ).toLocaleString("en-IN");
 }
 
 function normalizeText(value) {
@@ -607,6 +675,7 @@ function showMessage(id, message, type = "info") {
 
 function hideMessage(id) {
     const element = byId(id);
+
     element.textContent = "";
     element.className = "message";
 }
@@ -629,16 +698,18 @@ function clearStudentDisplay() {
     byId("feesSection").classList.add("hidden");
 
     byId("monthGrid").innerHTML = "";
+
     byId("generateButton").disabled = true;
 
     byId("paidCount").textContent = "0";
     byId("unpaidCount").textContent = "0";
     byId("selectedCount").textContent = "0";
+
+    hideMessage("feeMessage");
 }
 
 /* =========================================================
-   MONTH MATCHING
-   Supports Apr, April, october, October, 2026-10, etc.
+   MONTH NORMALIZATION
    ========================================================= */
 
 function normalizeMonth(value) {
@@ -663,18 +734,22 @@ function normalizeMonth(value) {
         return monthAliases[text];
     }
 
-    // Accept date-like keys such as 2026-10 or 2026/10.
     const dateMatch = text.match(/^\d{4}[-/](\d{1,2})$/);
 
     if (dateMatch) {
         const number = Number(dateMatch[1]);
-        return number >= 1 && number <= 12 ? number - 1 : -1;
+
+        return number >= 1 && number <= 12
+            ? number - 1
+            : -1;
     }
 
-    // Accept numeric month keys from 1 to 12.
     if (/^\d{1,2}$/.test(text)) {
         const number = Number(text);
-        return number >= 1 && number <= 12 ? number - 1 : -1;
+
+        return number >= 1 && number <= 12
+            ? number - 1
+            : -1;
     }
 
     return -1;
@@ -682,7 +757,6 @@ function normalizeMonth(value) {
 
 /* =========================================================
    PAID STATUS DETECTION
-   Supports the supplied Firebase fee record.
    ========================================================= */
 
 function isPaid(fee) {
@@ -727,7 +801,6 @@ function isPaid(fee) {
         return true;
     }
 
-    // Support numeric or string booleans from older records.
     if (
         normalizeText(fee.isPaid) === "true" ||
         normalizeText(fee.paid) === "true"
@@ -739,41 +812,71 @@ function isPaid(fee) {
 }
 
 /* =========================================================
-   FIND A MONTH'S FEE RECORD
-   Supports direct and nested fee structures.
+   FEE RECORD DETECTION
    ========================================================= */
 
 function looksLikeFeeRecord(value) {
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
+    if (
+        !value ||
+        typeof value !== "object" ||
+        Array.isArray(value)
+    ) {
         return false;
     }
 
-    return (
-        Object.prototype.hasOwnProperty.call(value, "isPaid") ||
-        Object.prototype.hasOwnProperty.call(value, "paymentStatus") ||
-        Object.prototype.hasOwnProperty.call(value, "razorpayStatus") ||
-        Object.prototype.hasOwnProperty.call(value, "receiptNo") ||
-        Object.prototype.hasOwnProperty.call(value, "monthlyFee") ||
-        Object.prototype.hasOwnProperty.call(value, "paymentId") ||
-        Object.prototype.hasOwnProperty.call(value, "razorpayPaymentId")
+    return [
+        "isPaid",
+        "paymentStatus",
+        "razorpayStatus",
+        "receiptNo",
+        "receiptNumber",
+        "receipt_number",
+        "monthlyFee",
+        "paymentId",
+        "razorpayPaymentId",
+        "amount"
+    ].some(key =>
+        Object.prototype.hasOwnProperty.call(value, key)
     );
 }
 
+/* =========================================================
+   FIND FEE RECORD FOR MONTH
+   Supports:
+   fees/october
+   fees/October
+   fees/Oct
+   nested fee structures
+   ========================================================= */
+
 function findFeeRecordForMonth(data, monthIndex, depth = 0) {
-    if (!data || typeof data !== "object" || depth > 6) {
+    if (
+        !data ||
+        typeof data !== "object" ||
+        depth > 8
+    ) {
         return null;
     }
 
     if (Array.isArray(data)) {
         for (const item of data) {
-            const result = findFeeRecordForMonth(item, monthIndex, depth + 1);
+            const result = findFeeRecordForMonth(
+                item,
+                monthIndex,
+                depth + 1
+            );
+
             if (result) return result;
         }
 
         return null;
     }
 
-    // A fee object may store its month inside the record itself.
+    /*
+     * If the record has its own month field,
+     * match that field.
+     */
+
     if (looksLikeFeeRecord(data)) {
         const recordMonth = normalizeMonth(data.month);
 
@@ -782,14 +885,23 @@ function findFeeRecordForMonth(data, monthIndex, depth = 0) {
         }
     }
 
-    // First check keys such as Oct, october, or 2026-10.
+    /*
+     * First inspect direct month keys.
+     */
+
     for (const [key, value] of Object.entries(data)) {
-        if (normalizeMonth(key) === monthIndex && looksLikeFeeRecord(value)) {
+        if (
+            normalizeMonth(key) === monthIndex &&
+            looksLikeFeeRecord(value)
+        ) {
             return value;
         }
     }
 
-    // Then inspect nested year/session/month objects.
+    /*
+     * Then inspect nested objects.
+     */
+
     for (const value of Object.values(data)) {
         if (value && typeof value === "object") {
             const result = findFeeRecordForMonth(
@@ -810,23 +922,48 @@ function getFeeForMonth(monthShort) {
 
     if (monthIndex < 0) return null;
 
-    return findFeeRecordForMonth(currentFees, monthIndex);
+    return findFeeRecordForMonth(
+        currentFees,
+        monthIndex
+    );
 }
 
-function getReceiptNumber(fee) {
-    if (!fee || typeof fee !== "object") return "";
+/* =========================================================
+   RECEIPT NUMBER RETRIEVAL
+   ========================================================= */
 
-    return String(
-        fee.receiptNo ||
-        fee.receiptNumber ||
-        fee.receipt_number ||
-        ""
-    ).trim();
+function getReceiptNumber(fee) {
+    if (!fee || typeof fee !== "object") {
+        return "";
+    }
+
+    const possibleKeys = [
+        "receiptNo",
+        "receiptNumber",
+        "receipt_number",
+        "receipt",
+        "receiptId",
+        "receiptID",
+        "receipt_no"
+    ];
+
+    for (const key of possibleKeys) {
+        const value = fee[key];
+
+        if (
+            value !== undefined &&
+            value !== null &&
+            String(value).trim() !== ""
+        ) {
+            return String(value).trim();
+        }
+    }
+
+    return "";
 }
 
 /* =========================================================
    FIND STUDENT
-   Supports mobile number as database key or mobile field.
    ========================================================= */
 
 async function findStudent() {
@@ -835,7 +972,12 @@ async function findStudent() {
     hideMessage("searchMessage");
 
     if (!mobile) {
-        showMessage("searchMessage", "Please enter the student's registered mobile number.", "error");
+        showMessage(
+            "searchMessage",
+            "Please enter the student's registered mobile number.",
+            "error"
+        );
+
         return;
     }
 
@@ -846,41 +988,51 @@ async function findStudent() {
         let student = null;
         let studentKey = null;
 
-        // First attempt: mobile number is the database key.
-        const directSnapshot = await studentsRef.child(mobile).once("value");
+        const normalizedMobile = mobile.replace(/\D/g, "");
+
+        /*
+         * First attempt: mobile number as database key.
+         */
+
+        const directSnapshot = await studentsRef
+            .child(mobile)
+            .once("value");
 
         if (directSnapshot.exists()) {
             student = directSnapshot.val();
             studentKey = directSnapshot.key;
         }
 
-        // Second attempt: find the record using its mobile field.
+        /*
+         * Second attempt: search student mobile fields.
+         */
+
         if (!student) {
             const snapshot = await studentsRef.once("value");
 
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
-                    if (!student) {
-                        const data = child.val() || {};
+                    if (student) return;
 
-                        const possibleMobiles = [
-                            data.mobile,
-                            data.mobileNumber,
-                            data.phone,
-                            data.phoneNumber,
-                            data.parentMobile,
-                            data.parentsMobile
-                        ];
+                    const data = child.val() || {};
 
-                        const matched = possibleMobiles.some(value =>
-                            String(value ?? "").replace(/\D/g, "") ===
-                            mobile.replace(/\D/g, "")
-                        );
+                    const possibleMobiles = [
+                        data.mobile,
+                        data.mobileNumber,
+                        data.phone,
+                        data.phoneNumber,
+                        data.parentMobile,
+                        data.parentsMobile
+                    ];
 
-                        if (matched) {
-                            student = data;
-                            studentKey = child.key;
-                        }
+                    const matched = possibleMobiles.some(value =>
+                        String(value ?? "").replace(/\D/g, "") ===
+                        normalizedMobile
+                    );
+
+                    if (matched) {
+                        student = data;
+                        studentKey = child.key;
                     }
                 });
             }
@@ -901,7 +1053,6 @@ async function findStudent() {
 
         currentFees = student.fees || {};
 
-        // Debug information: open browser developer tools to inspect.
         console.log("Student record:", student);
         console.log("Fee records:", currentFees);
 
@@ -922,7 +1073,8 @@ async function findStudent() {
 
         showMessage(
             "searchMessage",
-            "Unable to load student data. Check your internet connection and Firebase database permissions.",
+            "Unable to load student data: " +
+            (error.message || String(error)),
             "error"
         );
 
@@ -937,10 +1089,14 @@ async function findStudent() {
 
 function displayStudent(student) {
     byId("studentName").textContent =
-        student.name || student.studentName || "—";
+        student.name ||
+        student.studentName ||
+        "—";
 
     byId("studentClass").textContent =
-        student.class || student.className || "—";
+        student.class ||
+        student.className ||
+        "—";
 
     byId("parentName").textContent =
         student.parents ||
@@ -954,12 +1110,15 @@ function displayStudent(student) {
         student.mobileNumber ||
         byId("mobileInput").value.trim();
 
-    byId("monthlyFee").textContent =
-        formatMoney(student.monthlyfee ?? student.monthlyFee ?? 0);
+    byId("monthlyFee").textContent = formatMoney(
+        student.monthlyfee ??
+        student.monthlyFee ??
+        0
+    );
 }
 
 /* =========================================================
-   DISPLAY ALL MONTHS
+   DISPLAY MONTHLY FEE STATUS
    ========================================================= */
 
 function displayFeeMonths() {
@@ -999,18 +1158,25 @@ function displayFeeMonths() {
 
         const card = document.createElement("div");
 
-        card.className = "month-card " + (paid ? "paid" : "unpaid");
+        card.className = "month-card " +
+            (paid ? "paid" : "unpaid");
 
         card.innerHTML = `
             <div class="month-top">
-                <span class="month-name">${escapeHTML(month.full)}</span>
+
+                <span class="month-name">
+                    ${escapeHTML(month.full)}
+                </span>
+
                 <span class="badge ${paid ? "paid" : "unpaid"}">
                     ${paid ? "PAID" : "UNPAID"}
                 </span>
+
             </div>
 
             <div class="month-fee">
-                ${formatMoney(feeAmount)}
+
+                ${escapeHTML(formatMoney(feeAmount))}
 
                 ${
                     paid && receiptNo
@@ -1023,23 +1189,29 @@ function displayFeeMonths() {
                         ? `<small>Receipt number unavailable</small>`
                         : ""
                 }
+
             </div>
 
             ${
                 paid
                     ? `
                         <label class="month-select">
+
                             <input
                                 type="checkbox"
                                 class="month-checkbox"
                                 value="${month.short}"
                                 ${selectedMonths.has(month.short) ? "checked" : ""}
                                 onchange="toggleMonth('${month.short}', this.checked)">
+
                             Select receipt
+
                         </label>
                     `
                     : `
-                        <small style="color:#a31d1d">Payment not recorded</small>
+                        <small style="color:#a31d1d">
+                            Payment not recorded
+                        </small>
                     `
             }
         `;
@@ -1055,7 +1227,7 @@ function displayFeeMonths() {
     if (paidTotal === 0) {
         showMessage(
             "feeMessage",
-            "No paid months were detected. Check the Firebase fee structure in the browser console.",
+            "No paid months were detected. Check the Firebase fee records and their payment status.",
             "error"
         );
     } else {
@@ -1064,7 +1236,7 @@ function displayFeeMonths() {
 }
 
 /* =========================================================
-   SELECT MONTHS
+   MONTH SELECTION
    ========================================================= */
 
 function toggleMonth(month, checked) {
@@ -1083,7 +1255,7 @@ function selectAllPaid() {
     MONTHS.forEach(month => {
         const fee = getFeeForMonth(month.short);
 
-        if (isPaid(fee)) {
+        if (fee && isPaid(fee)) {
             selectedMonths.add(month.short);
         }
     });
@@ -1097,9 +1269,11 @@ function clearSelection() {
 }
 
 function updateSelectionSummary() {
-    byId("selectedCount").textContent = selectedMonths.size;
+    byId("selectedCount").textContent =
+        selectedMonths.size;
 
-    byId("generateButton").disabled = selectedMonths.size === 0;
+    byId("generateButton").disabled =
+        selectedMonths.size === 0;
 }
 
 /* =========================================================
@@ -1107,24 +1281,39 @@ function updateSelectionSummary() {
    ========================================================= */
 
 function formatDate(value) {
-    if (!value) return "—";
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "—";
+    }
 
     let date;
 
-    if (typeof value === "number" || /^\d+$/.test(String(value))) {
-        const number = Number(value);
+    if (
+        typeof value === "number" ||
+        /^\d+$/.test(String(value))
+    ) {
+        let number = Number(value);
+
+        /*
+         * Support Unix timestamps in seconds as well
+         * as JavaScript timestamps in milliseconds.
+         */
+
+        if (number > 0 && number < 100000000000) {
+            number *= 1000;
+        }
 
         date = new Date(number);
 
-        if (!Number.isFinite(date.getTime())) {
-            return "—";
-        }
     } else {
         date = new Date(value);
+    }
 
-        if (!Number.isFinite(date.getTime())) {
-            return "—";
-        }
+    if (!Number.isFinite(date.getTime())) {
+        return "—";
     }
 
     return date.toLocaleDateString("en-IN", {
@@ -1135,7 +1324,7 @@ function formatDate(value) {
 }
 
 /* =========================================================
-   LOAD SCHOOL LOGO FOR PDF
+   LOAD SCHOOL LOGO
    ========================================================= */
 
 function loadLogo() {
@@ -1150,17 +1339,28 @@ function loadLogo() {
                 canvas.height = img.naturalHeight;
 
                 const context = canvas.getContext("2d");
+
                 context.drawImage(img, 0, 0);
 
-                resolve(canvas.toDataURL("image/jpeg", 0.9));
+                resolve(
+                    canvas.toDataURL("image/jpeg", 0.9)
+                );
+
             } catch (error) {
-                console.warn("Could not convert logo:", error);
+                console.warn(
+                    "Could not convert school logo:",
+                    error
+                );
+
                 resolve(null);
             }
         };
 
         img.onerror = function() {
-            console.warn("logo.jpeg was not found.");
+            console.warn(
+                "logo.jpeg was not found. The PDF will be generated without the logo."
+            );
+
             resolve(null);
         };
 
@@ -1169,28 +1369,55 @@ function loadLogo() {
 }
 
 /* =========================================================
-   GENERATE QR CODE
+   QR CODE GENERATION
    ========================================================= */
 
 async function createQRCode(fee, month, receiptNo) {
+    if (
+        typeof QRCode === "undefined" ||
+        typeof QRCode.toDataURL !== "function"
+    ) {
+        throw new Error(
+            "QR Code library failed to load. Check the qrcode.min.js script."
+        );
+    }
+
     const qrData = {
         school: "SAI DRS SCHOOL",
         session: SESSION,
-        student: currentStudent.name || currentStudent.studentName || "",
+
+        student:
+            currentStudent.name ||
+            currentStudent.studentName ||
+            "",
+
         studentKey: currentStudentKey,
-        class: currentStudent.class || currentStudent.className || "",
+
+        class:
+            currentStudent.class ||
+            currentStudent.className ||
+            "",
+
         month: month.full,
         receiptNo: receiptNo,
+
         paymentId:
             fee.razorpayPaymentId ||
             fee.paymentId ||
             fee.transactionId ||
             "",
-        amount: Number(fee.amount || fee.monthlyFee || 0),
-        paymentStatus: fee.paymentStatus || fee.status || "Paid"
+
+        amount: Number(
+            fee.amount ??
+            fee.monthlyFee ??
+            fee.monthlyfee ??
+            0
+        ),
+
+        paymentStatus: "Paid"
     };
 
-    return QRCode.toDataURL(
+    return await QRCode.toDataURL(
         JSON.stringify(qrData),
         {
             errorCorrectionLevel: "M",
@@ -1204,23 +1431,41 @@ async function createQRCode(fee, month, receiptNo) {
    DRAW ONE RECEIPT COPY
    ========================================================= */
 
-function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
-    const pageWidth = 210;
-    const receiptHeight = 139;
+function drawReceipt(
+    pdf,
+    data,
+    logoData,
+    qrData,
+    startY,
+    copyLabel
+) {
     const left = 10;
     const right = 200;
     const width = right - left;
+    const receiptHeight = 139;
 
     const student = data.student;
     const fee = data.fee;
     const month = data.month;
 
-    // Outer border
+    /*
+     * Outer border
+     */
+
     pdf.setDrawColor(30, 65, 110);
     pdf.setLineWidth(0.6);
-    pdf.rect(left, startY, width, receiptHeight);
 
-    // School logo
+    pdf.rect(
+        left,
+        startY,
+        width,
+        receiptHeight
+    );
+
+    /*
+     * School logo
+     */
+
     if (logoData) {
         try {
             pdf.addImage(
@@ -1233,39 +1478,59 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
                 undefined,
                 "FAST"
             );
+
         } catch (error) {
-            console.warn("Unable to add logo to PDF:", error);
+            console.warn(
+                "Unable to add school logo:",
+                error
+            );
         }
     }
 
-    // Header
+    /*
+     * School heading
+     */
+
     pdf.setTextColor(18, 59, 112);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(16);
 
-    pdf.text("SAI DRS SCHOOL", 105, startY + 10, {
-        align: "center"
-    });
+    pdf.text(
+        "SAI DRS SCHOOL",
+        105,
+        startY + 10,
+        { align: "center" }
+    );
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
 
-    pdf.text("Jonali, Zoo Road, Guwahati, Assam", 105, startY + 15, {
-        align: "center"
-    });
+    pdf.text(
+        "Jonali, Zoo Road, Guwahati, Assam",
+        105,
+        startY + 15,
+        { align: "center" }
+    );
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(9);
 
-    pdf.text("FEE PAYMENT RECEIPT", 105, startY + 21, {
-        align: "center"
-    });
+    pdf.text(
+        "FEE PAYMENT RECEIPT",
+        105,
+        startY + 21,
+        { align: "center" }
+    );
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
     pdf.setTextColor(70, 70, 70);
 
-    pdf.text("Academic Session: 2026-2027", left + 5, startY + 29);
+    pdf.text(
+        "Academic Session: 2026-2027",
+        left + 5,
+        startY + 29
+    );
 
     pdf.text(
         "Copy: " + copyLabel,
@@ -1274,22 +1539,43 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
         { align: "right" }
     );
 
-    // Divider
-    pdf.setDrawColor(180, 195, 215);
-    pdf.line(left + 4, startY + 33, right - 4, startY + 33);
+    /*
+     * Divider
+     */
 
-    // Receipt information
+    pdf.setDrawColor(180, 195, 215);
+
+    pdf.line(
+        left + 4,
+        startY + 33,
+        right - 4,
+        startY + 33
+    );
+
+    /*
+     * Receipt number and payment date
+     */
+
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(9);
     pdf.setTextColor(20, 45, 75);
 
-    pdf.text("Receipt No.:", left + 5, startY + 41);
-    pdf.text("Payment Date:", left + 5, startY + 50);
+    pdf.text(
+        "Receipt No.:",
+        left + 5,
+        startY + 41
+    );
+
+    pdf.text(
+        "Payment Date:",
+        left + 5,
+        startY + 50
+    );
 
     pdf.setFont("helvetica", "normal");
 
     pdf.text(
-        String(data.receiptNo || "Not available"),
+        String(data.receiptNo || "Not available").slice(0, 40),
         left + 33,
         startY + 41
     );
@@ -1300,23 +1586,54 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
         startY + 50
     );
 
+    /*
+     * Student information
+     */
+
     pdf.setFont("helvetica", "bold");
 
-    pdf.text("Student Name:", left + 5, startY + 61);
-    pdf.text("Class:", left + 5, startY + 70);
-    pdf.text("Parent/Guardian:", left + 5, startY + 79);
-    pdf.text("Fee Month:", left + 5, startY + 88);
+    pdf.text(
+        "Student Name:",
+        left + 5,
+        startY + 61
+    );
+
+    pdf.text(
+        "Class:",
+        left + 5,
+        startY + 70
+    );
+
+    pdf.text(
+        "Parent/Guardian:",
+        left + 5,
+        startY + 79
+    );
+
+    pdf.text(
+        "Fee Month:",
+        left + 5,
+        startY + 88
+    );
 
     pdf.setFont("helvetica", "normal");
 
     pdf.text(
-        String(student.name || student.studentName || "—").slice(0, 45),
+        String(
+            student.name ||
+            student.studentName ||
+            "—"
+        ).slice(0, 45),
         left + 37,
         startY + 61
     );
 
     pdf.text(
-        String(student.class || student.className || "—").slice(0, 30),
+        String(
+            student.class ||
+            student.className ||
+            "—"
+        ).slice(0, 30),
         left + 37,
         startY + 70
     );
@@ -1333,9 +1650,16 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
         startY + 79
     );
 
-    pdf.text(month.full + " 2026-2027", left + 37, startY + 88);
+    pdf.text(
+        month.full + " 2026-2027",
+        left + 37,
+        startY + 88
+    );
 
-    // Amount details
+    /*
+     * Amount calculation
+     */
+
     const monthlyFee = Number(
         fee.monthlyFee ??
         fee.monthlyfee ??
@@ -1348,49 +1672,109 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
     const lateFee = Number(fee.lateFee || 0);
     const activityFee = Number(fee.activityFee || 0);
     const convenienceFee = Number(fee.convenienceFee || 0);
+
     const amount = Number(
         fee.amount ??
-        (monthlyFee + fine + lateFee + activityFee + convenienceFee)
+        (
+            monthlyFee +
+            fine +
+            lateFee +
+            activityFee +
+            convenienceFee
+        )
     );
 
+    /*
+     * Fee breakdown
+     */
+
     pdf.setDrawColor(200, 210, 225);
-    pdf.rect(left + 5, startY + 95, 120, 24);
+
+    pdf.rect(
+        left + 5,
+        startY + 95,
+        120,
+        24
+    );
 
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(40, 40, 40);
 
-    pdf.text("Monthly Fee", left + 8, startY + 101);
-    pdf.text(formatMoney(monthlyFee), left + 120, startY + 101, {
-        align: "right"
-    });
-
-    pdf.text("Fine / Late Fee", left + 8, startY + 107);
-    pdf.text(formatMoney(fine + lateFee), left + 120, startY + 107, {
-        align: "right"
-    });
-
-    pdf.text("Other Fees", left + 8, startY + 113);
     pdf.text(
-        formatMoney(activityFee + convenienceFee),
+        "Monthly Fee",
+        left + 8,
+        startY + 101
+    );
+
+    pdf.text(
+        formatPDFMoney(monthlyFee),
+        left + 120,
+        startY + 101,
+        { align: "right" }
+    );
+
+    pdf.text(
+        "Fine / Late Fee",
+        left + 8,
+        startY + 107
+    );
+
+    pdf.text(
+        formatPDFMoney(fine + lateFee),
+        left + 120,
+        startY + 107,
+        { align: "right" }
+    );
+
+    pdf.text(
+        "Other Fees",
+        left + 8,
+        startY + 113
+    );
+
+    pdf.text(
+        formatPDFMoney(activityFee + convenienceFee),
         left + 120,
         startY + 113,
         { align: "right" }
     );
 
-    // Total amount
+    /*
+     * Total paid
+     */
+
     pdf.setFillColor(237, 244, 252);
-    pdf.rect(left + 5, startY + 120, 120, 10, "F");
+
+    pdf.rect(
+        left + 5,
+        startY + 120,
+        120,
+        10,
+        "F"
+    );
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(10);
     pdf.setTextColor(18, 59, 112);
 
-    pdf.text("TOTAL PAID", left + 8, startY + 126.5);
-    pdf.text(formatMoney(amount), left + 120, startY + 126.5, {
-        align: "right"
-    });
+    pdf.text(
+        "TOTAL PAID",
+        left + 8,
+        startY + 126.5
+    );
 
-    // QR code
+    pdf.text(
+        formatPDFMoney(amount),
+        left + 120,
+        startY + 126.5,
+        { align: "right" }
+    );
+
+    /*
+     * QR code
+     */
+
     if (qrData) {
         pdf.addImage(
             qrData,
@@ -1401,6 +1785,10 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
             30
         );
     }
+
+    /*
+     * Payment verification
+     */
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(8);
@@ -1417,24 +1805,36 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
     pdf.setFontSize(7);
     pdf.setTextColor(70, 70, 70);
 
+    const paymentMode = String(
+        fee.paymentMode ||
+        fee.collectedBy ||
+        "—"
+    ).slice(0, 24);
+
     pdf.text(
-        "Mode: " + String(fee.paymentMode || fee.collectedBy || "—").slice(0, 24),
+        "Mode: " + paymentMode,
         left + 160,
         startY + 118,
         { align: "center" }
     );
 
+    const paymentId = String(
+        fee.razorpayPaymentId ||
+        fee.paymentId ||
+        fee.transactionId ||
+        "—"
+    );
+
     pdf.text(
-        "Payment ID: " + String(
-            fee.razorpayPaymentId ||
-            fee.transactionId ||
-            fee.paymentId ||
-            "—"
-        ).slice(0, 24),
+        "Payment ID: " + paymentId.slice(0, 24),
         left + 160,
         startY + 123,
         { align: "center" }
     );
+
+    /*
+     * Footer
+     */
 
     pdf.setFontSize(7);
     pdf.setTextColor(90, 90, 90);
@@ -1449,7 +1849,8 @@ function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
 
 /* =========================================================
    GENERATE PDF RECEIPTS
-   One A4 page per month, with school and parent copies.
+   One A4 page per paid month.
+   Two copies per page.
    ========================================================= */
 
 async function generateReceipts() {
@@ -1463,11 +1864,44 @@ async function generateReceipts() {
         return;
     }
 
+    /*
+     * Check required libraries before starting.
+     */
+
+    if (
+        !window.jspdf ||
+        typeof window.jspdf.jsPDF !== "function"
+    ) {
+        showMessage(
+            "feeMessage",
+            "PDF library failed to load. Check the jsPDF script and reload the page.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (
+        typeof QRCode === "undefined" ||
+        typeof QRCode.toDataURL !== "function"
+    ) {
+        showMessage(
+            "feeMessage",
+            "QR Code library failed to load. Check the qrcode.min.js script and reload the page.",
+            "error"
+        );
+
+        return;
+    }
+
+    /*
+     * Prepare selected months.
+     */
+
     const monthsToPrint = MONTHS.filter(month =>
         selectedMonths.has(month.short)
     );
 
-    // Do not create a receipt for an unpaid or missing record.
     const records = [];
 
     for (const month of monthsToPrint) {
@@ -1481,9 +1915,12 @@ async function generateReceipts() {
 
         if (!receiptNo) {
             alert(
-                "The receipt number for " + month.full +
-                " is missing in Firebase. Please correct the record before generating its receipt."
+                "The receipt number for " +
+                month.full +
+                " is missing in Firebase.\n\n" +
+                "Please add the correct receipt number to the fee record before generating the PDF."
             );
+
             return;
         }
 
@@ -1499,15 +1936,34 @@ async function generateReceipts() {
         return;
     }
 
+    /*
+     * Show loading status.
+     */
+
     const button = byId("generateButton");
     const originalText = button.innerHTML;
 
     button.disabled = true;
+
     button.innerHTML =
         '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
 
+    showMessage(
+        "feeMessage",
+        "Preparing your PDF receipts. Please wait...",
+        "info"
+    );
+
     try {
+        /*
+         * Load logo.
+         */
+
         const logoData = await loadLogo();
+
+        /*
+         * Create PDF.
+         */
 
         const { jsPDF } = window.jspdf;
 
@@ -1518,6 +1974,10 @@ async function generateReceipts() {
             compress: true
         });
 
+        /*
+         * Generate one page per selected month.
+         */
+
         for (let i = 0; i < records.length; i++) {
             const data = records[i];
 
@@ -1525,13 +1985,20 @@ async function generateReceipts() {
                 pdf.addPage();
             }
 
+            /*
+             * Generate QR code for this payment.
+             */
+
             const qrData = await createQRCode(
                 data.fee,
                 data.month,
                 data.receiptNo
             );
 
-            // School copy
+            /*
+             * School copy.
+             */
+
             drawReceipt(
                 pdf,
                 {
@@ -1546,13 +2013,29 @@ async function generateReceipts() {
                 "SCHOOL COPY"
             );
 
-            // Dotted cutting line
-            pdf.setDrawColor(120, 120, 120);
-            pdf.setLineDashPattern([2, 2], 0);
-            pdf.line(8, 148, 202, 148);
-            pdf.setLineDashPattern([], 0);
+            /*
+             * Dotted cutting line.
+             *
+             * Draw with ordinary short line segments
+             * for compatibility across jsPDF versions.
+             */
 
-            // Parent copy
+            pdf.setDrawColor(120, 120, 120);
+            pdf.setLineWidth(0.3);
+
+            for (let x = 8; x < 202; x += 4) {
+                pdf.line(
+                    x,
+                    148,
+                    Math.min(x + 2, 202),
+                    148
+                );
+            }
+
+            /*
+             * Parent copy.
+             */
+
             drawReceipt(
                 pdf,
                 {
@@ -1568,6 +2051,10 @@ async function generateReceipts() {
             );
         }
 
+        /*
+         * Create a safe filename.
+         */
+
         const studentName = String(
             currentStudent.name ||
             currentStudent.studentName ||
@@ -1575,24 +2062,53 @@ async function generateReceipts() {
         ).replace(/[^a-z0-9_-]/gi, "_");
 
         const filename =
-            "SAI_DRS_Receipts_" + studentName + "_" + SESSION + ".pdf";
+            "SAI_DRS_Receipts_" +
+            studentName +
+            "_" +
+            SESSION +
+            ".pdf";
+
+        /*
+         * Save PDF.
+         */
 
         pdf.save(filename);
 
         showMessage(
             "feeMessage",
-            "PDF generated successfully for " + records.length +
-            " paid month(s).",
+            "PDF generated successfully for " +
+            records.length +
+            " paid month(s). Each page contains a school copy and a parent copy.",
             "success"
         );
 
     } catch (error) {
-        console.error("PDF generation error:", error);
+        /*
+         * IMPORTANT:
+         * Display the actual error instead of incorrectly
+         * reporting an internet connection problem.
+         */
+
+        console.error(
+            "PDF generation error:",
+            error
+        );
+
+        const errorMessage =
+            error && error.message
+                ? error.message
+                : String(error);
 
         showMessage(
             "feeMessage",
-            "Unable to generate the PDF. Please check your internet connection and try again.",
+            "PDF Generation Failed: " + errorMessage,
             "error"
+        );
+
+        alert(
+            "PDF GENERATION ERROR\n\n" +
+            errorMessage +
+            "\n\nOpen the browser console for technical details."
         );
 
     } finally {
@@ -1605,11 +2121,14 @@ async function generateReceipts() {
    ENTER KEY SEARCH
    ========================================================= */
 
-byId("mobileInput").addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        findStudent();
+byId("mobileInput").addEventListener(
+    "keydown",
+    event => {
+        if (event.key === "Enter") {
+            findStudent();
+        }
     }
-});
+);
 
 </script>
 
