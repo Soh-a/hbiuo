@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SAI DRS SCHOOL - Fee Receipt</title>
 
 <style>
@@ -16,7 +17,9 @@
     --text: #202938;
 }
 
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -62,7 +65,7 @@ body {
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -166,22 +169,35 @@ button:disabled {
     line-height: 1.8;
 }
 
-.status-ok { color: var(--green); }
-.status-error { color: var(--red); }
+.status-ok {
+    color: var(--green);
+}
+
+.status-error {
+    color: var(--red);
+}
 
 @media(max-width:600px) {
-    body { padding: 10px; }
+    body {
+        padding: 10px;
+    }
 
     .container {
         padding: 18px;
         margin: 8px auto;
     }
 
-    .form-grid { grid-template-columns: 1fr; }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
 
-    .school-header h1 { font-size: 22px; }
+    .school-header h1 {
+        font-size: 22px;
+    }
 
-    .button-row button { width: 100%; }
+    .button-row button {
+        width: 100%;
+    }
 }
 </style>
 
@@ -193,6 +209,7 @@ button:disabled {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </head>
+
 <body>
 
 <div class="container">
@@ -220,6 +237,7 @@ button:disabled {
 
         <div class="form-group">
             <label for="month">Fee Month</label>
+
             <select id="month">
                 <option value="april">April</option>
                 <option value="may">May</option>
@@ -239,16 +257,29 @@ button:disabled {
     </div>
 
     <div class="button-row">
-        <button type="button" id="generateButton" class="primary-button">
+        <button
+            type="button"
+            id="generateButton"
+            class="primary-button"
+        >
             Generate PDF Receipt
         </button>
 
-        <button type="button" id="checkButton" class="secondary-button">
+        <button
+            type="button"
+            id="checkButton"
+            class="secondary-button"
+        >
             Check Libraries
         </button>
     </div>
 
-    <div id="feeMessage" class="message" role="status" aria-live="polite"></div>
+    <div
+        id="feeMessage"
+        class="message"
+        role="status"
+        aria-live="polite"
+    ></div>
 
     <div class="status-panel">
         <strong>System Status</strong><br>
@@ -270,19 +301,16 @@ button:disabled {
 
 /* =====================================================
    1. FIREBASE CONFIGURATION
-
-   Replace the placeholder values with your EXISTING
-   Firebase web app configuration.
 ===================================================== */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271",
-  storageBucket: "students-6e271.firebasestorage.app",
-  messagingSenderId: "336382170224",
-  appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271",
+    storageBucket: "students-6e271.firebasestorage.app",
+    messagingSenderId: "336382170224",
+    appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
 };
 
 /* =====================================================
@@ -317,23 +345,26 @@ let firebaseReady = false;
 let qrLibraryPromise = null;
 
 /* =====================================================
-   3. MESSAGE AND STATUS HELPERS
+   3. MESSAGES AND STATUS
 ===================================================== */
 
 function showMessage(message, type) {
     const element = document.getElementById("feeMessage");
+
     element.textContent = message;
     element.className = "message " + type;
 }
 
 function clearMessage() {
     const element = document.getElementById("feeMessage");
+
     element.textContent = "";
     element.className = "message";
 }
 
 function setStatus(id, message, success) {
     const element = document.getElementById(id);
+
     element.textContent = message;
     element.className = success ? "status-ok" : "status-error";
 }
@@ -341,12 +372,9 @@ function setStatus(id, message, success) {
 /* =====================================================
    4. QR CODE LIBRARY LOADER
 
-   Tries:
-   1. Local qrcode.min.js
-   2. jsDelivr
-   3. unpkg
+   The qrcode library must support QRCode.toDataURL().
 
-   The QR library must expose QRCode.toDataURL().
+   Local file is attempted first, followed by CDNs.
 ===================================================== */
 
 function loadScript(url) {
@@ -360,7 +388,7 @@ function loadScript(url) {
 
         script.onerror = () => {
             script.remove();
-            reject(new Error("Failed to load " + url));
+            reject(new Error("Failed to load QR library"));
         };
 
         document.head.appendChild(script);
@@ -368,6 +396,7 @@ function loadScript(url) {
 }
 
 async function loadQRCodeLibrary() {
+
     if (
         window.QRCode &&
         typeof window.QRCode.toDataURL === "function"
@@ -381,13 +410,16 @@ async function loadQRCodeLibrary() {
     }
 
     qrLibraryPromise = (async () => {
+
         const urls = [
             "./qrcode.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.4/qrcode.min.js",
             "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js",
             "https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js"
         ];
 
         for (const url of urls) {
+
             try {
                 await loadScript(url);
 
@@ -395,26 +427,35 @@ async function loadQRCodeLibrary() {
                     window.QRCode &&
                     typeof window.QRCode.toDataURL === "function"
                 ) {
-                    setStatus("qrStatus", "Loaded successfully", true);
+                    setStatus(
+                        "qrStatus",
+                        "Loaded successfully",
+                        true
+                    );
+
                     return window.QRCode;
                 }
 
                 console.warn(
-                    "The script loaded but did not expose QRCode.toDataURL():",
+                    "Loaded script does not provide QRCode.toDataURL:",
                     url
                 );
+
             } catch (error) {
-                console.warn(error.message);
+                console.warn("QR source failed:", url);
             }
         }
 
         throw new Error(
             "QR Code library failed to load. Check your internet connection " +
-            "or add qrcode.min.js beside index.html in your GitHub repository."
+            "or upload qrcode.min.js beside index.html in your GitHub repository."
         );
+
     })().catch(error => {
         qrLibraryPromise = null;
+
         setStatus("qrStatus", "Failed to load", false);
+
         throw error;
     });
 
@@ -426,13 +467,8 @@ async function loadQRCodeLibrary() {
 ===================================================== */
 
 function initializeFirebase() {
+
     try {
-        if (
-            !firebaseConfig.apiKey ||
-            firebaseConfig.apiKey === "YOUR_EXISTING_FIREBASE_API_KEY"
-        ) {
-            throw new Error("Firebase configuration placeholders remain.");
-        }
 
         if (!window.firebase) {
             throw new Error("Firebase SDK failed to load.");
@@ -448,19 +484,23 @@ function initializeFirebase() {
         setStatus("firebaseStatus", "Initialized", true);
 
     } catch (error) {
+
         database = null;
         firebaseReady = false;
 
         setStatus("firebaseStatus", "Not connected", false);
-        console.error("Firebase initialization:", error.message);
+
+        console.error("Firebase initialization failed:", error);
+
     }
 }
 
 /* =====================================================
-   6. LIBRARY STATUS CHECK
+   6. CHECK LIBRARIES
 ===================================================== */
 
 async function checkLibraries() {
+
     const pdfAvailable = Boolean(
         window.jspdf && window.jspdf.jsPDF
     );
@@ -478,10 +518,18 @@ async function checkLibraries() {
     );
 
     try {
+
         await loadQRCodeLibrary();
-        showMessage("QR Code and PDF libraries checked.", "success");
+
+        showMessage(
+            "QR Code and PDF libraries checked successfully.",
+            "success"
+        );
+
     } catch (error) {
+
         showMessage(error.message, "error");
+
     }
 }
 
@@ -490,15 +538,18 @@ async function checkLibraries() {
 ===================================================== */
 
 function safeNumber(value) {
+
     if (value === null || value === undefined || value === "") {
         return 0;
     }
 
     const number = Number(value);
+
     return Number.isFinite(number) ? number : 0;
 }
 
 function formatRupees(value) {
+
     return "Rs. " + safeNumber(value).toLocaleString("en-IN", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -506,7 +557,10 @@ function formatRupees(value) {
 }
 
 function formatDate(value) {
-    if (!value) return "Not recorded";
+
+    if (!value) {
+        return "Not recorded";
+    }
 
     let date;
 
@@ -528,14 +582,20 @@ function formatDate(value) {
 }
 
 function getFirstValue(object, keys, fallback = "") {
+
     if (!object || typeof object !== "object") {
         return fallback;
     }
 
     for (const key of keys) {
+
         const value = object[key];
 
-        if (value !== undefined && value !== null && value !== "") {
+        if (
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        ) {
             return value;
         }
     }
@@ -548,6 +608,7 @@ function normalizeMobile(value) {
 }
 
 function isPaid(record) {
+
     if (!record || typeof record !== "object") {
         return false;
     }
@@ -560,16 +621,13 @@ function isPaid(record) {
 }
 
 /* =====================================================
-   8. FIND STUDENT BY MOBILE
-
-   Reads the students node from the existing database.
+   8. FIND STUDENT BY MOBILE NUMBER
 ===================================================== */
 
 async function findStudentByMobile(mobile) {
+
     if (!database) {
-        throw new Error(
-            "Firebase is not initialized. Check your Firebase configuration."
-        );
+        throw new Error("Firebase is not initialized.");
     }
 
     const snapshot = await database.ref("students").once("value");
@@ -588,7 +646,10 @@ async function findStudentByMobile(mobile) {
     const matches = [];
 
     for (const [studentId, student] of Object.entries(students)) {
-        if (!student || typeof student !== "object") continue;
+
+        if (!student || typeof student !== "object") {
+            continue;
+        }
 
         const possibleMobiles = [
             student.mobile,
@@ -598,7 +659,10 @@ async function findStudentByMobile(mobile) {
             student.guardianMobile
         ];
 
-        if (student.parents && typeof student.parents === "object") {
+        if (
+            student.parents &&
+            typeof student.parents === "object"
+        ) {
             possibleMobiles.push(
                 student.parents.mobile,
                 student.parents.phone,
@@ -607,7 +671,10 @@ async function findStudentByMobile(mobile) {
         }
 
         const matched = possibleMobiles.some(value => {
-            return value && normalizeMobile(value) === targetMobile;
+            return (
+                value &&
+                normalizeMobile(value) === targetMobile
+            );
         });
 
         if (matched) {
@@ -621,7 +688,7 @@ async function findStudentByMobile(mobile) {
     if (matches.length > 1) {
         throw new Error(
             "This mobile number matches multiple students. " +
-            "Contact the school office to identify the correct student."
+            "Contact the school office."
         );
     }
 
@@ -629,10 +696,11 @@ async function findStudentByMobile(mobile) {
 }
 
 /* =====================================================
-   9. GET MONTHLY FEE RECORD
+   9. MONTHLY FEE RECORD
 ===================================================== */
 
 function getMonthFeeRecord(student, month) {
+
     if (!student || !student.fees) {
         return null;
     }
@@ -652,6 +720,7 @@ function getMonthFeeRecord(student, month) {
 ===================================================== */
 
 function getReceiptNumber(feeRecord, studentId, month) {
+
     const savedReceipt = getFirstValue(
         feeRecord,
         [
@@ -690,23 +759,31 @@ function getReceiptNumber(feeRecord, studentId, month) {
         )
     );
 
-    const date = timestamp ? new Date(timestamp) : new Date();
+    const date = timestamp
+        ? new Date(timestamp)
+        : new Date();
 
     const datePart =
         date.getFullYear() +
         String(date.getMonth() + 1).padStart(2, "0") +
         String(date.getDate()).padStart(2, "0");
 
-    return "SDS-" + datePart + "-" +
-        String(studentId).slice(-5).toUpperCase() + "-" +
-        month.slice(0, 3).toUpperCase();
+    return (
+        "SDS-" +
+        datePart +
+        "-" +
+        String(studentId).slice(-5).toUpperCase() +
+        "-" +
+        month.slice(0, 3).toUpperCase()
+    );
 }
 
 /* =====================================================
-   11. QR DATA URL
+   11. GENERATE QR CODE
 ===================================================== */
 
 async function generateQRDataURL(qrData) {
+
     const QR = await loadQRCodeLibrary();
 
     return QR.toDataURL(
@@ -721,42 +798,55 @@ async function generateQRDataURL(qrData) {
 
 /* =====================================================
    12. DRAW RECEIPT
+
+   Uses millimetres.
+   Both copies fit within one A4 page.
+
+   QR code is drawn separately so that it does not
+   overlap student and payment information.
 ===================================================== */
 
-function drawReceipt(doc, details, x, y, width, copyLabel) {
+function drawReceipt(doc, details, x, y, width, copyLabel, qrDataURL) {
+
     const blue = [18, 60, 120];
     const gold = [214, 166, 60];
     const black = [30, 30, 30];
 
-    const left = x + 10;
-    const right = x + width - 10;
-    const innerWidth = width - 20;
+    const height = 132;
+
+    const left = x + 5;
+    const right = x + width - 5;
+
+    const qrSize = 21;
+    const qrX = right - qrSize;
+    const qrY = y + 30;
 
     doc.setDrawColor(...blue);
-    doc.setLineWidth(0.8);
-    doc.rect(x, y, width, 365);
+    doc.setLineWidth(0.5);
+
+    doc.rect(x, y, width, height);
 
     doc.setFillColor(...blue);
-    doc.rect(x, y, width, 48, "F");
+    doc.rect(x, y, width, 21, "F");
 
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(13);
 
     doc.text(
         SCHOOL_NAME,
         x + width / 2,
-        y + 17,
+        y + 7,
         { align: "center" }
     );
 
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
 
     doc.text(
         "FEE PAYMENT RECEIPT",
         x + width / 2,
-        y + 29,
+        y + 13,
         { align: "center" }
     );
 
@@ -766,33 +856,36 @@ function drawReceipt(doc, details, x, y, width, copyLabel) {
     doc.text(
         copyLabel,
         x + width / 2,
-        y + 41,
+        y + 18,
         { align: "center" }
     );
 
     doc.setTextColor(...black);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
 
-    let cursorY = y + 62;
+    const labelX = left;
+    const valueX = left + 31;
+
+    let cursorY = y + 28;
+
+    const textWidth = qrX - valueX - 3;
 
     function line(label, value) {
+
         doc.setFont("helvetica", "bold");
-        doc.text(label, left, cursorY);
+
+        doc.text(label, labelX, cursorY);
 
         doc.setFont("helvetica", "normal");
 
-        const valueX = left + 87;
-        const maxWidth = innerWidth - 92;
-
         const lines = doc.splitTextToSize(
             String(value || "—"),
-            maxWidth
+            textWidth
         );
 
         doc.text(lines, valueX, cursorY);
 
-        cursorY += Math.max(13, lines.length * 11);
+        cursorY += Math.max(5, lines.length * 3.5);
     }
 
     line("Receipt No.", details.receiptNo);
@@ -800,74 +893,104 @@ function drawReceipt(doc, details, x, y, width, copyLabel) {
     line("Class", details.className);
     line("Parent Name", details.parentName);
     line("Mobile", details.mobile);
-    line("Academic Session", ACADEMIC_SESSION);
+    line("Session", ACADEMIC_SESSION);
     line("Fee Month", details.monthLabel);
     line("Payment Date", details.paymentDate);
 
-    cursorY += 5;
+    doc.addImage(
+        qrDataURL,
+        "PNG",
+        qrX,
+        qrY,
+        qrSize,
+        qrSize
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+
+    doc.text(
+        "SCAN TO VERIFY",
+        qrX + qrSize / 2,
+        qrY + qrSize + 3,
+        { align: "center" }
+    );
+
+    const dividerY = y + 76;
 
     doc.setDrawColor(...gold);
-    doc.line(left, cursorY, right, cursorY);
+    doc.line(left, dividerY, right, dividerY);
 
-    cursorY += 14;
+    const feeLeft = left;
+    const feeRight = right;
 
-    function feeLine(label, value, bold = false) {
-        doc.setFont("helvetica", bold ? "bold" : "normal");
+    const feeRows = [
+        ["Monthly Fee", details.monthlyFee],
+        ["Late Fee", details.lateFee],
+        ["Fine", details.fine],
+        ["Activity Fee", details.activityFee],
+        ["Convenience Fee", details.convenienceFee]
+    ];
 
-        doc.text(label, left, cursorY);
+    let feeY = dividerY + 6;
+
+    doc.setFontSize(7.2);
+
+    feeRows.forEach(([label, amount]) => {
+
+        doc.setFont("helvetica", "normal");
+
+        doc.text(label, feeLeft, feeY);
 
         doc.text(
-            formatRupees(value),
-            right,
-            cursorY,
+            formatRupees(amount),
+            feeRight,
+            feeY,
             { align: "right" }
         );
 
-        cursorY += 15;
-    }
-
-    feeLine("Monthly Fee", details.monthlyFee);
-    feeLine("Late Fee", details.lateFee);
-    feeLine("Fine", details.fine);
-    feeLine("Activity Fee", details.activityFee);
-    feeLine("Convenience Fee", details.convenienceFee);
+        feeY += 4.2;
+    });
 
     doc.setDrawColor(...blue);
-    doc.line(left, cursorY - 4, right, cursorY - 4);
+    doc.line(feeLeft, feeY - 1, feeRight, feeY - 1);
 
-    cursorY += 5;
+    feeY += 4;
 
-    feeLine("TOTAL PAID", details.amount, true);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+
+    doc.text("TOTAL PAID", feeLeft, feeY);
+
+    doc.text(
+        formatRupees(details.amount),
+        feeRight,
+        feeY,
+        { align: "right" }
+    );
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(6.5);
 
     doc.text(
         "Payment Mode: " + details.paymentMode,
         left,
-        y + 305
+        y + 121
     );
 
     doc.text(
         "Payment ID: " + details.paymentId,
-        left,
-        y + 318
+        left + 65,
+        y + 121,
+        { maxWidth: width - 75 }
     );
 
-    doc.text(
-        "This is a computer-generated receipt.",
-        x + width / 2,
-        y + 337,
-        { align: "center" }
-    );
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
+    doc.setFontSize(6);
 
     doc.text(
-        SCHOOL_NAME,
+        "Computer-generated receipt",
         x + width / 2,
-        y + 352,
+        y + 128,
         { align: "center" }
     );
 }
@@ -877,17 +1000,25 @@ function drawReceipt(doc, details, x, y, width, copyLabel) {
 ===================================================== */
 
 async function generateReceiptPDF() {
+
     const button = document.getElementById("generateButton");
 
-    if (button.disabled) return;
+    if (button.disabled) {
+        return;
+    }
 
     clearMessage();
 
     const mobile = document.getElementById("mobile").value.trim();
-    const month = document.getElementById("month").value.toLowerCase();
+
+    const month = document.getElementById("month")
+        .value.toLowerCase();
 
     if (!mobile) {
-        showMessage("Please enter the registered mobile number.", "error");
+        showMessage(
+            "Please enter the registered mobile number.",
+            "error"
+        );
         return;
     }
 
@@ -898,7 +1029,7 @@ async function generateReceiptPDF() {
 
     if (!database || !firebaseReady) {
         showMessage(
-            "Firebase is not initialized. Check the configuration and reload.",
+            "Firebase is not initialized. Check your configuration.",
             "error"
         );
         return;
@@ -916,29 +1047,36 @@ async function generateReceiptPDF() {
     button.textContent = "Generating Receipt...";
 
     try {
-        showMessage("Checking payment details...", "info");
 
-        await loadQRCodeLibrary();
+        showMessage(
+            "Checking payment details...",
+            "info"
+        );
 
         const result = await findStudentByMobile(mobile);
 
         if (!result) {
-            throw new Error("No student was found for this mobile number.");
+            throw new Error(
+                "No student was found for this mobile number."
+            );
         }
 
         const student = result.data;
+
         const feeRecord = getMonthFeeRecord(student, month);
 
         if (!feeRecord) {
             throw new Error(
-                "No fee record was found for " + MONTH_LABELS[month] + "."
+                "No fee record was found for " +
+                MONTH_LABELS[month] + "."
             );
         }
 
         if (!isPaid(feeRecord)) {
             throw new Error(
                 "The " + MONTH_LABELS[month] +
-                " fee is not marked as Paid. A receipt cannot be generated."
+                " fee is not marked as Paid. " +
+                "A receipt cannot be generated."
             );
         }
 
@@ -970,15 +1108,22 @@ async function generateReceiptPDF() {
             getFirstValue(
                 feeRecord,
                 ["amount", "totalAmount", "paidAmount"],
-                monthlyFee + lateFee + fine +
-                activityFee + convenienceFee
+                monthlyFee +
+                lateFee +
+                fine +
+                activityFee +
+                convenienceFee
             )
         );
 
         const paymentId = String(
             getFirstValue(
                 feeRecord,
-                ["paymentId", "razorpayPaymentId", "transactionId"],
+                [
+                    "paymentId",
+                    "razorpayPaymentId",
+                    "transactionId"
+                ],
                 "Not recorded"
             )
         );
@@ -991,7 +1136,12 @@ async function generateReceiptPDF() {
 
         const paymentTimestamp = getFirstValue(
             feeRecord,
-            ["paidAt", "paidDate", "paymentDate", "createdAt"],
+            [
+                "paidAt",
+                "paidDate",
+                "paymentDate",
+                "createdAt"
+            ],
             ""
         );
 
@@ -1000,20 +1150,33 @@ async function generateReceiptPDF() {
         let parentName;
 
         if (typeof parents === "string") {
+
             parentName = parents;
+
         } else {
+
             parentName = getFirstValue(
                 student,
-                ["parentName", "parentsName", "fatherName", "guardianName"],
+                [
+                    "parentName",
+                    "parentsName",
+                    "fatherName",
+                    "guardianName"
+                ],
                 getFirstValue(
                     parents,
-                    ["name", "fatherName", "guardianName"],
+                    [
+                        "name",
+                        "fatherName",
+                        "guardianName"
+                    ],
                     "Not recorded"
                 )
             );
         }
 
         const details = {
+
             receiptNo,
 
             studentName: String(
@@ -1033,8 +1196,11 @@ async function generateReceiptPDF() {
             ),
 
             parentName: String(parentName),
+
             mobile,
+
             monthLabel: MONTH_LABELS[month],
+
             paymentDate: formatDate(paymentTimestamp),
 
             monthlyFee,
@@ -1055,17 +1221,30 @@ async function generateReceiptPDF() {
         };
 
         const qrData = {
+
             school: SCHOOL_NAME,
+
             receiptNo: details.receiptNo,
+
             studentName: details.studentName,
+
             class: details.className,
+
             month: details.monthLabel,
+
             session: ACADEMIC_SESSION,
+
             amount: details.amount,
+
             paymentId: details.paymentId,
+
             paidAt: paymentTimestamp,
-            verification: "Verify against school payment records"
+
+            verification:
+                "Verify against school payment records"
         };
+
+        showMessage("Generating QR code...", "info");
 
         const qrDataURL = await generateQRDataURL(qrData);
 
@@ -1080,61 +1259,50 @@ async function generateReceiptPDF() {
         doc.setFont("helvetica", "normal");
 
         const pageWidth = doc.internal.pageSize.getWidth();
-        const margin = 12;
+
+        const margin = 10;
+
         const receiptWidth = pageWidth - margin * 2;
 
         /*
-          Two copies per page.
-          The receipt number and QR are identical.
-        */
+         * A4 page height: approximately 297 mm.
+         * Each receipt: 132 mm.
+         * Both copies fit on the same page.
+         */
 
         drawReceipt(
             doc,
             details,
             margin,
-            10,
+            8,
             receiptWidth,
-            "SCHOOL COPY"
+            "SCHOOL COPY",
+            qrDataURL
         );
 
         drawReceipt(
             doc,
             details,
             margin,
-            105,
-            receiptWidth,
-            "PARENT COPY"
-        );
-
-        const qrWidth = 25;
-        const qrX = pageWidth - margin - qrWidth - 4;
-
-        doc.addImage(
-            qrDataURL,
-            "PNG",
-            qrX,
-            53,
-            qrWidth,
-            25
-        );
-
-        doc.addImage(
-            qrDataURL,
-            "PNG",
-            qrX,
             148,
-            qrWidth,
-            25
+            receiptWidth,
+            "PARENT COPY",
+            qrDataURL
         );
+
+        /*
+         * Cut line between the two receipt copies.
+         */
 
         doc.setDrawColor(150, 150, 150);
+
         doc.setLineDashPattern([2, 2], 0);
 
         doc.line(
             margin,
-            102,
+            144,
             pageWidth - margin,
-            102
+            144
         );
 
         doc.setLineDashPattern([], 0);
@@ -1157,7 +1325,11 @@ async function generateReceiptPDF() {
         );
 
     } catch (error) {
-        console.error("Receipt generation failed:", error);
+
+        console.error(
+            "Receipt generation failed:",
+            error
+        );
 
         showMessage(
             error.message || "Unable to generate the receipt.",
@@ -1165,7 +1337,9 @@ async function generateReceiptPDF() {
         );
 
     } finally {
+
         button.disabled = false;
+
         button.textContent = "Generate PDF Receipt";
     }
 }
@@ -1175,19 +1349,17 @@ async function generateReceiptPDF() {
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+
     initializeFirebase();
 
-    document.getElementById("generateButton").addEventListener(
-        "click",
-        generateReceiptPDF
-    );
+    document.getElementById("generateButton")
+        .addEventListener("click", generateReceiptPDF);
 
-    document.getElementById("checkButton").addEventListener(
-        "click",
-        checkLibraries
-    );
+    document.getElementById("checkButton")
+        .addEventListener("click", checkLibraries);
 
     checkLibraries();
+
 });
 </script>
 
