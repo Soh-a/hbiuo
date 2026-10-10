@@ -1,592 +1,904 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Fee Receipt System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAI DRS SCHOOL - Fee Receipt System</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Libraries -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-<style>
-:root {
-  --primary: #16a34a;
-  --primary-hover: #15803d;
-  --accent-blue: #2563eb;
-  --accent-blue-hover: #1d4ed8;
-  --danger: #dc2626;
-  --bg-main: #f8fafc;
-  --card-bg: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-}
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-body {
-  font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--bg-main);
-  color: var(--text-main);
-  margin: 0;
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 95vh;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-.container {
-  width: 100%;
-  max-width: 460px;
-  background: var(--card-bg);
-  padding: 28px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color);
-  box-sizing: border-box;
-}
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f3f6fb;
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
 
-h2 {
-  text-align: center;
-  color: var(--text-main);
-  margin-top: 0;
-  margin-bottom: 24px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
+        .container {
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 25px #0000000d;
+        }
 
-.search-box {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
-}
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #173b75;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+        }
 
-.search-box input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-}
+        .header h1 {
+            margin: 0 0 8px;
+            color: #173b75;
+            font-size: 25px;
+        }
 
-.search-box input:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
+        .header p {
+            margin: 4px 0;
+            color: #64748b;
+        }
 
-.btn-search {
-  padding: 12px 20px;
-  background: var(--accent-blue);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.2s;
-}
+        .section-title {
+            font-size: 17px;
+            margin: 22px 0 12px;
+            color: #173b75;
+        }
 
-.btn-search:hover {
-  background: var(--accent-blue-hover);
-}
+        .search-row {
+            display: flex;
+            gap: 10px;
+        }
 
-#studentInfo {
-  background: #f0fdf4;
-  padding: 16px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  border-left: 4px solid var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+        input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
 
-#studentInfo i {
-  color: var(--primary);
-  font-size: 1.25rem;
-}
+        button {
+            border: none;
+            border-radius: 7px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
-.student-meta h4 {
-  margin: 0;
-  color: #14532d;
-  font-size: 1rem;
-  font-weight: 600;
-}
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
 
-.student-meta p {
-  margin: 2px 0 0 0;
-  color: #166534;
-  font-size: 0.85rem;
-}
+        .primary-btn {
+            background: #173b75;
+            color: white;
+        }
 
-.section-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-  display: block;
-}
+        .success-btn {
+            background: #15803d;
+            color: white;
+        }
 
-.month-box {
-  max-height: 260px;
-  overflow-y: auto;
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  background: #fff;
-  margin-bottom: 24px;
-}
+        .status {
+            margin-top: 12px;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
 
-.month {
-  padding: 14px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  transition: background 0.2s ease;
-}
+        .student-card {
+            display: none;
+            margin-top: 20px;
+            padding: 17px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
 
-.month:last-child {
-  border-bottom: none;
-}
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
 
-.month:hover {
-  background: #f8fafc;
-}
+        .student-item small {
+            display: block;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
 
-.month-label-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+        .student-item strong {
+            overflow-wrap: anywhere;
+        }
 
-.month-label-group i {
-  color: var(--primary);
-  font-size: 0.95rem;
-}
+        .months {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
 
-.month span {
-  font-weight: 500;
-  font-size: 0.95rem;
-}
+        .month-option {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            padding: 12px;
+            border: 1px solid #dbe3ee;
+            border-radius: 8px;
+            font-size: 14px;
+        }
 
-.checkbox-container {
-  position: relative;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+        .month-option.paid {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
 
-.checkbox-container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
+        .month-option.unpaid {
+            background: #fff7f7;
+            border-color: #fecaca;
+        }
 
-.checkmark {
-  height: 22px;
-  width: 22px;
-  background-color: #f1f5f9;
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  transition: all 0.2s ease-in-out;
-  display: inline-block;
-  position: relative;
-}
+        .month-option input {
+            margin-top: 3px;
+        }
 
-.checkbox-container:hover input ~ .checkmark {
-  border-color: var(--primary);
-}
+        .month-option small {
+            display: block;
+            margin-top: 4px;
+            color: #64748b;
+            overflow-wrap: anywhere;
+        }
 
-.checkbox-container input:checked ~ .checkmark {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
 
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
+        .actions button {
+            flex: 1;
+        }
 
-.checkbox-container input:checked ~ .checkmark:after {
-  display: block;
-}
+        .hidden {
+            display: none !important;
+        }
 
-.checkbox-container .checkmark:after {
-  left: 7px;
-  top: 3px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2.5px 2.5px 0;
-  transform: rotate(45deg);
-}
+        .note {
+            margin-top: 18px;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 7px;
+            color: #1e40af;
+            font-size: 13px;
+            line-height: 1.5;
+        }
 
-button.generate {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  background: var(--primary);
-  color: #fff;
-}
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
 
-button.generate:hover {
-  background: var(--primary-hover);
-}
+            .container {
+                padding: 16px;
+            }
 
-.no-data {
-  padding: 30px 16px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-.no-data i {
-  font-size: 2rem;
-  color: var(--border-color);
-  margin-bottom: 8px;
-  display: block;
-}
-.error-text {
-  color: var(--danger);
-}
-</style>
+            .header h1 {
+                font-size: 21px;
+            }
+
+            .search-row {
+                flex-direction: column;
+            }
+
+            .months {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .student-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .months {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Advanced Fee Receipt System</h2>
 
-  <div class="search-box">
-    <input id="mobileInput" type="text" placeholder="Enter Registered Mobile Number" autocomplete="off">
-    <button class="btn-search" onclick="fetchStudentData()">
-      <i class="fas fa-search"></i> Search
-    </button>
-  </div>
+    <div class="header">
+        <h1>SAI DRS SCHOOL</h1>
+        <p>Fee Receipt Management System</p>
+        <p>Academic Session: 2026–27</p>
+    </div>
 
-  <div id="studentContainer" style="display: none;">
-    <div id="studentInfo"></div>
-    <span class="section-title">Select Paid Months</span>
-    <div class="month-box" id="monthsBox"></div>
-    <button class="generate" onclick="generatePDF()">
-      <i class="fas fa-cloud-download-alt"></i> Download Receipt
-    </button>
-  </div>
+    <h3 class="section-title">
+        <i class="fa-solid fa-user-graduate"></i>
+        Find Student
+    </h3>
+
+    <div class="search-row">
+        <input
+            type="text"
+            id="mobileInput"
+            placeholder="Enter student's registered mobile number"
+            inputmode="numeric"
+            maxlength="15"
+        >
+
+        <button class="primary-btn" id="searchBtn" onclick="findStudent()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            Search
+        </button>
+    </div>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+
+    <div id="studentCard" class="student-card">
+
+        <h3 class="section-title" style="margin-top:0">
+            Student Information
+        </h3>
+
+        <div class="student-grid">
+            <div class="student-item">
+                <small>Student Name</small>
+                <strong id="studentName">—</strong>
+            </div>
+
+            <div class="student-item">
+                <small>Class</small>
+                <strong id="studentClass">—</strong>
+            </div>
+
+            <div class="student-item">
+                <small>Parent / Guardian</small>
+                <strong id="studentParent">—</strong>
+            </div>
+
+            <div class="student-item">
+                <small>Mobile Number</small>
+                <strong id="studentMobile">—</strong>
+            </div>
+
+            <div class="student-item">
+                <small>Academic Session</small>
+                <strong id="studentSession">2026–27</strong>
+            </div>
+
+            <div class="student-item">
+                <small>Monthly Fee</small>
+                <strong id="studentFee">—</strong>
+            </div>
+        </div>
+
+        <h3 class="section-title">
+            <i class="fa-solid fa-receipt"></i>
+            Select Paid Months
+        </h3>
+
+        <div id="monthsBox" class="months"></div>
+
+        <div class="note">
+            <i class="fa-solid fa-circle-info"></i>
+            Only months marked as paid can be selected. Each selected month
+            must have a receipt number saved in Firebase before the PDF can
+            be generated. A separate PDF page will be created for each month,
+            with the school copy and parent copy on that page.
+        </div>
+
+        <div class="actions">
+            <button class="success-btn" id="generateBtn" onclick="generatePDF()">
+                <i class="fa-solid fa-file-pdf"></i>
+                Generate Receipt PDF
+            </button>
+
+            <button class="primary-btn" onclick="resetForm()">
+                <i class="fa-solid fa-rotate"></i>
+                Clear
+            </button>
+        </div>
+    </div>
 </div>
 
-<div id="qrcode-container" style="display:none;"></div>
+<!-- Temporary QR code container -->
+<div id="qrContainer"
+     style="position:absolute;left:-10000px;top:0;width:150px;height:150px;">
+</div>
 
 <script>
-// ================= FIREBASE INITIALIZATION =================
+/* =========================================================
+   1. FIREBASE CONFIGURATION
+   Replace these placeholder values with your existing config.
+   Do not publish your Firebase service-account credentials here.
+   ========================================================= */
+
 const firebaseConfig = {
-    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa-dTbc",
+    apiKey: "YOUR_FIREBASE_API_KEY",
     authDomain: "students-6e271.firebaseapp.com",
     databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-    projectId: "students-6e271"
+    projectId: "students-6e271",
+    storageBucket: "students-6e271.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_FIREBASE_APP_ID"
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database();
+const studentsRef = db.ref("students");
 
-// Global tracking references
-let dynamicFeesData = {}; 
-let monthlyFeeAmount = 0;
-let dbStudentName = "";
-let dbStudentClass = "";
-let dbAdmissionNo = "";
-let mobileKey = "";
+/* =========================================================
+   2. SETTINGS
+   ========================================================= */
 
-// ================= FETCH STUDENT VIA MOBILE NUMBER =================
-function fetchStudentData() {
-  const mobileInput = document.getElementById("mobileInput").value.trim();
-  const studentContainer = document.getElementById("studentContainer");
-  
-  if (!mobileInput) {
-    alert("Please enter a mobile number.");
-    return;
-  }
+const MONTHS = [
+    "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+    "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"
+];
 
-  mobileKey = String(mobileInput);
-  studentContainer.style.display = "block";
-  document.getElementById("studentInfo").innerHTML = `
-    <i class="fas fa-circle-notch fa-spin"></i>
-    <div class="student-meta"><h4>Searching record...</h4></div>
-  `;
-  document.getElementById("monthsBox").innerHTML = `
-    <div class="no-data"><i class="fas fa-receipt"></i>Retrieving payment records...</div>
-  `;
+const SESSION = "2026-27";
 
-  // Attach single lookup event to targeted node path
-  db.ref("students/" + mobileKey).once("value").then(snapshot => {
-    const freshSnapshot = snapshot.val();
-    
-    if(!freshSnapshot) {
-        document.getElementById("studentInfo").innerHTML = `
-          <i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i>
-          <div class="student-meta"><h4 class="error-text">Profile not found</h4><p>Check entry & search again</p></div>
-        `;
-        document.getElementById("monthsBox").innerHTML = "<div class='no-data'><i class='fas fa-exclamation-triangle'></i>No details available.</div>";
+let currentStudent = null;
+let currentStudentKey = "";
+let currentFees = {};
+
+/* =========================================================
+   3. HELPERS
+   ========================================================= */
+
+function getElement(id) {
+    return document.getElementById(id);
+}
+
+function setStatus(message, error = false) {
+    const element = getElement("status");
+    element.textContent = message;
+    element.style.color = error ? "#b91c1c" : "#166534";
+}
+
+function cleanMobile(value) {
+    return String(value || "").replace(/\D/g, "");
+}
+
+function formatMoney(value) {
+    const amount = Number(value);
+    return "₹" + (Number.isFinite(amount) ? amount : 0).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function getReceiptNumber(month) {
+    return String(currentFees[month]?.receiptNo || "").trim();
+}
+
+function getFeeStatus(fee) {
+    if (typeof fee === "string") {
+        return fee.trim().toLowerCase();
+    }
+
+    if (!fee || typeof fee !== "object") {
+        return "";
+    }
+
+    return String(
+        fee.status ||
+        fee.paymentStatus ||
+        ""
+    ).trim().toLowerCase();
+}
+
+function isPaid(fee) {
+    if (typeof fee === "string") {
+        return fee.trim().toLowerCase() === "paid";
+    }
+
+    return !!fee && (
+        fee.isPaid === true ||
+        getFeeStatus(fee) === "paid"
+    );
+}
+
+function getMonthAmount(month) {
+    const fee = currentFees[month];
+
+    if (fee && typeof fee === "object" && fee.amount != null) {
+        const amount = Number(fee.amount);
+        if (Number.isFinite(amount)) return amount;
+    }
+
+    const monthlyFee = Number(currentStudent?.monthlyfee || 0);
+    return Number.isFinite(monthlyFee) ? monthlyFee : 0;
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
+/* =========================================================
+   4. FIND STUDENT
+   Supports mobile-number keys and records containing mobile.
+   ========================================================= */
+
+async function findStudent() {
+    const mobile = cleanMobile(getElement("mobileInput").value);
+
+    if (!mobile) {
+        setStatus("Please enter a mobile number.", true);
         return;
     }
 
-    dynamicFeesData = freshSnapshot.fees || {};
-    monthlyFeeAmount = Number(freshSnapshot.monthlyfee || 0);
-    dbStudentName = freshSnapshot.name ? freshSnapshot.name.toUpperCase() : "STUDENT";
-    dbStudentClass = freshSnapshot.class || "N/A";
-    dbAdmissionNo = freshSnapshot.admissionNo || "N/A";
+    const button = getElement("searchBtn");
+    button.disabled = true;
+    setStatus("Searching for student...");
 
-    document.getElementById("studentInfo").innerHTML = `
-      <i class="fas fa-user"></i>
-      <div class="student-meta">
-        <h4>${dbStudentName}</h4>
-        <p>Class: ${dbStudentClass} | Adm No: ${dbAdmissionNo}</p>
-      </div>
-    `;
+    getElement("studentCard").style.display = "none";
+    currentStudent = null;
+    currentStudentKey = "";
+    currentFees = {};
 
-    let html = "";
-    Object.keys(dynamicFeesData).forEach(monthKey => {
-        const data = dynamicFeesData[monthKey] || {};
-        const status = String(data.status || "").trim().toLowerCase();
+    try {
+        let snapshot = await studentsRef.child(mobile).once("value");
 
-        if (status === "paid") {
-            html += `
-            <div class="month">
-              <div class="month-label-group">
-                <i class="fas fa-check-circle"></i>
-                <span>${monthKey.toUpperCase()}</span>
-              </div>
-              <label class="checkbox-container">
-                <input type="checkbox" value="${monthKey}">
-                <span class="checkmark"></span>
-              </label>
-            </div>`;
+        // Fallback for records whose Firebase key is not the mobile number.
+        if (!snapshot.exists()) {
+            const result = await studentsRef
+                .orderByChild("mobile")
+                .equalTo(mobile)
+                .once("value");
+
+            if (result.exists()) {
+                const records = result.val();
+                const key = Object.keys(records)[0];
+
+                snapshot = await studentsRef.child(key).once("value");
+            }
+        }
+
+        if (!snapshot.exists()) {
+            setStatus("Student not found. Check the registered mobile number.", true);
+            return;
+        }
+
+        const student = snapshot.val();
+
+        if (!student || typeof student !== "object") {
+            setStatus("Student record is invalid.", true);
+            return;
+        }
+
+        currentStudent = student;
+        currentStudentKey = snapshot.key;
+        currentFees = student.fees || {};
+
+        showStudent();
+        setStatus("Student found successfully.");
+
+    } catch (error) {
+        console.error("Student search failed:", error);
+        setStatus("Could not load student data. Check Firebase configuration and database permissions.", true);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+/* =========================================================
+   5. DISPLAY STUDENT AND PAID MONTHS
+   ========================================================= */
+
+function showStudent() {
+    const student = currentStudent;
+
+    getElement("studentName").textContent = student.name || "—";
+    getElement("studentClass").textContent = student.class || "—";
+    getElement("studentParent").textContent = student.parents || "—";
+    getElement("studentMobile").textContent = student.mobile || currentStudentKey;
+    getElement("studentSession").textContent = student.session || SESSION;
+    getElement("studentFee").textContent = formatMoney(student.monthlyfee || 0);
+
+    const monthsBox = getElement("monthsBox");
+    monthsBox.innerHTML = "";
+
+    MONTHS.forEach(month => {
+        const fee = currentFees[month];
+        const paid = isPaid(fee);
+        const receiptNo = getReceiptNumber(month);
+
+        const label = document.createElement("label");
+        label.className = "month-option " + (paid ? "paid" : "unpaid");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = month;
+        checkbox.disabled = !paid;
+
+        const details = document.createElement("span");
+
+        details.innerHTML = `
+            <strong>${escapeHTML(month)}</strong>
+            <small>${paid ? "Paid" : "Unpaid"}</small>
+            <small>${escapeHTML(formatMoney(getMonthAmount(month)))}</small>
+            <small>${receiptNo
+                ? "Receipt: " + escapeHTML(receiptNo)
+                : (paid ? "Receipt number missing" : "Not available")}</small>
+        `;
+
+        label.append(checkbox, details);
+        monthsBox.appendChild(label);
+    });
+
+    getElement("studentCard").style.display = "block";
+}
+
+/* =========================================================
+   6. LOGO AND QR HELPERS
+   ========================================================= */
+
+function loadLogo() {
+    return new Promise(resolve => {
+        const logo = new Image();
+        logo.src = "logo.jpeg";
+
+        logo.onload = () => resolve(logo);
+        logo.onerror = () => resolve(null);
+    });
+}
+
+function makeQRCode(text) {
+    return new Promise((resolve, reject) => {
+        const container = getElement("qrContainer");
+        container.innerHTML = "";
+
+        try {
+            new QRCode(container, {
+                text,
+                width: 150,
+                height: 150,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            // QRCode.js creates a canvas or an image.
+            setTimeout(() => {
+                const canvas = container.querySelector("canvas");
+
+                if (canvas) {
+                    resolve(canvas.toDataURL("image/png"));
+                    return;
+                }
+
+                const image = container.querySelector("img");
+
+                if (image && image.src) {
+                    resolve(image.src);
+                    return;
+                }
+
+                reject(new Error("QR code could not be created."));
+            }, 100);
+
+        } catch (error) {
+            reject(error);
         }
     });
-
-    document.getElementById("monthsBox").innerHTML = html || `
-      <div class="no-data">
-        <i class="fas fa-info-circle"></i> No settled payments found for this profile.
-      </div>`;
-  }).catch(err => {
-      console.error(err);
-      alert("Error fetching student profile details.");
-  });
 }
 
-// ================= NUMBER TO WORDS ENGINE (Indian Financial Structure) =================
-function numberToWords(num) {
-  const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten",
-  "Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
-  const b = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+/* =========================================================
+   7. DRAW ONE RECEIPT COPY
+   Two copies fit on one A4 page.
+   ========================================================= */
 
-  if ((num = num.toString()).length > 9) return 'overflow';
-  let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-  if (!n) return ''; 
-  let str = '';
-  str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[Math.floor(n[1]/10)] + ' ' + a[n[1]%10]) + ' Crore ' : '';
-  str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[Math.floor(n[2]/10)] + ' ' + a[n[2]%10]) + ' Lakh ' : '';
-  str += (Number(n[3]) != 0) ? (a[Number(n[3])] || b[Math.floor(n[3]/10)] + ' ' + a[n[3]%10]) + ' Thousand ' : '';
-  str += (Number(n[4]) != 0) ? (a[Number(n[4])] || b[Math.floor(n[4]/10)] + ' ' + a[n[4]%10]) + ' Hundred ' : '';
-  str += (Number(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[Math.floor(n[5]/10)] + ' ' + a[n[5]%10]) : '';
-  return str.trim() ? str.trim() : "Zero";
-}
+function drawReceipt(doc, data, y, logo, qrData) {
+    const pageWidth = 210;
+    const receiptHeight = 140;
+    const left = 8;
+    const width = pageWidth - 16;
+    const right = left + width;
 
-// ================= PDF EXPORT GENERATOR =================
-const logo = new Image();
-logo.src = "logo.jpeg";
+    // Receipt border
+    doc.setDrawColor(30, 58, 100);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(left, y, width, receiptHeight, 2, 2);
 
-// Helper function to generate QR Code Data URL on-the-fly
-function getQRCodeBase64(text) {
-  const qrContainer = document.getElementById("qrcode-container");
-  qrContainer.innerHTML = ""; // Clear existing
-
-  new QRCode(qrContainer, {
-    text: text,
-    width: 100,
-    height: 100,
-    correctLevel: QRCode.CorrectLevel.M
-  });
-
-  const canvas = qrContainer.querySelector("canvas");
-  return canvas ? canvas.toDataURL("image/png") : null;
-}
-
-function generatePDF() {
-  const selected = document.querySelectorAll("input:checked");
-
-  if(selected.length === 0){
-    alert("Select at least one month");
-    return;
-  }
-
-  if(!logo.complete){
-    alert("Logo is loading. Please try again.");
-    return;
-  }
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  // Generate dynamic QR Code containing Student Name and Class
-  const qrDataText = `Student Name: ${dbStudentName}\nClass: ${dbStudentClass}`;
-  const qrBase64 = getQRCodeBase64(qrDataText);
-
-  const receiptNo = "VCH/" + Math.floor(Math.random() * 100000);
-
-  const today = new Date().toLocaleDateString('en-GB',{
-    day:'2-digit',
-    month:'short',
-    year:'numeric'
-  });
-
-  const transactionNo = dynamicFeesData[selected[0].value]?.paymentId || "N/A";
-  let total = 0;
-
-  const feeItems = Array.from(selected).map((cb,index)=>{
-    const targetMonthData = dynamicFeesData[cb.value] || {};
-    const baseAmt = Number(targetMonthData.amountPaid || targetMonthData.amount || monthlyFeeAmount);
-
-    total += baseAmt;
-
-    const monthName = cb.value;
-    const monthShort = monthName.substring(0,3);
-    const monthIndex = new Date(monthName + " 1, 2026").getMonth();
-    const yearSuffix = (monthIndex >= 3) ? "26" : "27";
-
-    return {
-      sno: index + 1,
-      particulars: "Tuition Fee",
-      month: monthShort.charAt(0).toUpperCase() + monthShort.slice(1) + "-" + yearSuffix,
-      amount: baseAmt.toLocaleString("en-IN", {minimumFractionDigits:2})
-    };
-  });
-
-  function drawCopy(startY, title){
-    let y = startY;
-
-    // LOGO
-    doc.addImage(logo, "JPEG", 15, y, 22, 22);
-
-    // QR CODE (Placed top right corner)
-    if (qrBase64) {
-      doc.addImage(qrBase64, "PNG", 173, y, 22, 22);
+    // Logo
+    if (logo) {
+        try {
+            doc.addImage(logo, "JPEG", left + 5, y + 5, 19, 19);
+        } catch (error) {
+            console.warn("Logo could not be added:", error);
+        }
     }
 
-    // SCHOOL NAME & DETAILS
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(14);
-    doc.text("SAI DRS KIDS SCHOOL", 105, y + 5, {align:"center"});
+    // School heading
+    doc.setTextColor(23, 59, 117);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("SAI DRS SCHOOL", 105, y + 11, { align: "center" });
 
-    doc.setFont("helvetica","normal");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text("83, Jonali, Guwahati, Assam", 105, y + 16, { align: "center" });
+    doc.text("FEE RECEIPT | SESSION 2026-27", 105, y + 21, { align: "center" });
+
+    // Copy type
+    doc.setFillColor(232, 239, 249);
+    doc.roundedRect(right - 36, y + 5, 30, 7, 1, 1, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(23, 59, 117);
+    doc.text(data.copyType.toUpperCase(), right - 21, y + 9.7, { align: "center" });
+
+    doc.setDrawColor(23, 59, 117);
+    doc.line(left + 4, y + 27, right - 4, y + 27);
+
+    // Receipt number and date
     doc.setFontSize(9);
-    doc.text("R.G.B Road, Junali, Guwahati - 781024", 105, y + 12, {align:"center"});
-    doc.text("Email: sai.drs.kids.school@gmail.com", 105, y + 17, {align:"center"});
+    doc.setTextColor(0, 0, 0);
+    doc.text("Receipt No.: " + data.receiptNo, left + 5, y + 34);
+    doc.text("Date: " + data.date, right - 5, y + 34, { align: "right" });
 
-    y += 30;
+    // Student details
+    const rows = [
+        ["Student Name", data.name, "Class", data.studentClass],
+        ["Parent / Guardian", data.parent, "Mobile", data.mobile],
+        ["Fee Month", data.month, "Session", data.session]
+    ];
 
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(10);
-    doc.text(`FEE RECEIPT (2026-2027) - ${title.toUpperCase()}`, 105, y, {align:"center"});
+    let rowY = y + 43;
 
-    y += 8;
+    doc.setFontSize(8.5);
 
-    doc.setFont("helvetica","normal");
-    doc.setFontSize(9);
-    doc.text(`Receipt No: ${receiptNo}`, 15, y);
-    doc.text(`Receipt Date: ${today}`, 195, y, {align:"right"});
+    rows.forEach(row => {
+        doc.setFont("helvetica", "bold");
+        doc.text(row[0] + ":", left + 5, rowY);
 
-    y += 6;
+        doc.setFont("helvetica", "normal");
+        doc.text(String(row[1] || "—").slice(0, 35), left + 35, rowY);
 
-    doc.text(`Student Name: ${dbStudentName}`, 15, y);
-    doc.text(`Class: ${dbStudentClass}`, 195, y, {align:"right"});
+        doc.setFont("helvetica", "bold");
+        doc.text(row[2] + ":", left + 105, rowY);
 
-    y += 4;
-    doc.line(15, y, 195, y);
-    y += 5;
+        doc.setFont("helvetica", "normal");
+        doc.text(String(row[3] || "—").slice(0, 24), left + 130, rowY);
 
-    doc.text("S.No", 17, y);
-    doc.text("Particulars", 35, y);
-    doc.text("Due Month", 90, y);
-    doc.text("Due Amt.", 140, y);
-    doc.text("Paid Amt.", 195, y, {align:"right"});
-
-    y += 2;
-    doc.line(15, y, 195, y);
-
-    feeItems.forEach(item => {
-      y += 7;
-      doc.text(String(item.sno), 17, y);
-      doc.text(item.particulars, 35, y);
-      doc.text(item.month, 90, y);
-      doc.text(item.amount, 140, y);
-      doc.text(item.amount, 195, y, {align:"right"});
+        rowY += 9;
     });
 
-    y += 4;
-    doc.line(15, y, 195, y);
-    y += 8;
+    // Payment table
+    const tableY = y + 74;
 
-    doc.setFont("helvetica","bold");
-    const totalStr = total.toLocaleString("en-IN", {minimumFractionDigits:2});
-    doc.text("Total Paid Amount:", 15, y);
-    doc.text(`Rs. ${totalStr}`, 195, y, {align:"right"});
+    doc.setFillColor(23, 59, 117);
+    doc.rect(left + 5, tableY, width - 10, 9, "F");
 
-    y += 6;
-
-    doc.setFont("helvetica","normal");
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
-    doc.text(`Amount In Words: INR ${numberToWords(total)} Only`, 15, y);
+    doc.text("DESCRIPTION", left + 9, tableY + 6);
+    doc.text("AMOUNT", right - 9, tableY + 6, { align: "right" });
 
-    y += 5;
-    doc.text("Payment Mode: Payment Gateway", 15, y);
-    doc.text(`Transaction No: ${transactionNo}`, 80, y);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.rect(left + 5, tableY + 9, width - 10, 12);
+    doc.text("Monthly tuition fee - " + data.month, left + 9, tableY + 16.5);
+    doc.text(formatMoney(data.amount), right - 9, tableY + 16.5, { align: "right" });
 
-    y += 8;
-    doc.text("Note: Parents are requested to preserve this receipt.", 15, y);
-    y += 4;
-    doc.text("Fees once paid will not be refunded.", 15, y);
+    // Total
+    doc.setFont("helvetica", "bold");
+    doc.text("TOTAL PAID:", right - 57, y + 110);
+    doc.text(formatMoney(data.amount), right - 9, y + 110, { align: "right" });
 
-    y += 10;
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(9);
-    doc.text(" Digitally signed by Manager ", 195, y, {align:"right"});
-  }
+    // Paid stamp
+    doc.setTextColor(21, 128, 61);
+    doc.setFontSize(11);
+    doc.text("PAID", left + 8, y + 113);
 
-  drawCopy(15,"Office Copy");
+    // QR code
+    if (qrData) {
+        doc.addImage(qrData, "PNG", right - 28, y + 112, 20, 20);
+    }
 
-  doc.setLineDashPattern([2,2],0);
-  doc.line(10,148,200,148);
-  doc.setLineDashPattern([],0);
-
-  drawCopy(155,"Parent Copy");
-
-  const saveFileName = dbStudentName.replace(/\s+/g,"_");
-  doc.save(`Receipt_${saveFileName}.pdf`);
+    // Footer
+    doc.setTextColor(80, 80, 80);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7);
+    doc.text(
+        "This is a computer-generated receipt.",
+        105,
+        y + 134,
+        { align: "center" }
+    );
 }
+
+/* =========================================================
+   8. GENERATE PDF
+   One PDF page per month, each page containing two copies.
+   Receipt numbers are read from Firebase, not generated here.
+   ========================================================= */
+
+async function generatePDF() {
+    if (!currentStudent) {
+        alert("Search for a student first.");
+        return;
+    }
+
+    const selectedMonths = [
+        ...document.querySelectorAll("#monthsBox input:checked")
+    ].map(input => input.value);
+
+    if (!selectedMonths.length) {
+        alert("Select at least one paid month.");
+        return;
+    }
+
+    const missing = selectedMonths.filter(month => !getReceiptNumber(month));
+
+    if (missing.length) {
+        alert("Receipt number missing in Firebase for: " + missing.join(", "));
+        return;
+    }
+
+    const unpaid = selectedMonths.filter(month => !isPaid(currentFees[month]));
+
+    if (unpaid.length) {
+        alert("These months are not marked paid: " + unpaid.join(", "));
+        return;
+    }
+
+    const button = getElement("generateBtn");
+    button.disabled = true;
+    button.textContent = "Generating PDF...";
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4"
+        });
+
+        const logo = await loadLogo();
+
+        for (let index = 0; index < selectedMonths.length; index++) {
+            const month = selectedMonths[index];
+
+            if (index > 0) {
+                doc.addPage();
+            }
+
+            const data = {
+                receiptNo: getReceiptNumber(month),
+                date: getPaidDate(month),
+                name: currentStudent.name || "",
+                studentClass: currentStudent.class || "",
+                parent: currentStudent.parents || "",
+                mobile: currentStudent.mobile || currentStudentKey,
+                session: currentStudent.session || SESSION,
+                month,
+                amount: getMonthAmount(month)
+            };
+
+            const qrData = await makeQRCode(JSON.stringify({
+                school: "SAI DRS SCHOOL",
+                receiptNo: data.receiptNo,
+                student: data.name,
+                mobile: data.mobile,
+                month: data.month,
+                session: data.session,
+                amount: data.amount,
+                status: "Paid"
+            }));
+
+            // Both copies fit on one A4 page.
+            drawReceipt(doc, { ...data, copyType: "School Copy" }, 5, logo, qrData);
+
+            doc.setDrawColor(140, 140, 140);
+            doc.setLineDashPattern([2, 2], 0);
+            doc.line(8, 148, 202, 148);
+            doc.setLineDashPattern([], 0);
+
+            drawReceipt(doc, { ...data, copyType: "Parent Copy" }, 152, logo, qrData);
+        }
+
+        const filename = `Receipt_${safeFilename(currentStudent.name)}_${SESSION}.pdf`;
+        doc.save(filename);
+
+        setStatus("PDF generated successfully.");
+
+    } catch (error) {
+        console.error("Receipt PDF generation failed:", error);
+        alert("Could not generate receipt PDF. Check the console for details.");
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Generate Receipt PDF';
+        getElement("qrContainer").innerHTML = "";
+    }
+}
+
+function getPaidDate(month) {
+    const fee = currentFees[month];
+
+    if (!fee || typeof fee !== "object") {
+        return new Date().toLocaleDateString("en-IN");
+    }
+
+    const rawDate = fee.paidAt || fee.transactionDate || fee.date;
+
+    if (!rawDate) {
+        return new Date().toLocaleDateString("en-IN");
+    }
+
+    const date = new Date(rawDate);
+
+    return Number.isNaN(date.getTime())
+        ? String(rawDate)
+        : date.toLocaleDateString("en-IN");
+}
+
+function safeFilename(value) {
+    return String(value || "Student")
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+        .replace(/\s+/g, "_");
+}
+
+/* =========================================================
+   9. RESET
+   ========================================================= */
+
+function resetForm() {
+    currentStudent = null;
+    currentStudentKey = "";
+    currentFees = {};
+
+    getElement("mobileInput").value = "";
+    getElement("studentCard").style.display = "none";
+    getElement("monthsBox").innerHTML = "";
+    getElement("qrContainer").innerHTML = "";
+
+    setStatus("");
+}
+
+/* Allow Enter to search. */
+getElement("mobileInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        findStudent();
+    }
+});
 </script>
+
 </body>
-  </html>
+</html>
