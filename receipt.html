@@ -417,13 +417,27 @@ function getFeeStatus(fee) {
 }
 
 function isPaid(fee) {
+    if (fee === true) return true;
+
     if (typeof fee === "string") {
         return fee.trim().toLowerCase() === "paid";
     }
 
-    return !!fee && (
+    if (!fee || typeof fee !== "object") {
+        return false;
+    }
+
+    const status = String(
+        fee.status ??
+        fee.paymentStatus ??
+        fee.payment_status ??
+        ""
+    ).trim().toLowerCase();
+
+    return (
         fee.isPaid === true ||
-        getFeeStatus(fee) === "paid"
+        fee.paid === true ||
+        ["paid", "success", "successful", "completed"].includes(status)
     );
 }
 
