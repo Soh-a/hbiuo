@@ -1,456 +1,582 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAI DRS SCHOOL - Fee Receipt System</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Libraries -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<title>SAI DRS SCHOOL - Fee Receipt System</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #f3f6fb;
-            color: #1e293b;
-            font-family: Arial, sans-serif;
-        }
+<!-- QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 
-        .container {
-            width: 100%;
-            max-width: 850px;
-            margin: auto;
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 5px 25px #0000000d;
-        }
+<!-- Icons -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #173b75;
-            padding-bottom: 18px;
-            margin-bottom: 24px;
-        }
+<style>
+:root {
+    --primary: #123b70;
+    --secondary: #1d5da8;
+    --light: #edf4fc;
+    --success: #16803c;
+    --danger: #c62828;
+    --border: #d8e0ea;
+    --text: #253247;
+}
 
-        .header h1 {
-            margin: 0 0 8px;
-            color: #173b75;
-            font-size: 25px;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .header p {
-            margin: 4px 0;
-            color: #64748b;
-        }
+body {
+    margin: 0;
+    background: #f3f6fb;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+}
 
-        .section-title {
-            font-size: 17px;
-            margin: 22px 0 12px;
-            color: #173b75;
-        }
+header {
+    background: linear-gradient(135deg, #123b70, #1d5da8);
+    color: white;
+    padding: 22px 16px;
+    text-align: center;
+}
 
-        .search-row {
-            display: flex;
-            gap: 10px;
-        }
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
 
-        input[type="text"] {
-            flex: 1;
-            min-width: 0;
-            padding: 13px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            font-size: 15px;
-        }
+.header-content img {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    background: white;
+    padding: 5px;
+    border-radius: 8px;
+}
 
-        button {
-            border: none;
-            border-radius: 7px;
-            padding: 12px 18px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
+header h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+}
 
-        button:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+header p {
+    margin: 0;
+    font-size: 13px;
+    opacity: .9;
+}
 
-        .primary-btn {
-            background: #173b75;
-            color: white;
-        }
+.session {
+    margin-top: 12px;
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 20px;
+    font-size: 12px;
+}
 
-        .success-btn {
-            background: #15803d;
-            color: white;
-        }
+.container {
+    width: min(1100px, 94%);
+    margin: 25px auto;
+}
 
-        .status {
-            margin-top: 12px;
-            font-size: 14px;
-            overflow-wrap: anywhere;
-        }
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 18px rgba(25, 55, 95, .07);
+}
 
-        .student-card {
-            display: none;
-            margin-top: 20px;
-            padding: 17px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-        }
+.card h2 {
+    color: var(--primary);
+    font-size: 18px;
+    margin: 0 0 18px;
+}
 
-        .student-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-        }
+.search-row {
+    display: flex;
+    gap: 10px;
+}
 
-        .student-item small {
-            display: block;
-            color: #64748b;
-            margin-bottom: 4px;
-        }
+input, select {
+    font: inherit;
+}
 
-        .student-item strong {
-            overflow-wrap: anywhere;
-        }
+.search-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    outline: none;
+}
 
-        .months {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-        }
+.search-row input:focus {
+    border-color: var(--secondary);
+}
 
-        .month-option {
-            display: flex;
-            gap: 8px;
-            align-items: flex-start;
-            padding: 12px;
-            border: 1px solid #dbe3ee;
-            border-radius: 8px;
-            font-size: 14px;
-        }
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 7px;
+    padding: 12px 17px;
+    font-weight: bold;
+    font-size: 13px;
+    transition: .2s;
+}
 
-        .month-option.paid {
-            background: #f0fdf4;
-            border-color: #86efac;
-        }
+button:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
 
-        .month-option.unpaid {
-            background: #fff7f7;
-            border-color: #fecaca;
-        }
+.btn-primary {
+    color: white;
+    background: var(--primary);
+}
 
-        .month-option input {
-            margin-top: 3px;
-        }
+.btn-primary:hover:not(:disabled) {
+    background: var(--secondary);
+}
 
-        .month-option small {
-            display: block;
-            margin-top: 4px;
-            color: #64748b;
-            overflow-wrap: anywhere;
-        }
+.btn-success {
+    color: white;
+    background: var(--success);
+}
 
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
+.btn-light {
+    color: var(--primary);
+    background: var(--light);
+}
 
-        .actions button {
-            flex: 1;
-        }
+.message {
+    display: none;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    line-height: 1.5;
+}
 
-        .hidden {
-            display: none !important;
-        }
+.message.error {
+    display: block;
+    color: #8c1717;
+    background: #ffebeb;
+}
 
-        .note {
-            margin-top: 18px;
-            padding: 12px;
-            background: #eff6ff;
-            border-radius: 7px;
-            color: #1e40af;
-            font-size: 13px;
-            line-height: 1.5;
-        }
+.message.success {
+    display: block;
+    color: #12632e;
+    background: #e8f7ed;
+}
 
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
+.message.info {
+    display: block;
+    color: #174b84;
+    background: #eaf3ff;
+}
 
-            .container {
-                padding: 16px;
-            }
+.hidden {
+    display: none !important;
+}
 
-            .header h1 {
-                font-size: 21px;
-            }
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
 
-            .search-row {
-                flex-direction: column;
-            }
+.detail {
+    padding: 13px;
+    background: #f7f9fc;
+    border: 1px solid #e7edf5;
+    border-radius: 8px;
+    min-width: 0;
+}
 
-            .months {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
+.detail span {
+    display: block;
+    font-size: 11px;
+    color: #66758a;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
 
-            .student-grid {
-                grid-template-columns: 1fr;
-            }
+.detail strong {
+    display: block;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
 
-            .actions {
-                flex-direction: column;
-            }
-        }
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
 
-        @media (max-width: 360px) {
-            .months {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+.month-card {
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 14px;
+    background: white;
+    min-width: 0;
+}
+
+.month-card.paid {
+    border-left: 4px solid var(--success);
+    background: #f1fbf4;
+}
+
+.month-card.unpaid {
+    border-left: 4px solid var(--danger);
+    background: #fff7f7;
+}
+
+.month-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.month-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.badge.paid {
+    background: #d7f4df;
+    color: #12632e;
+}
+
+.badge.unpaid {
+    background: #ffe0e0;
+    color: #a31d1d;
+}
+
+.month-fee {
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.month-fee small {
+    display: block;
+    margin-top: 5px;
+    color: #64748b;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.month-select {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.month-select input {
+    accent-color: var(--success);
+    width: 16px;
+    height: 16px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    flex: 1;
+    min-width: 125px;
+    padding: 14px;
+    border-radius: 8px;
+    background: var(--light);
+}
+
+.summary-item span {
+    display: block;
+    color: #5b6e86;
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+
+.summary-item strong {
+    color: var(--primary);
+    font-size: 21px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #6b7788;
+    font-size: 12px;
+}
+
+.loading {
+    text-align: center;
+    padding: 25px;
+    color: #526780;
+}
+
+@media(max-width: 750px) {
+    .month-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .student-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+}
+
+@media(max-width: 420px) {
+    .month-grid,
+    .student-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-row button {
+        width: 100%;
+    }
+
+    .header-content img {
+        width: 50px;
+        height: 50px;
+    }
+
+    header h1 {
+        font-size: 17px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<header>
+    <div class="header-content">
+        <img src="logo.jpeg"
+             alt="Sai DRS School Logo"
+             onerror="this.style.display='none'">
 
-    <div class="header">
-        <h1>SAI DRS SCHOOL</h1>
-        <p>Fee Receipt Management System</p>
-        <p>Academic Session: 2026–27</p>
+        <div>
+            <h1>SAI DRS SCHOOL</h1>
+            <p>Fee Receipt & Payment Verification System</p>
+            <div class="session">Academic Session 2026–2027</div>
+        </div>
     </div>
+</header>
 
-    <h3 class="section-title">
-        <i class="fa-solid fa-user-graduate"></i>
-        Find Student
-    </h3>
+<main class="container">
 
-    <div class="search-row">
-        <input
-            type="text"
-            id="mobileInput"
-            placeholder="Enter student's registered mobile number"
-            inputmode="numeric"
-            maxlength="15"
-        >
+    <!-- SEARCH -->
+    <section class="card">
+        <h2><i class="fa-solid fa-magnifying-glass"></i> Find Student</h2>
 
-        <button class="primary-btn" id="searchBtn" onclick="findStudent()">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            Search
-        </button>
-    </div>
+        <div class="search-row">
+            <input
+                type="tel"
+                id="mobileInput"
+                placeholder="Enter registered mobile number"
+                inputmode="numeric"
+                autocomplete="tel">
 
-    <div id="status" class="status" role="status" aria-live="polite"></div>
+            <button class="btn-primary" id="searchButton" onclick="findStudent()">
+                <i class="fa-solid fa-search"></i> Search Student
+            </button>
+        </div>
 
-    <div id="studentCard" class="student-card">
+        <div id="searchMessage" class="message"></div>
+    </section>
 
-        <h3 class="section-title" style="margin-top:0">
-            Student Information
-        </h3>
+    <!-- STUDENT DETAILS -->
+    <section class="card hidden" id="studentSection">
+        <h2><i class="fa-solid fa-user-graduate"></i> Student Details</h2>
 
         <div class="student-grid">
-            <div class="student-item">
-                <small>Student Name</small>
+            <div class="detail">
+                <span>Student Name</span>
                 <strong id="studentName">—</strong>
             </div>
 
-            <div class="student-item">
-                <small>Class</small>
+            <div class="detail">
+                <span>Class</span>
                 <strong id="studentClass">—</strong>
             </div>
 
-            <div class="student-item">
-                <small>Parent / Guardian</small>
-                <strong id="studentParent">—</strong>
+            <div class="detail">
+                <span>Parent / Guardian</span>
+                <strong id="parentName">—</strong>
             </div>
 
-            <div class="student-item">
-                <small>Mobile Number</small>
+            <div class="detail">
+                <span>Mobile Number</span>
                 <strong id="studentMobile">—</strong>
             </div>
 
-            <div class="student-item">
-                <small>Academic Session</small>
-                <strong id="studentSession">2026–27</strong>
+            <div class="detail">
+                <span>Monthly Tuition Fee</span>
+                <strong id="monthlyFee">—</strong>
             </div>
 
-            <div class="student-item">
-                <small>Monthly Fee</small>
-                <strong id="studentFee">—</strong>
+            <div class="detail">
+                <span>Academic Session</span>
+                <strong>2026–2027</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEE STATUS -->
+    <section class="card hidden" id="feesSection">
+        <h2><i class="fa-solid fa-money-check-dollar"></i> Monthly Fee Status</h2>
+
+        <div class="summary">
+            <div class="summary-item">
+                <span>Paid Months</span>
+                <strong id="paidCount">0</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Unpaid Months</span>
+                <strong id="unpaidCount">0</strong>
+            </div>
+
+            <div class="summary-item">
+                <span>Selected Receipts</span>
+                <strong id="selectedCount">0</strong>
             </div>
         </div>
 
-        <h3 class="section-title">
-            <i class="fa-solid fa-receipt"></i>
-            Select Paid Months
-        </h3>
+        <div id="monthGrid" class="month-grid"></div>
 
-        <div id="monthsBox" class="months"></div>
-
-        <div class="note">
-            <i class="fa-solid fa-circle-info"></i>
-            Only months marked as paid can be selected. Each selected month
-            must have a receipt number saved in Firebase before the PDF can
-            be generated. A separate PDF page will be created for each month,
-            with the school copy and parent copy on that page.
-        </div>
+        <div id="feeMessage" class="message"></div>
 
         <div class="actions">
-            <button class="success-btn" id="generateBtn" onclick="generatePDF()">
-                <i class="fa-solid fa-file-pdf"></i>
-                Generate Receipt PDF
+            <button class="btn-light" onclick="selectAllPaid()">
+                <i class="fa-solid fa-check-double"></i> Select All Paid
             </button>
 
-            <button class="primary-btn" onclick="resetForm()">
-                <i class="fa-solid fa-rotate"></i>
-                Clear
+            <button class="btn-light" onclick="clearSelection()">
+                <i class="fa-solid fa-xmark"></i> Clear Selection
+            </button>
+
+            <button class="btn-success" id="generateButton"
+                    onclick="generateReceipts()" disabled>
+                <i class="fa-solid fa-file-pdf"></i> Generate PDF Receipts
             </button>
         </div>
-    </div>
-</div>
+    </section>
 
-<!-- Temporary QR code container -->
-<div id="qrContainer"
-     style="position:absolute;left:-10000px;top:0;width:150px;height:150px;">
-</div>
+</main>
+
+<footer>
+    SAI DRS SCHOOL · Fee Receipt System · Academic Session 2026–2027
+</footer>
 
 <script>
+"use strict";
+
 /* =========================================================
-   1. FIREBASE CONFIGURATION
-   Replace these placeholder values with your existing config.
-   Do not publish your Firebase service-account credentials here.
+   FIREBASE CONFIGURATION
    ========================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271",
-  storageBucket: "students-6e271.firebasestorage.app",
-  messagingSenderId: "336382170224",
-  appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
+    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
+    authDomain: "students-6e271.firebaseapp.com",
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+    projectId: "students-6e271",
+    storageBucket: "students-6e271.firebasestorage.app",
+    messagingSenderId: "336382170224",
+    appId: "1:336382170224:web:21b2ace0bb69d5459810b5"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-const db = firebase.database();
-const studentsRef = db.ref("students");
+const database = firebase.database();
+const studentsRef = database.ref("students");
 
 /* =========================================================
-   2. SETTINGS
+   CONFIGURATION
    ========================================================= */
-
-const MONTHS = [
-    "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-    "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"
-];
 
 const SESSION = "2026-27";
 
-let currentStudent = null;
-let currentStudentKey = "";
-let currentFees = {};
+const MONTHS = [
+    { short: "Apr", full: "April" },
+    { short: "May", full: "May" },
+    { short: "Jun", full: "June" },
+    { short: "Jul", full: "July" },
+    { short: "Aug", full: "August" },
+    { short: "Sep", full: "September" },
+    { short: "Oct", full: "October" },
+    { short: "Nov", full: "November" },
+    { short: "Dec", full: "December" },
+    { short: "Jan", full: "January" },
+    { short: "Feb", full: "February" },
+    { short: "Mar", full: "March" }
+];
+
+const CURRENCY = "₹";
 
 /* =========================================================
-   3. HELPERS
+   APPLICATION STATE
    ========================================================= */
 
-function getElement(id) {
+let currentStudent = null;
+let currentStudentKey = null;
+let currentFees = {};
+let selectedMonths = new Set();
+
+/* =========================================================
+   GENERAL HELPERS
+   ========================================================= */
+
+function byId(id) {
     return document.getElementById(id);
-}
-
-function setStatus(message, error = false) {
-    const element = getElement("status");
-    element.textContent = message;
-    element.style.color = error ? "#b91c1c" : "#166534";
-}
-
-function cleanMobile(value) {
-    return String(value || "").replace(/\D/g, "");
-}
-
-function formatMoney(value) {
-    const amount = Number(value);
-    return "₹" + (Number.isFinite(amount) ? amount : 0).toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
-
-function getReceiptNumber(month) {
-    return String(currentFees[month]?.receiptNo || "").trim();
-}
-
-function getFeeStatus(fee) {
-    if (typeof fee === "string") {
-        return fee.trim().toLowerCase();
-    }
-
-    if (!fee || typeof fee !== "object") {
-        return "";
-    }
-
-    return String(
-        fee.status ||
-        fee.paymentStatus ||
-        ""
-    ).trim().toLowerCase();
-}
-
-function isPaid(fee) {
-    if (fee === true) return true;
-
-    if (typeof fee === "string") {
-        return fee.trim().toLowerCase() === "paid";
-    }
-
-    if (!fee || typeof fee !== "object") {
-        return false;
-    }
-
-    const status = String(
-        fee.status ??
-        fee.paymentStatus ??
-        fee.payment_status ??
-        ""
-    ).trim().toLowerCase();
-
-    return (
-        fee.isPaid === true ||
-        fee.paid === true ||
-        ["paid", "success", "successful", "completed"].includes(status)
-    );
-}
-
-function getMonthAmount(month) {
-    const fee = currentFees[month];
-
-    if (fee && typeof fee === "object" && fee.amount != null) {
-        const amount = Number(fee.amount);
-        if (Number.isFinite(amount)) return amount;
-    }
-
-    const monthlyFee = Number(currentStudent?.monthlyfee || 0);
-    return Number.isFinite(monthlyFee) ? monthlyFee : 0;
 }
 
 function escapeHTML(value) {
@@ -459,459 +585,1032 @@ function escapeHTML(value) {
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
-        "'": "&#39;"
+        "'": "&#039;"
     })[character]);
 }
 
+function formatMoney(value) {
+    const number = Number(value);
+    return CURRENCY + (Number.isFinite(number) ? number : 0).toLocaleString("en-IN");
+}
+
+function normalizeText(value) {
+    return String(value ?? "").trim().toLowerCase();
+}
+
+function showMessage(id, message, type = "info") {
+    const element = byId(id);
+
+    element.textContent = message;
+    element.className = "message " + type;
+}
+
+function hideMessage(id) {
+    const element = byId(id);
+    element.textContent = "";
+    element.className = "message";
+}
+
+function setSearching(isSearching) {
+    byId("searchButton").disabled = isSearching;
+
+    byId("searchButton").innerHTML = isSearching
+        ? '<i class="fa-solid fa-spinner fa-spin"></i> Searching...'
+        : '<i class="fa-solid fa-search"></i> Search Student';
+}
+
+function clearStudentDisplay() {
+    currentStudent = null;
+    currentStudentKey = null;
+    currentFees = {};
+    selectedMonths.clear();
+
+    byId("studentSection").classList.add("hidden");
+    byId("feesSection").classList.add("hidden");
+
+    byId("monthGrid").innerHTML = "";
+    byId("generateButton").disabled = true;
+
+    byId("paidCount").textContent = "0";
+    byId("unpaidCount").textContent = "0";
+    byId("selectedCount").textContent = "0";
+}
+
 /* =========================================================
-   4. FIND STUDENT
-   Supports mobile-number keys and records containing mobile.
+   MONTH MATCHING
+   Supports Apr, April, october, October, 2026-10, etc.
+   ========================================================= */
+
+function normalizeMonth(value) {
+    const text = normalizeText(value);
+
+    const monthAliases = {
+        jan: 0, january: 0,
+        feb: 1, february: 1,
+        mar: 2, march: 2,
+        apr: 3, april: 3,
+        may: 4,
+        jun: 5, june: 5,
+        jul: 6, july: 6,
+        aug: 7, august: 7,
+        sep: 8, sept: 8, september: 8,
+        oct: 9, october: 9,
+        nov: 10, november: 10,
+        dec: 11, december: 11
+    };
+
+    if (Object.prototype.hasOwnProperty.call(monthAliases, text)) {
+        return monthAliases[text];
+    }
+
+    // Accept date-like keys such as 2026-10 or 2026/10.
+    const dateMatch = text.match(/^\d{4}[-/](\d{1,2})$/);
+
+    if (dateMatch) {
+        const number = Number(dateMatch[1]);
+        return number >= 1 && number <= 12 ? number - 1 : -1;
+    }
+
+    // Accept numeric month keys from 1 to 12.
+    if (/^\d{1,2}$/.test(text)) {
+        const number = Number(text);
+        return number >= 1 && number <= 12 ? number - 1 : -1;
+    }
+
+    return -1;
+}
+
+/* =========================================================
+   PAID STATUS DETECTION
+   Supports the supplied Firebase fee record.
+   ========================================================= */
+
+function isPaid(fee) {
+    if (!fee) return false;
+
+    if (fee === true) return true;
+
+    if (typeof fee === "string") {
+        return [
+            "paid",
+            "success",
+            "successful",
+            "completed",
+            "captured"
+        ].includes(normalizeText(fee));
+    }
+
+    if (typeof fee !== "object") return false;
+
+    if (fee.isPaid === true || fee.paid === true) {
+        return true;
+    }
+
+    const statuses = [
+        fee.status,
+        fee.paymentStatus,
+        fee.payment_status,
+        fee.razorpayStatus
+    ];
+
+    const successfulStatuses = [
+        "paid",
+        "success",
+        "successful",
+        "completed",
+        "captured"
+    ];
+
+    if (statuses.some(status =>
+        successfulStatuses.includes(normalizeText(status))
+    )) {
+        return true;
+    }
+
+    // Support numeric or string booleans from older records.
+    if (
+        normalizeText(fee.isPaid) === "true" ||
+        normalizeText(fee.paid) === "true"
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+/* =========================================================
+   FIND A MONTH'S FEE RECORD
+   Supports direct and nested fee structures.
+   ========================================================= */
+
+function looksLikeFeeRecord(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return false;
+    }
+
+    return (
+        Object.prototype.hasOwnProperty.call(value, "isPaid") ||
+        Object.prototype.hasOwnProperty.call(value, "paymentStatus") ||
+        Object.prototype.hasOwnProperty.call(value, "razorpayStatus") ||
+        Object.prototype.hasOwnProperty.call(value, "receiptNo") ||
+        Object.prototype.hasOwnProperty.call(value, "monthlyFee") ||
+        Object.prototype.hasOwnProperty.call(value, "paymentId") ||
+        Object.prototype.hasOwnProperty.call(value, "razorpayPaymentId")
+    );
+}
+
+function findFeeRecordForMonth(data, monthIndex, depth = 0) {
+    if (!data || typeof data !== "object" || depth > 6) {
+        return null;
+    }
+
+    if (Array.isArray(data)) {
+        for (const item of data) {
+            const result = findFeeRecordForMonth(item, monthIndex, depth + 1);
+            if (result) return result;
+        }
+
+        return null;
+    }
+
+    // A fee object may store its month inside the record itself.
+    if (looksLikeFeeRecord(data)) {
+        const recordMonth = normalizeMonth(data.month);
+
+        if (recordMonth === monthIndex) {
+            return data;
+        }
+    }
+
+    // First check keys such as Oct, october, or 2026-10.
+    for (const [key, value] of Object.entries(data)) {
+        if (normalizeMonth(key) === monthIndex && looksLikeFeeRecord(value)) {
+            return value;
+        }
+    }
+
+    // Then inspect nested year/session/month objects.
+    for (const value of Object.values(data)) {
+        if (value && typeof value === "object") {
+            const result = findFeeRecordForMonth(
+                value,
+                monthIndex,
+                depth + 1
+            );
+
+            if (result) return result;
+        }
+    }
+
+    return null;
+}
+
+function getFeeForMonth(monthShort) {
+    const monthIndex = normalizeMonth(monthShort);
+
+    if (monthIndex < 0) return null;
+
+    return findFeeRecordForMonth(currentFees, monthIndex);
+}
+
+function getReceiptNumber(fee) {
+    if (!fee || typeof fee !== "object") return "";
+
+    return String(
+        fee.receiptNo ||
+        fee.receiptNumber ||
+        fee.receipt_number ||
+        ""
+    ).trim();
+}
+
+/* =========================================================
+   FIND STUDENT
+   Supports mobile number as database key or mobile field.
    ========================================================= */
 
 async function findStudent() {
-    const mobile = cleanMobile(getElement("mobileInput").value);
+    const mobile = byId("mobileInput").value.trim();
+
+    hideMessage("searchMessage");
 
     if (!mobile) {
-        setStatus("Please enter a mobile number.", true);
+        showMessage("searchMessage", "Please enter the student's registered mobile number.", "error");
         return;
     }
 
-    const button = getElement("searchBtn");
-    button.disabled = true;
-    setStatus("Searching for student...");
-
-    getElement("studentCard").style.display = "none";
-    currentStudent = null;
-    currentStudentKey = "";
-    currentFees = {};
+    clearStudentDisplay();
+    setSearching(true);
 
     try {
-        let snapshot = await studentsRef.child(mobile).once("value");
+        let student = null;
+        let studentKey = null;
 
-        // Fallback for records whose Firebase key is not the mobile number.
-        if (!snapshot.exists()) {
-            const result = await studentsRef
-                .orderByChild("mobile")
-                .equalTo(mobile)
-                .once("value");
+        // First attempt: mobile number is the database key.
+        const directSnapshot = await studentsRef.child(mobile).once("value");
 
-            if (result.exists()) {
-                const records = result.val();
-                const key = Object.keys(records)[0];
+        if (directSnapshot.exists()) {
+            student = directSnapshot.val();
+            studentKey = directSnapshot.key;
+        }
 
-                snapshot = await studentsRef.child(key).once("value");
+        // Second attempt: find the record using its mobile field.
+        if (!student) {
+            const snapshot = await studentsRef.once("value");
+
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    if (!student) {
+                        const data = child.val() || {};
+
+                        const possibleMobiles = [
+                            data.mobile,
+                            data.mobileNumber,
+                            data.phone,
+                            data.phoneNumber,
+                            data.parentMobile,
+                            data.parentsMobile
+                        ];
+
+                        const matched = possibleMobiles.some(value =>
+                            String(value ?? "").replace(/\D/g, "") ===
+                            mobile.replace(/\D/g, "")
+                        );
+
+                        if (matched) {
+                            student = data;
+                            studentKey = child.key;
+                        }
+                    }
+                });
             }
         }
 
-        if (!snapshot.exists()) {
-            setStatus("Student not found. Check the registered mobile number.", true);
-            return;
-        }
+        if (!student) {
+            showMessage(
+                "searchMessage",
+                "No student was found for this mobile number. Please check the number and try again.",
+                "error"
+            );
 
-        const student = snapshot.val();
-
-        if (!student || typeof student !== "object") {
-            setStatus("Student record is invalid.", true);
             return;
         }
 
         currentStudent = student;
-        currentStudentKey = snapshot.key;
+        currentStudentKey = studentKey;
+
         currentFees = student.fees || {};
 
-        showStudent();
-        setStatus("Student found successfully.");
+        // Debug information: open browser developer tools to inspect.
+        console.log("Student record:", student);
+        console.log("Fee records:", currentFees);
+
+        displayStudent(student);
+        displayFeeMonths();
+
+        byId("studentSection").classList.remove("hidden");
+        byId("feesSection").classList.remove("hidden");
+
+        showMessage(
+            "searchMessage",
+            "Student found successfully.",
+            "success"
+        );
 
     } catch (error) {
-        console.error("Student search failed:", error);
-        setStatus("Could not load student data. Check Firebase configuration and database permissions.", true);
+        console.error("Student search error:", error);
+
+        showMessage(
+            "searchMessage",
+            "Unable to load student data. Check your internet connection and Firebase database permissions.",
+            "error"
+        );
+
     } finally {
-        button.disabled = false;
+        setSearching(false);
     }
 }
 
 /* =========================================================
-   5. DISPLAY STUDENT AND PAID MONTHS
+   DISPLAY STUDENT DETAILS
    ========================================================= */
 
-function showStudent() {
-    const student = currentStudent;
+function displayStudent(student) {
+    byId("studentName").textContent =
+        student.name || student.studentName || "—";
 
-    getElement("studentName").textContent = student.name || "—";
-    getElement("studentClass").textContent = student.class || "—";
-    getElement("studentParent").textContent = student.parents || "—";
-    getElement("studentMobile").textContent = student.mobile || currentStudentKey;
-    getElement("studentSession").textContent = student.session || SESSION;
-    getElement("studentFee").textContent = formatMoney(student.monthlyfee || 0);
+    byId("studentClass").textContent =
+        student.class || student.className || "—";
 
-    const monthsBox = getElement("monthsBox");
-    monthsBox.innerHTML = "";
+    byId("parentName").textContent =
+        student.parents ||
+        student.parentName ||
+        student.fatherName ||
+        student.motherName ||
+        "—";
 
-    MONTHS.forEach(month => {
-        const fee = currentFees[month];
-        const paid = isPaid(fee);
-        const receiptNo = getReceiptNumber(month);
+    byId("studentMobile").textContent =
+        student.mobile ||
+        student.mobileNumber ||
+        byId("mobileInput").value.trim();
 
-        const label = document.createElement("label");
-        label.className = "month-option " + (paid ? "paid" : "unpaid");
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = month;
-        checkbox.disabled = !paid;
-
-        const details = document.createElement("span");
-
-        details.innerHTML = `
-            <strong>${escapeHTML(month)}</strong>
-            <small>${paid ? "Paid" : "Unpaid"}</small>
-            <small>${escapeHTML(formatMoney(getMonthAmount(month)))}</small>
-            <small>${receiptNo
-                ? "Receipt: " + escapeHTML(receiptNo)
-                : (paid ? "Receipt number missing" : "Not available")}</small>
-        `;
-
-        label.append(checkbox, details);
-        monthsBox.appendChild(label);
-    });
-
-    getElement("studentCard").style.display = "block";
+    byId("monthlyFee").textContent =
+        formatMoney(student.monthlyfee ?? student.monthlyFee ?? 0);
 }
 
 /* =========================================================
-   6. LOGO AND QR HELPERS
+   DISPLAY ALL MONTHS
+   ========================================================= */
+
+function displayFeeMonths() {
+    const grid = byId("monthGrid");
+
+    grid.innerHTML = "";
+
+    let paidTotal = 0;
+    let unpaidTotal = 0;
+
+    MONTHS.forEach(month => {
+        const fee = getFeeForMonth(month.short);
+        const paid = isPaid(fee);
+
+        if (paid) {
+            paidTotal++;
+        } else {
+            unpaidTotal++;
+        }
+
+        const receiptNo = getReceiptNumber(fee);
+
+        const feeAmount = fee
+            ? (
+                fee.monthlyFee ??
+                fee.monthlyfee ??
+                fee.amount ??
+                currentStudent.monthlyfee ??
+                currentStudent.monthlyFee ??
+                0
+            )
+            : (
+                currentStudent.monthlyfee ??
+                currentStudent.monthlyFee ??
+                0
+            );
+
+        const card = document.createElement("div");
+
+        card.className = "month-card " + (paid ? "paid" : "unpaid");
+
+        card.innerHTML = `
+            <div class="month-top">
+                <span class="month-name">${escapeHTML(month.full)}</span>
+                <span class="badge ${paid ? "paid" : "unpaid"}">
+                    ${paid ? "PAID" : "UNPAID"}
+                </span>
+            </div>
+
+            <div class="month-fee">
+                ${formatMoney(feeAmount)}
+
+                ${
+                    paid && receiptNo
+                        ? `<small>Receipt: ${escapeHTML(receiptNo)}</small>`
+                        : ""
+                }
+
+                ${
+                    paid && !receiptNo
+                        ? `<small>Receipt number unavailable</small>`
+                        : ""
+                }
+            </div>
+
+            ${
+                paid
+                    ? `
+                        <label class="month-select">
+                            <input
+                                type="checkbox"
+                                class="month-checkbox"
+                                value="${month.short}"
+                                ${selectedMonths.has(month.short) ? "checked" : ""}
+                                onchange="toggleMonth('${month.short}', this.checked)">
+                            Select receipt
+                        </label>
+                    `
+                    : `
+                        <small style="color:#a31d1d">Payment not recorded</small>
+                    `
+            }
+        `;
+
+        grid.appendChild(card);
+    });
+
+    byId("paidCount").textContent = paidTotal;
+    byId("unpaidCount").textContent = unpaidTotal;
+
+    updateSelectionSummary();
+
+    if (paidTotal === 0) {
+        showMessage(
+            "feeMessage",
+            "No paid months were detected. Check the Firebase fee structure in the browser console.",
+            "error"
+        );
+    } else {
+        hideMessage("feeMessage");
+    }
+}
+
+/* =========================================================
+   SELECT MONTHS
+   ========================================================= */
+
+function toggleMonth(month, checked) {
+    if (checked) {
+        selectedMonths.add(month);
+    } else {
+        selectedMonths.delete(month);
+    }
+
+    updateSelectionSummary();
+}
+
+function selectAllPaid() {
+    selectedMonths.clear();
+
+    MONTHS.forEach(month => {
+        const fee = getFeeForMonth(month.short);
+
+        if (isPaid(fee)) {
+            selectedMonths.add(month.short);
+        }
+    });
+
+    displayFeeMonths();
+}
+
+function clearSelection() {
+    selectedMonths.clear();
+    displayFeeMonths();
+}
+
+function updateSelectionSummary() {
+    byId("selectedCount").textContent = selectedMonths.size;
+
+    byId("generateButton").disabled = selectedMonths.size === 0;
+}
+
+/* =========================================================
+   DATE FORMATTING
+   ========================================================= */
+
+function formatDate(value) {
+    if (!value) return "—";
+
+    let date;
+
+    if (typeof value === "number" || /^\d+$/.test(String(value))) {
+        const number = Number(value);
+
+        date = new Date(number);
+
+        if (!Number.isFinite(date.getTime())) {
+            return "—";
+        }
+    } else {
+        date = new Date(value);
+
+        if (!Number.isFinite(date.getTime())) {
+            return "—";
+        }
+    }
+
+    return date.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+/* =========================================================
+   LOAD SCHOOL LOGO FOR PDF
    ========================================================= */
 
 function loadLogo() {
     return new Promise(resolve => {
-        const logo = new Image();
-        logo.src = "logo.jpeg";
+        const img = new Image();
 
-        logo.onload = () => resolve(logo);
-        logo.onerror = () => resolve(null);
-    });
-}
+        img.onload = function() {
+            try {
+                const canvas = document.createElement("canvas");
 
-function makeQRCode(text) {
-    return new Promise((resolve, reject) => {
-        const container = getElement("qrContainer");
-        container.innerHTML = "";
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
 
-        try {
-            new QRCode(container, {
-                text,
-                width: 150,
-                height: 150,
-                correctLevel: QRCode.CorrectLevel.M
-            });
+                const context = canvas.getContext("2d");
+                context.drawImage(img, 0, 0);
 
-            // QRCode.js creates a canvas or an image.
-            setTimeout(() => {
-                const canvas = container.querySelector("canvas");
+                resolve(canvas.toDataURL("image/jpeg", 0.9));
+            } catch (error) {
+                console.warn("Could not convert logo:", error);
+                resolve(null);
+            }
+        };
 
-                if (canvas) {
-                    resolve(canvas.toDataURL("image/png"));
-                    return;
-                }
+        img.onerror = function() {
+            console.warn("logo.jpeg was not found.");
+            resolve(null);
+        };
 
-                const image = container.querySelector("img");
-
-                if (image && image.src) {
-                    resolve(image.src);
-                    return;
-                }
-
-                reject(new Error("QR code could not be created."));
-            }, 100);
-
-        } catch (error) {
-            reject(error);
-        }
+        img.src = "logo.jpeg";
     });
 }
 
 /* =========================================================
-   7. DRAW ONE RECEIPT COPY
-   Two copies fit on one A4 page.
+   GENERATE QR CODE
    ========================================================= */
 
-function drawReceipt(doc, data, y, logo, qrData) {
+async function createQRCode(fee, month, receiptNo) {
+    const qrData = {
+        school: "SAI DRS SCHOOL",
+        session: SESSION,
+        student: currentStudent.name || currentStudent.studentName || "",
+        studentKey: currentStudentKey,
+        class: currentStudent.class || currentStudent.className || "",
+        month: month.full,
+        receiptNo: receiptNo,
+        paymentId:
+            fee.razorpayPaymentId ||
+            fee.paymentId ||
+            fee.transactionId ||
+            "",
+        amount: Number(fee.amount || fee.monthlyFee || 0),
+        paymentStatus: fee.paymentStatus || fee.status || "Paid"
+    };
+
+    return QRCode.toDataURL(
+        JSON.stringify(qrData),
+        {
+            errorCorrectionLevel: "M",
+            margin: 1,
+            width: 220
+        }
+    );
+}
+
+/* =========================================================
+   DRAW ONE RECEIPT COPY
+   ========================================================= */
+
+function drawReceipt(pdf, data, logoData, qrData, startY, copyLabel) {
     const pageWidth = 210;
-    const receiptHeight = 140;
-    const left = 8;
-    const width = pageWidth - 16;
-    const right = left + width;
+    const receiptHeight = 139;
+    const left = 10;
+    const right = 200;
+    const width = right - left;
 
-    // Receipt border
-    doc.setDrawColor(30, 58, 100);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(left, y, width, receiptHeight, 2, 2);
+    const student = data.student;
+    const fee = data.fee;
+    const month = data.month;
 
-    // Logo
-    if (logo) {
+    // Outer border
+    pdf.setDrawColor(30, 65, 110);
+    pdf.setLineWidth(0.6);
+    pdf.rect(left, startY, width, receiptHeight);
+
+    // School logo
+    if (logoData) {
         try {
-            doc.addImage(logo, "JPEG", left + 5, y + 5, 19, 19);
+            pdf.addImage(
+                logoData,
+                "JPEG",
+                left + 5,
+                startY + 5,
+                19,
+                19,
+                undefined,
+                "FAST"
+            );
         } catch (error) {
-            console.warn("Logo could not be added:", error);
+            console.warn("Unable to add logo to PDF:", error);
         }
     }
 
-    // School heading
-    doc.setTextColor(23, 59, 117);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.text("SAI DRS SCHOOL", 105, y + 11, { align: "center" });
+    // Header
+    pdf.setTextColor(18, 59, 112);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
-    doc.text("83, Jonali, Guwahati, Assam", 105, y + 16, { align: "center" });
-    doc.text("FEE RECEIPT | SESSION 2026-27", 105, y + 21, { align: "center" });
-
-    // Copy type
-    doc.setFillColor(232, 239, 249);
-    doc.roundedRect(right - 36, y + 5, 30, 7, 1, 1, "F");
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor(23, 59, 117);
-    doc.text(data.copyType.toUpperCase(), right - 21, y + 9.7, { align: "center" });
-
-    doc.setDrawColor(23, 59, 117);
-    doc.line(left + 4, y + 27, right - 4, y + 27);
-
-    // Receipt number and date
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Receipt No.: " + data.receiptNo, left + 5, y + 34);
-    doc.text("Date: " + data.date, right - 5, y + 34, { align: "right" });
-
-    // Student details
-    const rows = [
-        ["Student Name", data.name, "Class", data.studentClass],
-        ["Parent / Guardian", data.parent, "Mobile", data.mobile],
-        ["Fee Month", data.month, "Session", data.session]
-    ];
-
-    let rowY = y + 43;
-
-    doc.setFontSize(8.5);
-
-    rows.forEach(row => {
-        doc.setFont("helvetica", "bold");
-        doc.text(row[0] + ":", left + 5, rowY);
-
-        doc.setFont("helvetica", "normal");
-        doc.text(String(row[1] || "—").slice(0, 35), left + 35, rowY);
-
-        doc.setFont("helvetica", "bold");
-        doc.text(row[2] + ":", left + 105, rowY);
-
-        doc.setFont("helvetica", "normal");
-        doc.text(String(row[3] || "—").slice(0, 24), left + 130, rowY);
-
-        rowY += 9;
+    pdf.text("SAI DRS SCHOOL", 105, startY + 10, {
+        align: "center"
     });
 
-    // Payment table
-    const tableY = y + 74;
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
 
-    doc.setFillColor(23, 59, 117);
-    doc.rect(left + 5, tableY, width - 10, 9, "F");
+    pdf.text("Jonali, Zoo Road, Guwahati, Assam", 105, startY + 15, {
+        align: "center"
+    });
 
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8);
-    doc.text("DESCRIPTION", left + 9, tableY + 6);
-    doc.text("AMOUNT", right - 9, tableY + 6, { align: "right" });
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
 
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "normal");
-    doc.rect(left + 5, tableY + 9, width - 10, 12);
-    doc.text("Monthly tuition fee - " + data.month, left + 9, tableY + 16.5);
-    doc.text(formatMoney(data.amount), right - 9, tableY + 16.5, { align: "right" });
+    pdf.text("FEE PAYMENT RECEIPT", 105, startY + 21, {
+        align: "center"
+    });
 
-    // Total
-    doc.setFont("helvetica", "bold");
-    doc.text("TOTAL PAID:", right - 57, y + 110);
-    doc.text(formatMoney(data.amount), right - 9, y + 110, { align: "right" });
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8);
+    pdf.setTextColor(70, 70, 70);
 
-    // Paid stamp
-    doc.setTextColor(21, 128, 61);
-    doc.setFontSize(11);
-    doc.text("PAID", left + 8, y + 113);
+    pdf.text("Academic Session: 2026-2027", left + 5, startY + 29);
+
+    pdf.text(
+        "Copy: " + copyLabel,
+        right - 5,
+        startY + 29,
+        { align: "right" }
+    );
+
+    // Divider
+    pdf.setDrawColor(180, 195, 215);
+    pdf.line(left + 4, startY + 33, right - 4, startY + 33);
+
+    // Receipt information
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(20, 45, 75);
+
+    pdf.text("Receipt No.:", left + 5, startY + 41);
+    pdf.text("Payment Date:", left + 5, startY + 50);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(
+        String(data.receiptNo || "Not available"),
+        left + 33,
+        startY + 41
+    );
+
+    pdf.text(
+        formatDate(fee.paidAt || fee.transactionDate),
+        left + 33,
+        startY + 50
+    );
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text("Student Name:", left + 5, startY + 61);
+    pdf.text("Class:", left + 5, startY + 70);
+    pdf.text("Parent/Guardian:", left + 5, startY + 79);
+    pdf.text("Fee Month:", left + 5, startY + 88);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(
+        String(student.name || student.studentName || "—").slice(0, 45),
+        left + 37,
+        startY + 61
+    );
+
+    pdf.text(
+        String(student.class || student.className || "—").slice(0, 30),
+        left + 37,
+        startY + 70
+    );
+
+    pdf.text(
+        String(
+            student.parents ||
+            student.parentName ||
+            student.fatherName ||
+            student.motherName ||
+            "—"
+        ).slice(0, 42),
+        left + 37,
+        startY + 79
+    );
+
+    pdf.text(month.full + " 2026-2027", left + 37, startY + 88);
+
+    // Amount details
+    const monthlyFee = Number(
+        fee.monthlyFee ??
+        fee.monthlyfee ??
+        student.monthlyfee ??
+        student.monthlyFee ??
+        0
+    );
+
+    const fine = Number(fee.fine || 0);
+    const lateFee = Number(fee.lateFee || 0);
+    const activityFee = Number(fee.activityFee || 0);
+    const convenienceFee = Number(fee.convenienceFee || 0);
+    const amount = Number(
+        fee.amount ??
+        (monthlyFee + fine + lateFee + activityFee + convenienceFee)
+    );
+
+    pdf.setDrawColor(200, 210, 225);
+    pdf.rect(left + 5, startY + 95, 120, 24);
+
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text("Monthly Fee", left + 8, startY + 101);
+    pdf.text(formatMoney(monthlyFee), left + 120, startY + 101, {
+        align: "right"
+    });
+
+    pdf.text("Fine / Late Fee", left + 8, startY + 107);
+    pdf.text(formatMoney(fine + lateFee), left + 120, startY + 107, {
+        align: "right"
+    });
+
+    pdf.text("Other Fees", left + 8, startY + 113);
+    pdf.text(
+        formatMoney(activityFee + convenienceFee),
+        left + 120,
+        startY + 113,
+        { align: "right" }
+    );
+
+    // Total amount
+    pdf.setFillColor(237, 244, 252);
+    pdf.rect(left + 5, startY + 120, 120, 10, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.setTextColor(18, 59, 112);
+
+    pdf.text("TOTAL PAID", left + 8, startY + 126.5);
+    pdf.text(formatMoney(amount), left + 120, startY + 126.5, {
+        align: "right"
+    });
 
     // QR code
     if (qrData) {
-        doc.addImage(qrData, "PNG", right - 28, y + 112, 20, 20);
+        pdf.addImage(
+            qrData,
+            "PNG",
+            left + 145,
+            startY + 78,
+            30,
+            30
+        );
     }
 
-    // Footer
-    doc.setTextColor(80, 80, 80);
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(7);
-    doc.text(
-        "This is a computer-generated receipt.",
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    pdf.setTextColor(22, 128, 60);
+
+    pdf.text(
+        "PAYMENT VERIFIED",
+        left + 160,
+        startY + 113,
+        { align: "center" }
+    );
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7);
+    pdf.setTextColor(70, 70, 70);
+
+    pdf.text(
+        "Mode: " + String(fee.paymentMode || fee.collectedBy || "—").slice(0, 24),
+        left + 160,
+        startY + 118,
+        { align: "center" }
+    );
+
+    pdf.text(
+        "Payment ID: " + String(
+            fee.razorpayPaymentId ||
+            fee.transactionId ||
+            fee.paymentId ||
+            "—"
+        ).slice(0, 24),
+        left + 160,
+        startY + 123,
+        { align: "center" }
+    );
+
+    pdf.setFontSize(7);
+    pdf.setTextColor(90, 90, 90);
+
+    pdf.text(
+        "This receipt acknowledges the payment recorded by the school.",
         105,
-        y + 134,
+        startY + 135,
         { align: "center" }
     );
 }
 
 /* =========================================================
-   8. GENERATE PDF
-   One PDF page per month, each page containing two copies.
-   Receipt numbers are read from Firebase, not generated here.
+   GENERATE PDF RECEIPTS
+   One A4 page per month, with school and parent copies.
    ========================================================= */
 
-async function generatePDF() {
+async function generateReceipts() {
     if (!currentStudent) {
-        alert("Search for a student first.");
+        alert("Please search for a student first.");
         return;
     }
 
-    const selectedMonths = [
-        ...document.querySelectorAll("#monthsBox input:checked")
-    ].map(input => input.value);
-
-    if (!selectedMonths.length) {
-        alert("Select at least one paid month.");
+    if (selectedMonths.size === 0) {
+        alert("Please select at least one paid month.");
         return;
     }
 
-    const missing = selectedMonths.filter(month => !getReceiptNumber(month));
+    const monthsToPrint = MONTHS.filter(month =>
+        selectedMonths.has(month.short)
+    );
 
-    if (missing.length) {
-        alert("Receipt number missing in Firebase for: " + missing.join(", "));
-        return;
-    }
+    // Do not create a receipt for an unpaid or missing record.
+    const records = [];
 
-    const unpaid = selectedMonths.filter(month => !isPaid(currentFees[month]));
+    for (const month of monthsToPrint) {
+        const fee = getFeeForMonth(month.short);
 
-    if (unpaid.length) {
-        alert("These months are not marked paid: " + unpaid.join(", "));
-        return;
-    }
-
-    const button = getElement("generateBtn");
-    button.disabled = true;
-    button.textContent = "Generating PDF...";
-
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: "a4"
-        });
-
-        const logo = await loadLogo();
-
-        for (let index = 0; index < selectedMonths.length; index++) {
-            const month = selectedMonths[index];
-
-            if (index > 0) {
-                doc.addPage();
-            }
-
-            const data = {
-                receiptNo: getReceiptNumber(month),
-                date: getPaidDate(month),
-                name: currentStudent.name || "",
-                studentClass: currentStudent.class || "",
-                parent: currentStudent.parents || "",
-                mobile: currentStudent.mobile || currentStudentKey,
-                session: currentStudent.session || SESSION,
-                month,
-                amount: getMonthAmount(month)
-            };
-
-            const qrData = await makeQRCode(JSON.stringify({
-                school: "SAI DRS SCHOOL",
-                receiptNo: data.receiptNo,
-                student: data.name,
-                mobile: data.mobile,
-                month: data.month,
-                session: data.session,
-                amount: data.amount,
-                status: "Paid"
-            }));
-
-            // Both copies fit on one A4 page.
-            drawReceipt(doc, { ...data, copyType: "School Copy" }, 5, logo, qrData);
-
-            doc.setDrawColor(140, 140, 140);
-            doc.setLineDashPattern([2, 2], 0);
-            doc.line(8, 148, 202, 148);
-            doc.setLineDashPattern([], 0);
-
-            drawReceipt(doc, { ...data, copyType: "Parent Copy" }, 152, logo, qrData);
+        if (!fee || !isPaid(fee)) {
+            continue;
         }
 
-        const filename = `Receipt_${safeFilename(currentStudent.name)}_${SESSION}.pdf`;
-        doc.save(filename);
+        const receiptNo = getReceiptNumber(fee);
 
-        setStatus("PDF generated successfully.");
+        if (!receiptNo) {
+            alert(
+                "The receipt number for " + month.full +
+                " is missing in Firebase. Please correct the record before generating its receipt."
+            );
+            return;
+        }
+
+        records.push({
+            month,
+            fee,
+            receiptNo
+        });
+    }
+
+    if (records.length === 0) {
+        alert("No valid paid-month records were found.");
+        return;
+    }
+
+    const button = byId("generateButton");
+    const originalText = button.innerHTML;
+
+    button.disabled = true;
+    button.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
+
+    try {
+        const logoData = await loadLogo();
+
+        const { jsPDF } = window.jspdf;
+
+        const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4",
+            compress: true
+        });
+
+        for (let i = 0; i < records.length; i++) {
+            const data = records[i];
+
+            if (i > 0) {
+                pdf.addPage();
+            }
+
+            const qrData = await createQRCode(
+                data.fee,
+                data.month,
+                data.receiptNo
+            );
+
+            // School copy
+            drawReceipt(
+                pdf,
+                {
+                    student: currentStudent,
+                    fee: data.fee,
+                    month: data.month,
+                    receiptNo: data.receiptNo
+                },
+                logoData,
+                qrData,
+                5,
+                "SCHOOL COPY"
+            );
+
+            // Dotted cutting line
+            pdf.setDrawColor(120, 120, 120);
+            pdf.setLineDashPattern([2, 2], 0);
+            pdf.line(8, 148, 202, 148);
+            pdf.setLineDashPattern([], 0);
+
+            // Parent copy
+            drawReceipt(
+                pdf,
+                {
+                    student: currentStudent,
+                    fee: data.fee,
+                    month: data.month,
+                    receiptNo: data.receiptNo
+                },
+                logoData,
+                qrData,
+                153,
+                "PARENT COPY"
+            );
+        }
+
+        const studentName = String(
+            currentStudent.name ||
+            currentStudent.studentName ||
+            "Student"
+        ).replace(/[^a-z0-9_-]/gi, "_");
+
+        const filename =
+            "SAI_DRS_Receipts_" + studentName + "_" + SESSION + ".pdf";
+
+        pdf.save(filename);
+
+        showMessage(
+            "feeMessage",
+            "PDF generated successfully for " + records.length +
+            " paid month(s).",
+            "success"
+        );
 
     } catch (error) {
-        console.error("Receipt PDF generation failed:", error);
-        alert("Could not generate receipt PDF. Check the console for details.");
+        console.error("PDF generation error:", error);
+
+        showMessage(
+            "feeMessage",
+            "Unable to generate the PDF. Please check your internet connection and try again.",
+            "error"
+        );
+
     } finally {
-        button.disabled = false;
-        button.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Generate Receipt PDF';
-        getElement("qrContainer").innerHTML = "";
+        button.disabled = selectedMonths.size === 0;
+        button.innerHTML = originalText;
     }
-}
-
-function getPaidDate(month) {
-    const fee = currentFees[month];
-
-    if (!fee || typeof fee !== "object") {
-        return new Date().toLocaleDateString("en-IN");
-    }
-
-    const rawDate = fee.paidAt || fee.transactionDate || fee.date;
-
-    if (!rawDate) {
-        return new Date().toLocaleDateString("en-IN");
-    }
-
-    const date = new Date(rawDate);
-
-    return Number.isNaN(date.getTime())
-        ? String(rawDate)
-        : date.toLocaleDateString("en-IN");
-}
-
-function safeFilename(value) {
-    return String(value || "Student")
-        .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
-        .replace(/\s+/g, "_");
 }
 
 /* =========================================================
-   9. RESET
+   ENTER KEY SEARCH
    ========================================================= */
 
-function resetForm() {
-    currentStudent = null;
-    currentStudentKey = "";
-    currentFees = {};
-
-    getElement("mobileInput").value = "";
-    getElement("studentCard").style.display = "none";
-    getElement("monthsBox").innerHTML = "";
-    getElement("qrContainer").innerHTML = "";
-
-    setStatus("");
-}
-
-/* Allow Enter to search. */
-getElement("mobileInput").addEventListener("keydown", event => {
+byId("mobileInput").addEventListener("keydown", event => {
     if (event.key === "Enter") {
         findStudent();
     }
 });
+
 </script>
 
 </body>
