@@ -2,270 +2,1846 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#123a70">
-<title>SAI DRS | Financial Ledger</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAI DRS KIDS SCHOOL | Fee Management</title>
+
+<script>
+if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "index.html";
+}
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <style>
-:root{--blue:#123a70;--navy:#0b1f3e;--gold:#d4af37;--bg:#f4f7fb;--ink:#17243a;--muted:#718096;--line:#e5eaf1;--green:#138653;--red:#bd382e;--white:#fff;--shadow:0 7px 24px rgba(18,58,112,.07)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:var(--navy);color:#fff;padding:21px 14px;display:flex;flex-direction:column;z-index:20;transition:transform .2s}.brand{display:flex;gap:10px;align-items:center;padding:4px 9px 21px;border-bottom:1px solid #ffffff22}.brand-mark{width:42px;height:42px;border-radius:12px;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-weight:900}.brand strong{display:block;font-size:13px;letter-spacing:.3px}.brand small{color:#b8c8dc;font-size:10px}.nav-label{margin:21px 10px 7px;color:#91a6c2;text-transform:uppercase;font-size:10px;letter-spacing:1.2px}.nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:8px;background:transparent;color:#cbd6e5;text-align:left;margin:2px 0;font-weight:600;font-size:12px}.nav button:hover,.nav button.active{background:#ffffff18;color:white}.nav button.active{box-shadow:inset 3px 0 var(--gold)}.ico{width:18px;text-align:center;font-size:15px}.side-bottom{margin-top:auto;padding:14px 9px 3px;border-top:1px solid #ffffff22;color:#9fb0c6;font-size:10px}.main{margin-left:245px;min-height:100vh}.topbar{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}.top-left{display:flex;align-items:center;gap:12px}.topbar h1{font-size:17px;margin:0;color:var(--navy)}.subhead{font-size:10px;color:var(--muted);margin-top:2px}.user-chip{display:flex;align-items:center;gap:9px;color:#53647b;font-size:11px}.avatar{width:33px;height:33px;border-radius:50%;background:#eaf0f8;color:var(--blue);display:grid;place-items:center;font-weight:800}.menu-btn{display:none;border:0;background:#edf2f8;border-radius:8px;padding:8px 10px;color:var(--blue)}.content{padding:25px 28px 40px;max-width:1550px;margin:auto}.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:19px}.page-heading h2{font-size:21px;margin:0 0 4px;color:var(--navy)}.page-heading p{margin:0;color:var(--muted);font-size:11px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;color:var(--blue);padding:9px 13px;border-radius:8px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.gold{background:var(--gold);color:var(--navy);border-color:var(--gold)}.btn.danger{color:var(--red)}.btn:disabled{opacity:.5;cursor:not-allowed}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:17px 18px;box-shadow:var(--shadow)}.stat-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px;font-weight:700}.stat-icon{width:33px;height:33px;border-radius:9px;background:#edf3fa;color:var(--blue);display:grid;place-items:center;font-size:15px}.stat strong{display:block;font-size:24px;margin-top:8px;color:var(--navy)}.stat small{color:var(--muted);font-size:10px}.toolbar,.table-wrap,.page-panel{background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}.toolbar{padding:15px;margin-bottom:14px}.filter-grid{display:grid;grid-template-columns:2fr repeat(3,minmax(125px,1fr));gap:9px;align-items:end}.field label{display:block;font-size:9px;font-weight:800;color:#64748b;margin:0 0 5px;letter-spacing:.2px}.field input,.field select,.field textarea{width:100%;border:1px solid #dce3ec;border-radius:7px;padding:9px 10px;background:#fff;color:var(--ink);outline:none;min-height:38px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#7395c1;box-shadow:0 0 0 3px #123a7010}.advanced{display:none;border-top:1px solid var(--line);padding-top:12px;margin-top:12px;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.advanced.show{display:grid}.filter-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.text-btn{border:0;background:none;color:var(--blue);font-size:10px;font-weight:800;padding:4px}.table-head{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;border-bottom:1px solid var(--line)}.table-head h3{margin:0;font-size:13px;color:var(--navy)}.table-head small{color:var(--muted);font-size:10px}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:740px}th{text-align:left;background:#f8fafc;color:#64748b;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:11px 13px;white-space:nowrap}td{padding:12px 13px;border-top:1px solid #edf0f5;font-size:11px;vertical-align:middle}tbody tr:hover{background:#fbfcfe}.student-cell strong{display:block;color:#20314b;font-size:11px}.student-cell small{color:var(--muted);font-size:9px}.amount{font-weight:800;color:var(--navy);white-space:nowrap}.badge{display:inline-block;border-radius:20px;padding:4px 8px;font-size:9px;font-weight:800}.paid{background:#e5f5ed;color:#13784b}.unpaid{background:#fdecea;color:#b83227}.row-actions{display:flex;gap:5px}.icon-btn{border:1px solid var(--line);background:#fff;border-radius:6px;width:28px;height:28px;color:#53647b}.icon-btn:hover{border-color:#9db2ce;color:var(--blue)}.empty,.loading{padding:35px 12px;text-align:center;color:var(--muted)}.mobile-list{display:none}.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.pagination .btn{padding:6px 9px}.overlay{position:fixed;inset:0;background:#08182c70;z-index:40;display:none;align-items:center;justify-content:center;padding:15px}.overlay.open{display:flex}.modal{background:#fff;border-radius:13px;width:min(540px,100%);max-height:92vh;overflow:auto;box-shadow:0 20px 60px #08182c40}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 19px;border-bottom:1px solid var(--line)}.modal-head h3{margin:0;color:var(--navy);font-size:15px}.close{border:0;background:#f1f4f8;border-radius:7px;width:29px;height:29px;font-size:18px;color:#52647c}.modal-body{padding:18px 19px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field.full{grid-column:1/-1}.modal-foot{padding:13px 19px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}.hint{font-size:10px;color:var(--muted);margin-top:4px}.notice{padding:9px 11px;border-radius:7px;background:#f0f5fb;color:#31557f;font-size:10px;margin-bottom:12px}.toast{position:fixed;right:18px;bottom:18px;background:#122c4d;color:#fff;padding:11px 15px;border-radius:8px;box-shadow:var(--shadow);z-index:100;font-size:11px;display:none}.toast.show{display:block}.page-panel{padding:23px}.page-panel h3{margin:0 0 7px;color:var(--navy)}.page-panel p{color:var(--muted);font-size:11px}.login{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}.login-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:26px;width:min(360px,100%);box-shadow:var(--shadow)}.login-card h2{color:var(--navy);margin:0 0 5px}.login-card p{color:var(--muted);font-size:11px;margin:0 0 18px}.login-card .field{margin-bottom:13px}.login-card button{width:100%}
-@media(max-width:1000px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.search-field{grid-column:1/-1}}
-@media(max-width:700px){.sidebar{transform:translateX(-100%);width:265px}.sidebar.open{transform:translateX(0);box-shadow:15px 0 40px #06152c55}.main{margin-left:0}.menu-btn{display:inline-block}.topbar{height:60px;padding:0 13px}.topbar h1{font-size:14px}.content{padding:16px 12px 28px}.page-heading{display:block}.page-heading .actions{margin-top:12px}.cards{grid-template-columns:1fr;gap:8px}.stat{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}.stat strong{font-size:20px;margin-top:2px}.stat small{display:none}.stat-icon{order:2}.toolbar{padding:11px}.filter-grid{grid-template-columns:1fr 1fr;gap:8px}.search-field{grid-column:1/-1}.field label{font-size:8px}.field input,.field select{font-size:11px;padding:8px}.advanced.show{grid-template-columns:1fr 1fr}.table-scroll{display:none}.mobile-list{display:block}.mobile-card{padding:13px;border-bottom:1px solid var(--line)}.mobile-card:last-child{border-bottom:0}.mobile-card-top{display:flex;justify-content:space-between;gap:8px}.mobile-card strong{font-size:12px;color:var(--navy)}.mobile-meta{font-size:9px;color:var(--muted);margin-top:3px}.mobile-card-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px}.mobile-actions{display:flex;gap:5px}.table-head{padding:13px}.pagination{padding:10px 12px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.overlay{padding:0;align-items:flex-end}.modal{border-radius:14px 14px 0 0;max-height:93vh}.modal-body{padding:15px}.modal-head,.modal-foot{padding:13px 15px}.user-chip span{display:none}.advanced.show{grid-template-columns:1fr 1fr}}
-@media(max-width:370px){.filter-grid,.advanced.show{grid-template-columns:1fr}.search-field{grid-column:auto}.actions .btn{flex:1}}
+:root {
+    --primary: #123a70;
+    --navy: #0b1739;
+    --gold: #d4af37;
+    --background: #f3f6fb;
+    --white: #ffffff;
+    --text: #17243a;
+    --muted: #718096;
+    --border: #e5eaf1;
+    --green: #16865c;
+    --red: #d64545;
+    --orange: #d98b22;
+    --shadow: 0 5px 22px rgba(15, 35, 70, .07);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--text);
+}
+
+button, input, select, textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.topbar {
+    background: var(--navy);
+    color: white;
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--gold);
+    color: var(--navy);
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    font-size: 17px;
+}
+
+.brand h1 {
+    font-size: 17px;
+    letter-spacing: .3px;
+}
+
+.brand p {
+    color: #c4d0e4;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.session-label {
+    color: #d8e1ef;
+    font-size: 13px;
+}
+
+.logout-btn {
+    background: rgba(255,255,255,.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,.2);
+    padding: 9px 13px;
+    border-radius: 9px;
+}
+
+.container {
+    width: min(1450px, 100%);
+    margin: auto;
+    padding: 24px;
+}
+
+.page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.page-heading h2 {
+    font-size: 23px;
+    color: var(--navy);
+}
+
+.page-heading p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.primary-btn {
+    background: var(--primary);
+    color: white;
+    border: 0;
+    padding: 12px 17px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.primary-btn:hover {
+    background: var(--navy);
+}
+
+.secondary-btn {
+    background: #edf2f8;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 27px;
+    font-weight: 800;
+    margin-top: 12px;
+    color: var(--navy);
+}
+
+.stat-note {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 7px;
+}
+
+.stat-card.collected {
+    border-left: 4px solid var(--green);
+}
+
+.stat-card.pending {
+    border-left: 4px solid var(--orange);
+}
+
+.stat-card.transactions {
+    border-left: 4px solid var(--primary);
+}
+
+.panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.panel-header h3 {
+    font-size: 16px;
+    color: var(--navy);
+}
+
+.filters {
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    border: 1px solid #dce3ed;
+    border-radius: 9px;
+    padding: 11px 12px;
+    outline: none;
+    background: white;
+    color: var(--text);
+    min-height: 42px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(18,58,112,.08);
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+th {
+    background: #f7f9fc;
+    color: #65738a;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 13px 15px;
+}
+
+td {
+    padding: 14px 15px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+}
+
+tbody tr:hover {
+    background: #fafcff;
+}
+
+.student-name {
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.subtext {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.amount {
+    font-weight: 800;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.badge.paid {
+    background: #e4f6ee;
+    color: #16865c;
+}
+
+.badge.unpaid {
+    background: #fff2df;
+    color: #b87513;
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.icon-btn {
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 7px;
+    padding: 7px 9px;
+    color: var(--primary);
+    font-size: 12px;
+}
+
+.icon-btn.delete {
+    color: var(--red);
+}
+
+.empty {
+    padding: 45px 15px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.pagination {
+    padding: 15px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.pagination span {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.page-buttons {
+    display: flex;
+    gap: 7px;
+}
+
+.page-buttons button {
+    border: 1px solid var(--border);
+    background: white;
+    padding: 8px 12px;
+    border-radius: 7px;
+}
+
+.page-buttons button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+/* Modal */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(7, 18, 40, .62);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    width: min(560px, 100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+
+.modal-header {
+    background: var(--navy);
+    color: white;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 17px;
+}
+
+.close-btn {
+    background: transparent;
+    color: white;
+    border: 0;
+    font-size: 25px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.message {
+    margin-bottom: 13px;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+}
+
+.message.error {
+    display: block;
+    background: #fff0f0;
+    color: #bd3434;
+}
+
+.message.success {
+    display: block;
+    background: #e9f8f0;
+    color: #16865c;
+}
+
+.loading {
+    text-align: center;
+    padding: 25px;
+    color: var(--muted);
+}
+
+.mobile-records {
+    display: none;
+}
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 22px 10px;
+}
+
+/* Mobile */
+
+@media(max-width: 760px) {
+    .topbar {
+        padding: 13px 15px;
+    }
+
+    .brand h1 {
+        font-size: 14px;
+    }
+
+    .brand p {
+        font-size: 10px;
+    }
+
+    .brand-logo {
+        width: 37px;
+        height: 37px;
+    }
+
+    .session-label {
+        display: none;
+    }
+
+    .container {
+        padding: 17px 12px;
+    }
+
+    .page-heading {
+        align-items: flex-start;
+    }
+
+    .page-heading h2 {
+        font-size: 20px;
+    }
+
+    .page-heading p {
+        max-width: 210px;
+        line-height: 1.5;
+    }
+
+    .page-heading .primary-btn {
+        padding: 11px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 23px;
+        margin-top: 7px;
+    }
+
+    .filters {
+        grid-template-columns: 1fr 1fr;
+        padding: 13px;
+    }
+
+    .filters .search-field {
+        grid-column: 1 / -1;
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .table-wrap {
+        display: none;
+    }
+
+    .mobile-records {
+        display: block;
+        padding: 10px;
+    }
+
+    .record-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 10px;
+    }
+
+    .record-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .record-name {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--navy);
+    }
+
+    .record-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .record-details small {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+        margin-bottom: 4px;
+    }
+
+    .record-details strong {
+        font-size: 12px;
+    }
+
+    .record-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        border-top: 1px solid var(--border);
+        padding-top: 12px;
+    }
+
+    .record-actions button {
+        flex: 1;
+        padding: 10px;
+    }
+
+    .pagination {
+        padding: 13px;
+    }
+
+    .pagination span {
+        font-size: 10px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal {
+        width: 100%;
+        max-height: 94vh;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .modal-body {
+        padding: 17px;
+    }
+
+    .modal-footer button {
+        flex: 1;
+    }
+}
+
+@media(max-width: 360px) {
+    .brand h1 {
+        font-size: 12px;
+    }
+
+    .logout-btn {
+        padding: 8px;
+        font-size: 11px;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+
+    .filters .search-field {
+        grid-column: auto;
+    }
+}
 </style>
 </head>
+
 <body>
-<aside class="sidebar" id="sidebar">
- <div class="brand"><div class="brand-mark">DRS</div><div><strong>SAI DRS KIDS SCHOOL</strong><small>Financial Ledger Suite</small></div></div>
- <div class="nav-label">Workspace</div>
- <nav class="nav" id="navigation">
-  <button class="active" data-page="ledger"><span class="ico">▦</span>Dashboard</button>
-  <button data-page="students"><span class="ico">♙</span>Students</button>
-  <button data-page="defaulters"><span class="ico">◷</span>Defaulters</button>
-  <button data-page="fine"><span class="ico">₹</span>Fine Manager</button>
-  <button data-page="payroll"><span class="ico">▤</span>Payroll</button>
-  <button data-page="reports"><span class="ico">▥</span>Financial Reports</button>
- </nav>
- <div class="nav-label">Management</div>
- <nav class="nav">
-  <button data-page="staff"><span class="ico">♧</span>Staff Management</button>
-  <button data-page="receipts"><span class="ico">▣</span>Fee Receipts</button>
- </nav>
- <div class="side-bottom">SAI DRS KIDS SCHOOL<br>Academic Session 2026–27</div>
-</aside>
-<main class="main">
-<header class="topbar"><div class="top-left"><button class="menu-btn" id="menuBtn">☰</button><div><h1>Financial Ledger</h1><div class="subhead">Fee collection and receivables</div></div></div><div class="user-chip"><div class="avatar">AD</div><span>Administrator</span><button class="btn" id="logoutBtn">Logout</button></div></header>
-<section class="content" id="mainContent">
- <div class="page-heading"><div><h2>Fee Overview</h2><p>Monitor collections, outstanding fees and recent transactions.</p></div><div class="actions"><button class="btn" id="refreshBtn">↻ Refresh</button><button class="btn primary" id="collectBtn">＋ Collect Fee</button></div></div>
- <div class="cards">
-  <div class="stat"><div><div class="stat-top">Total Collected <span class="stat-icon">₹</span></div><strong id="totalCollected">₹0</strong><small>Recorded successful payments</small></div></div>
-  <div class="stat"><div><div class="stat-top">Pending Fees <span class="stat-icon">◷</span></div><strong id="totalPending">₹0</strong><small>Outstanding amount in student fee records</small></div></div>
-  <div class="stat"><div><div class="stat-top">Total Receipts <span class="stat-icon">▤</span></div><strong id="receiptCount">0</strong><small>Recorded payment entries</small></div></div>
- </div>
- <div class="toolbar">
-  <div class="filter-grid">
-   <div class="field search-field"><label>SEARCH STUDENT / RECEIPT</label><input id="searchInput" placeholder="Name, admission ID or receipt number..."></div>
-   <div class="field"><label>CLASS</label><select id="classFilter"><option value="">All Classes</option><option>Daycare</option><option>Playgroup</option><option>IK-1</option><option>IK-2</option><option>IK-3</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-   <div class="field"><label>MONTH</label><select id="monthFilter"><option value="">All Months</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option><option>January</option><option>February</option><option>March</option></select></div>
-   <div class="field"><label>PAYMENT STATUS</label><select id="statusFilter"><option value="">All Statuses</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></div>
-  </div>
-  <div class="filter-foot"><button class="text-btn" id="advancedBtn">＋ Advanced filters</button><button class="text-btn" id="clearFilters">Clear filters</button></div>
-  <div class="advanced" id="advancedFilters">
-   <div class="field"><label>PAYMENT MODE</label><select id="modeFilter"><option value="">All Modes</option><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
-   <div class="field"><label>FINANCIAL YEAR</label><select id="yearFilter"><option value="">All Years</option><option>2026-27</option><option>2025-26</option><option>2024-25</option></select></div>
-   <div class="field"><label>SORT ORDER</label><select id="sortFilter"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="high">Amount: high to low</option><option value="low">Amount: low to high</option></select></div>
-  </div>
- </div>
- <div class="table-wrap">
-  <div class="table-head"><div><h3>Transaction Ledger</h3><small id="resultCount">Loading records...</small></div><button class="btn" id="exportBtn">↓ Export CSV</button></div>
-  <div class="table-scroll"><table><thead><tr><th>Receipt No.</th><th>Student</th><th>Class</th><th>Month</th><th>Amount</th><th>Status</th><th>Payment Mode</th><th>Actions</th></tr></thead><tbody id="ledgerBody"><tr><td colspan="8" class="loading">Connecting to database...</td></tr></tbody></table></div>
-  <div class="mobile-list" id="mobileList"></div>
-  <div class="pagination"><span id="pageInfo">Page 1</span><div style="display:flex;gap:6px"><button class="btn" id="prevPage">Previous</button><button class="btn" id="nextPage">Next</button></div></div>
- </div>
-</section>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-logo">DRS</div>
+        <div>
+            <h1>SAI DRS KIDS SCHOOL</h1>
+            <p>Fee Management System</p>
+        </div>
+    </div>
+
+    <div class="header-right">
+        <span class="session-label">Academic Session 2026–27</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<main class="container">
+
+    <section class="page-heading">
+        <div>
+            <h2>Fee Dashboard</h2>
+            <p>Manage student fee payments and receipts.</p>
+        </div>
+        <button class="primary-btn" onclick="openAddModal()">
+            + Collect Fee
+        </button>
+    </section>
+
+    <section class="stats">
+        <div class="stat-card collected">
+            <div class="stat-label">Total Fees Collected</div>
+            <div class="stat-value" id="totalCollected">₹0</div>
+            <div class="stat-note">All recorded paid transactions</div>
+        </div>
+
+        <div class="stat-card pending">
+            <div class="stat-label">Pending Fees</div>
+            <div class="stat-value" id="totalPending">₹0</div>
+            <div class="stat-note">Recorded transactions marked unpaid</div>
+        </div>
+
+        <div class="stat-card transactions">
+            <div class="stat-label">Total Transactions</div>
+            <div class="stat-value" id="totalTransactions">0</div>
+            <div class="stat-note">All fee records</div>
+        </div>
+    </section>
+
+    <section class="panel">
+
+        <div class="panel-header">
+            <h3>Fee Register</h3>
+            <button class="secondary-btn" onclick="loadData()">Refresh</button>
+        </div>
+
+        <div class="filters">
+            <div class="field search-field">
+                <label>Search student / receipt</label>
+                <input id="searchInput" type="search"
+                    placeholder="Enter student name, ID, receipt or UPI reference..."
+                    oninput="applyFilters()">
+            </div>
+
+            <div class="field">
+                <label>Class</label>
+                <select id="classFilter" onchange="applyFilters()">
+                    <option value="">All Classes</option>
+                    <option>IK-1</option>
+                    <option>IK-2</option>
+                    <option>IK-3</option>
+                    <option>Class 1</option>
+                    <option>Class 2</option>
+                    <option>Class 3</option>
+                    <option>Class 4</option>
+                    <option>Class 5</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Month</label>
+                <select id="monthFilter" onchange="applyFilters()">
+                    <option value="">All Months</option>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Payment Status</label>
+                <select id="statusFilter" onchange="applyFilters()">
+                    <option value="">All Status</option>
+                    <option value="paid">Paid</option>
+                    <option value="unpaid">Unpaid</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Receipt</th>
+                        <th>Student</th>
+                        <th>Class</th>
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="7" class="loading">Loading fee records...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mobile-records" id="mobileRecords">
+            <div class="loading">Loading fee records...</div>
+        </div>
+
+        <div class="pagination">
+            <span id="pageInfo">Showing 0 records</span>
+            <div class="page-buttons">
+                <button id="prevPage" onclick="changePage(-1)">Previous</button>
+                <button id="nextPage" onclick="changePage(1)">Next</button>
+            </div>
+        </div>
+
+    </section>
+
 </main>
-<div class="overlay" id="feeModal"><div class="modal">
- <div class="modal-head"><h3 id="modalTitle">Collect Fee</h3><button class="close" data-close="feeModal">×</button></div>
- <form id="feeForm"><div class="modal-body">
-  <div class="notice">Enter the student's admission ID. Student name and class are looked up from the existing students database.</div>
-  <div class="form-grid">
-   <div class="field full"><label>STUDENT ADMISSION ID *</label><input id="studentId" required autocomplete="off" placeholder="Enter admission ID"><div class="hint" id="studentLookup">Student details will appear here.</div></div>
-   <div class="field"><label>STUDENT NAME</label><input id="studentName" readonly placeholder="Auto-filled"></div>
-   <div class="field"><label>CLASS</label><input id="studentClass" readonly placeholder="Auto-filled"></div>
-   <div class="field"><label>FINANCIAL YEAR *</label><select id="financialYear" required><option>2026-27</option><option>2025-26</option><option>2024-25</option></select></div>
-   <div class="field"><label>FEE MONTH *</label><select id="feeMonth" required><option value="">Select month</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option><option>January</option><option>February</option><option>March</option></select></div>
-   <div class="field"><label>AMOUNT (₹) *</label><input id="feeAmount" type="number" min="0" step="0.01" required placeholder="0.00"></div>
-   <div class="field"><label>PAYMENT STATUS *</label><select id="feeStatus"><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></div>
-   <div class="field"><label>PAYMENT MODE</label><select id="feeMode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
-   <div class="field" id="upiField" style="display:none"><label>UPI / TRANSACTION REFERENCE</label><input id="upiRef" placeholder="Transaction reference"></div>
-   <div class="field full"><label>REMARKS</label><textarea id="remarks" rows="2" placeholder="Optional notes"></textarea></div>
-  </div>
- </div><div class="modal-foot"><button type="button" class="btn" data-close="feeModal">Cancel</button><button type="submit" class="btn primary" id="saveFeeBtn">Save Payment</button></div></form>
-</div></div>
-<div class="toast" id="toast"></div>
+
+<footer>
+    SAI DRS KIDS SCHOOL · Fee Management System
+</footer>
+
+<!-- ADD / EDIT MODAL -->
+
+<div class="modal-overlay" id="feeModal">
+    <div class="modal">
+
+        <div class="modal-header">
+            <h3 id="modalTitle">Collect Fee</h3>
+            <button class="close-btn" onclick="closeModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+
+            <div class="message" id="formMessage"></div>
+
+            <form id="feeForm" onsubmit="saveFee(event)">
+
+                <div class="form-grid">
+
+                    <div class="field full">
+                        <label>Student Admission ID</label>
+                        <input id="studentId" required
+                            placeholder="Enter student admission ID">
+                    </div>
+
+                    <div class="field">
+                        <label>Student Name</label>
+                        <input id="studentName" readonly
+                            placeholder="Student name will appear here">
+                    </div>
+
+                    <div class="field">
+                        <label>Class</label>
+                        <input id="studentClass" readonly
+                            placeholder="Class">
+                    </div>
+
+                    <div class="field">
+                        <label>Academic Session</label>
+                        <select id="academicYear" required>
+                            <option value="2026-27">2026-27</option>
+                            <option value="2025-26">2025-26</option>
+                            <option value="2024-25">2024-25</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Fee Month</label>
+                        <select id="feeMonth" required>
+                            <option value="">Select Month</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Amount (₹)</label>
+                        <input id="amount" type="number" min="0"
+                            step="0.01" required placeholder="Enter amount">
+                    </div>
+
+                    <div class="field">
+                        <label>Payment Method</label>
+                        <select id="paymentMode" required onchange="toggleUPI()">
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Payment Status</label>
+                        <select id="status" required>
+                            <option value="paid">Paid</option>
+                            <option value="unpaid">Unpaid</option>
+                        </select>
+                    </div>
+
+                    <div class="field full" id="upiField" style="display:none">
+                        <label>UPI Reference / Transaction ID</label>
+                        <input id="upiRefId" placeholder="Enter UPI reference">
+                    </div>
+
+                    <div class="field full">
+                        <label>Remarks (Optional)</label>
+                        <textarea id="remarks" rows="2"
+                            placeholder="Additional information"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn"
+                        onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="primary-btn" id="saveButton">
+                        Save Payment
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-/* ------------------------------------------------------------------
-   FIREBASE SETUP
-   Replace the placeholder values below with the SAME firebaseConfig
-   from your existing working SAI DRS application. Do not create a new
-   Firebase project. This version keeps the existing database paths:
-   students/{studentId}, students/{studentId}/fees/{month},
-   cashPayments and metaProperties/receiptCounter.
-------------------------------------------------------------------- */
+/* =====================================================
+   FIREBASE CONFIGURATION
+   Paste your ORIGINAL Firebase configuration here.
+   Do not change your existing project configuration.
+===================================================== */
+
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_EXISTING_API_KEY",
-  authDomain: "students-6e271.firebaseapp.com",
-  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-  projectId: "students-6e271",
-  storageBucket: "students-6e271.appspot.com",
-  messagingSenderId: "PASTE_YOUR_EXISTING_MESSAGING_SENDER_ID",
-  appId: "PASTE_YOUR_EXISTING_APP_ID"
+        apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",  
+    authDomain: "students-6e271.firebaseapp.com",  
+    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",  
+    projectId: "students-6e271" 
 };
 
-const CURRENT_SESSION = "2026-27";
-const PAGE_SIZE = 12;
-let db, studentsCache = {}, payments = [], filteredPayments = [], currentPage = 1;
-let editingKey = null, editingOriginal = null, activeStudent = null;
-const $ = id => document.getElementById(id);
-const money = value => "₹" + (Number(value)||0).toLocaleString("en-IN",{maximumFractionDigits:2});
-const safe = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const norm = value => String(value ?? "").trim().toLowerCase();
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),3000)}
-function setBusy(busy){$("saveFeeBtn").disabled=busy;$("saveFeeBtn").textContent=busy?"Saving...":(editingKey?"Update Payment":"Save Payment")}
-function showModal(){ $("feeModal").classList.add("open"); }
-function hideModal(){ $("feeModal").classList.remove("open"); }
-function showPage(page){
- document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
- $("sidebar").classList.remove("open");
- if(page==="ledger"||page==="receipts"){ $("mainContent").style.display=""; $("collectBtn").style.display=""; $("mainContent").querySelector(".page-heading h2").textContent=page==="receipts"?"Fee Receipts":"Fee Overview"; applyFilters(); return; }
- $("collectBtn").style.display="none";
- $("mainContent").innerHTML=`<div class="page-heading"><div><h2>${safe(({students:"Students",defaulters:"Defaulters",fine:"Fine Manager",payroll:"Payroll",reports:"Financial Reports",staff:"Staff Management"})[page]||"Management")}</h2><p>Choose the relevant management module.</p></div><button class="btn" onclick="location.reload()">Back to Dashboard</button></div><div class="page-panel"><h3>This section is not connected in this ledger page</h3><p>This redesigned page focuses on fee collection and the existing Firebase fee ledger. The other modules can remain in your current ERP or be connected separately without changing your student/payment database.</p></div>`;
+const db = firebase.database();
+
+/* =====================================================
+   EXISTING DATABASE PATHS — PRESERVED
+===================================================== */
+
+const STUDENTS_PATH = "students";
+const CASH_PATH = "cashPayments";
+const COUNTER_PATH = "metaProperties/receiptCounter";
+
+/* =====================================================
+   APPLICATION STATE
+===================================================== */
+
+let allRecords = [];
+let filteredRecords = [];
+let currentPage = 1;
+const pageSize = 10;
+
+let editingRecord = null;
+let studentCache = {};
+
+const currentUser =
+    localStorage.getItem("userEmail") || "Admin";
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function money(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+    });
 }
-function initFirebase(){
- if(!window.firebase){$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">Firebase library could not load. Check your internet connection.</td></tr>';return;}
- if(firebaseConfig.apiKey.startsWith("PASTE_")){$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">Add your existing Firebase API key, messagingSenderId and appId in firebaseConfig to connect this page.</td></tr>';return;}
- try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.database();loadData();}
- catch(e){console.error(e);toast("Firebase initialization failed.");}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        }[char];
+    });
 }
-async function loadData(){
- $("ledgerBody").innerHTML='<tr><td colspan="8" class="loading">Loading ledger...</td></tr>';
- try{
-  const [studentSnap,paymentSnap]=await Promise.all([db.ref("students").once("value"),db.ref("cashPayments").once("value")]);
-  studentsCache=studentSnap.val()||{};
-  const raw=paymentSnap.val()||{};
-  payments=Object.entries(raw).map(([key,p])=>normalizePayment(key,p)).filter(Boolean);
-  updateSummary();applyFilters();
- }catch(e){console.error(e);$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">Unable to read Firebase data. Check database URL and Firebase rules.</td></tr>';toast("Could not load records.");}
+
+function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem("isLoggedIn");
+        window.location.href = "index.html";
+    }
 }
-function normalizePayment(key,p){
- if(!p||typeof p!=="object")return null;
- const studentId=String(p.studentId||p.admissionId||p.studentID||"");
- const student=studentsCache[studentId]||{};
- const status=norm(p.status||p.paymentStatus||"paid")==="unpaid"?"unpaid":"paid";
- const amount=Number(p.amount??p.feeAmount??p.paidAmount??0);
- return {key,studentId,name:p.studentName||p.name||student.name||student.studentName||"Unknown Student",className:p.className||p.class||student.class||student.className||"",month:p.month||p.feeMonth||"",year:p.financialYear||p.session||CURRENT_SESSION,amount,status,mode:p.paymentMode||p.mode||"—",receipt:p.receiptNo||p.receiptNumber||p.receipt||key,date:Number(p.timestamp||p.createdAt||p.dateMillis||0),upiRef:p.upiRef||p.transactionId||"",remarks:p.remarks||"",raw:p};
+
+function showMessage(message, type = "error") {
+    const box = document.getElementById("formMessage");
+    box.textContent = message;
+    box.className = "message " + type;
 }
-function updateSummary(){
- const collected=payments.filter(p=>p.status==="paid").reduce((s,p)=>s+p.amount,0);
- let pending=0;
- Object.entries(studentsCache).forEach(([id,student])=>{
-  const fees=student&&student.fees;
-  if(!fees||typeof fees!=="object")return;
-  Object.values(fees).forEach(f=>{
-   if(!f||typeof f!=="object")return;
-   const status=norm(f.status||f.paymentStatus||"");
-   if(status==="unpaid"||status==="pending")pending+=Number(f.amount??f.feeAmount??f.dueAmount??0);
-  });
- });
- $("totalCollected").textContent=money(collected);
- $("totalPending").textContent=money(pending);
- $("receiptCount").textContent=payments.filter(p=>p.status==="paid").length.toLocaleString("en-IN");
+
+function clearMessage() {
+    const box = document.getElementById("formMessage");
+    box.textContent = "";
+    box.className = "message";
 }
-function applyFilters(){
- const q=norm($("searchInput")?.value),cl=$("classFilter")?.value||"",mo=$("monthFilter")?.value||"",st=$("statusFilter")?.value||"",mode=$("modeFilter")?.value||"",yr=$("yearFilter")?.value||"";
- filteredPayments=payments.filter(p=>(!q||[p.name,p.studentId,p.receipt].some(v=>norm(v).includes(q)))&&(!cl||String(p.className)===cl)&&(!mo||p.month===mo)&&(!st||p.status===st)&&(!mode||p.mode===mode)&&(!yr||p.year===yr));
- const sort=$("sortFilter")?.value||"newest";
- filteredPayments.sort((a,b)=>sort==="oldest"?a.date-b.date:sort==="high"?b.amount-a.amount:sort==="low"?a.amount-b.amount:b.date-a.date);
- currentPage=1;renderLedger();
+
+/* =====================================================
+   LOAD FIREBASE DATA
+===================================================== */
+
+function loadData() {
+    document.getElementById("tableBody").innerHTML =
+        '<tr><td colspan="7" class="loading">Loading records...</td></tr>';
+
+    db.ref().once("value")
+        .then(snapshot => {
+            const root = snapshot.val() || {};
+
+            const students = root.students || {};
+            const cashPayments = root.cashPayments || {};
+
+            studentCache = students;
+            allRecords = [];
+
+            Object.keys(students).forEach(studentId => {
+                const student = students[studentId] || {};
+                const fees = student.fees || {};
+
+                Object.keys(fees).forEach(month => {
+                    const fee = fees[month];
+
+                    if (!fee) return;
+
+                    allRecords.push({
+                        ...fee,
+                        studentId: studentId,
+                        studentName: student.name || fee.studentName || "Unknown Student",
+                        studentClass: student.class || fee.class || "",
+                        month: fee.month || month,
+                        academicYear: fee.academicYear || student.academicYear || "",
+                        paymentId: fee.paymentId || "",
+                        source: "students",
+                        recordKey: month
+                    });
+                });
+            });
+
+            /*
+             * Keep legacy cashPayments records available.
+             * Avoid showing the same record twice when it is
+             * already linked from a student's fees entry.
+             */
+
+            const linkedIds = new Set(
+                allRecords.map(record => String(record.paymentId || ""))
+            );
+
+            Object.keys(cashPayments).forEach(paymentId => {
+                if (linkedIds.has(String(paymentId))) return;
+
+                const payment = cashPayments[paymentId] || {};
+
+                const studentId =
+                    payment.studentId ||
+                    payment.admissionNo ||
+                    "";
+
+                const student = students[studentId] || {};
+
+                allRecords.push({
+                    ...payment,
+                    studentId,
+                    studentName: payment.studentName || student.name || "Unknown Student",
+                    studentClass: payment.studentClass || student.class || "",
+                    month: payment.month || "",
+                    paymentId,
+                    source: "cashPayments",
+                    recordKey: paymentId
+                });
+            });
+
+            allRecords.sort((a, b) => {
+                const dateA = new Date(
+                    a.transactionDate || a.date || 0
+                ).getTime();
+
+                const dateB = new Date(
+                    b.transactionDate || b.date || 0
+                ).getTime();
+
+                return dateB - dateA;
+            });
+
+            updateDashboard();
+            applyFilters();
+        })
+        .catch(error => {
+            console.error(error);
+            document.getElementById("tableBody").innerHTML =
+                '<tr><td colspan="7" class="empty">Unable to load records. Check Firebase connection.</td></tr>';
+        });
 }
-function renderLedger(){
- const total=filteredPayments.length,pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
- currentPage=Math.min(currentPage,pages);
- const start=(currentPage-1)*PAGE_SIZE,rows=filteredPayments.slice(start,start+PAGE_SIZE);
- $("resultCount").textContent=`${total} transaction${total===1?"":"s"} found`;
- $("pageInfo").textContent=`Page ${currentPage} of ${pages}`;
- $("prevPage").disabled=currentPage<=1;$("nextPage").disabled=currentPage>=pages;
- if(!rows.length){$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">No transactions match these filters.</td></tr>';$("mobileList").innerHTML='<div class="empty">No transactions found.</div>';return;}
- $("ledgerBody").innerHTML=rows.map(p=>`<tr>
- <td><strong>${safe(p.receipt)}</strong></td>
- <td class="student-cell"><strong>${safe(p.name)}</strong><small>${safe(p.studentId)}</small></td>
- <td>${safe(p.className||"—")}</td><td>${safe(p.month||"—")}<br><small>${safe(p.year)}</small></td>
- <td class="amount">${money(p.amount)}</td><td><span class="badge ${p.status}">${p.status==="paid"?"PAID":"UNPAID"}</span></td><td>${safe(p.mode)}</td>
- <td><div class="row-actions"><button class="icon-btn" title="Print receipt" onclick="printReceipt('${safe(p.key)}')">▤</button><button class="icon-btn" title="Edit" onclick="editPayment('${safe(p.key)}')">✎</button><button class="icon-btn" title="Delete" onclick="deletePayment('${safe(p.key)}')">×</button></div></td></tr>`).join("");
- $("mobileList").innerHTML=rows.map(p=>`<div class="mobile-card"><div class="mobile-card-top"><div><strong>${safe(p.name)}</strong><div class="mobile-meta">${safe(p.studentId)} · ${safe(p.className||"—")} · ${safe(p.month)} ${safe(p.year)}</div></div><span class="badge ${p.status}">${p.status==="paid"?"PAID":"UNPAID"}</span></div><div class="mobile-card-bottom"><div><strong class="amount">${money(p.amount)}</strong><div class="mobile-meta">${safe(p.receipt)} · ${safe(p.mode)}</div></div><div class="mobile-actions"><button class="icon-btn" onclick="printReceipt('${safe(p.key)}')" title="Print">▤</button><button class="icon-btn" onclick="editPayment('${safe(p.key)}')" title="Edit">✎</button><button class="icon-btn" onclick="deletePayment('${safe(p.key)}')" title="Delete">×</button></div></div></div>`).join("");
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+function updateDashboard() {
+    let collected = 0;
+    let pending = 0;
+
+    allRecords.forEach(record => {
+        const amount = Number(record.amount || 0);
+
+        if (String(record.status).toLowerCase() === "paid") {
+            collected += amount;
+        } else {
+            pending += amount;
+        }
+    });
+
+    document.getElementById("totalCollected").textContent =
+        money(collected);
+
+    document.getElementById("totalPending").textContent =
+        money(pending);
+
+    document.getElementById("totalTransactions").textContent =
+        allRecords.length;
 }
-function openNewPayment(){
- editingKey=null;editingOriginal=null;activeStudent=null;$("feeForm").reset();$("modalTitle").textContent="Collect Fee";$("saveFeeBtn").textContent="Save Payment";$("financialYear").value=CURRENT_SESSION;$("studentName").value="";$("studentClass").value="";$("studentLookup").textContent="Student details will appear here.";$("upiField").style.display="none";showModal();
+
+/* =====================================================
+   FILTERS
+===================================================== */
+
+function applyFilters() {
+    const search = document.getElementById("searchInput")
+        .value.trim().toLowerCase();
+
+    const classValue = document.getElementById("classFilter").value;
+    const monthValue = document.getElementById("monthFilter").value;
+    const statusValue = document.getElementById("statusFilter").value;
+
+    filteredRecords = allRecords.filter(record => {
+        const searchable = [
+            record.studentName,
+            record.studentId,
+            record.receiptNo,
+            record.upiRefId,
+            record.paymentId
+        ].join(" ").toLowerCase();
+
+        const matchSearch = !search || searchable.includes(search);
+
+        const matchClass =
+            !classValue || record.studentClass === classValue;
+
+        const matchMonth =
+            !monthValue ||
+            String(record.month).toLowerCase() === monthValue.toLowerCase();
+
+        const matchStatus =
+            !statusValue ||
+            String(record.status).toLowerCase() === statusValue;
+
+        return matchSearch && matchClass && matchMonth && matchStatus;
+    });
+
+    currentPage = 1;
+    renderRecords();
 }
-async function lookupStudent(){
- const id=$("studentId").value.trim();activeStudent=null;$("studentName").value="";$("studentClass").value="";
- if(!id){$("studentLookup").textContent="Enter an admission ID.";return;}
- const student=studentsCache[id];
- if(student){activeStudent=student;$("studentName").value=student.name||student.studentName||student.fullName||"";$("studentClass").value=student.class||student.className||student.grade||"";$("studentLookup").textContent="Student found.";return;}
- try{const snap=await db.ref("students/"+id).once("value");const found=snap.val();if(found){studentsCache[id]=found;activeStudent=found;$("studentName").value=found.name||found.studentName||found.fullName||"";$("studentClass").value=found.class||found.className||found.grade||"";$("studentLookup").textContent="Student found."; }else{$("studentLookup").textContent="No student found with this admission ID.";}}
- catch(e){$("studentLookup").textContent="Could not verify student. Check database connection.";}
+
+/* =====================================================
+   RENDER RECORDS
+===================================================== */
+
+function renderRecords() {
+    const start = (currentPage - 1) * pageSize;
+    const pageRecords = filteredRecords.slice(start, start + pageSize);
+
+    const tbody = document.getElementById("tableBody");
+    const mobile = document.getElementById("mobileRecords");
+
+    if (!filteredRecords.length) {
+        tbody.innerHTML =
+            '<tr><td colspan="7" class="empty">No fee records found.</td></tr>';
+
+        mobile.innerHTML =
+            '<div class="empty">No fee records found.</div>';
+    } else {
+        tbody.innerHTML = pageRecords.map(record => {
+            const status = String(record.status || "unpaid").toLowerCase();
+
+            return `
+            <tr>
+                <td>
+                    <strong>${escapeHTML(record.receiptNo || "—")}</strong>
+                </td>
+                <td>
+                    <div class="student-name">${escapeHTML(record.studentName)}</div>
+                    <div class="subtext">${escapeHTML(record.studentId)}</div>
+                </td>
+                <td>${escapeHTML(record.studentClass || "—")}</td>
+                <td>${escapeHTML(record.month || "—")}</td>
+                <td class="amount">${money(record.amount)}</td>
+                <td>
+                    <span class="badge ${status === "paid" ? "paid" : "unpaid"}">
+                        ${status === "paid" ? "Paid" : "Unpaid"}
+                    </span>
+                </td>
+                <td>
+                    <div class="actions">
+                        <button class="icon-btn"
+                            onclick="printReceipt('${escapeHTML(record.studentId)}','${escapeHTML(record.recordKey)}','${escapeHTML(record.source)}')">
+                            Print
+                        </button>
+                        <button class="icon-btn"
+                            onclick="editRecord('${escapeHTML(record.studentId)}','${escapeHTML(record.recordKey)}','${escapeHTML(record.source)}')">
+                            Edit
+                        </button>
+                        <button class="icon-btn delete"
+                            onclick="deleteRecord('${escapeHTML(record.studentId)}','${escapeHTML(record.recordKey)}','${escapeHTML(record.source)}')">
+                            Delete
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join("");
+
+        mobile.innerHTML = pageRecords.map(record => {
+            const status = String(record.status || "unpaid").toLowerCase();
+
+            return `
+            <div class="record-card">
+                <div class="record-top">
+                    <div>
+                        <div class="record-name">${escapeHTML(record.studentName)}</div>
+                        <div class="subtext">${escapeHTML(record.studentId)} · ${escapeHTML(record.studentClass)}</div>
+                    </div>
+                    <span class="badge ${status === "paid" ? "paid" : "unpaid"}">
+                        ${status === "paid" ? "Paid" : "Unpaid"}
+                    </span>
+                </div>
+
+                <div class="record-details">
+                    <div>
+                        <small>Receipt Number</small>
+                        <strong>${escapeHTML(record.receiptNo || "—")}</strong>
+                    </div>
+                    <div>
+                        <small>Fee Month</small>
+                        <strong>${escapeHTML(record.month || "—")}</strong>
+                    </div>
+                    <div>
+                        <small>Amount</small>
+                        <strong>${money(record.amount)}</strong>
+                    </div>
+                    <div>
+                        <small>Payment Method</small>
+                        <strong>${escapeHTML(record.paymentMode || "—")}</strong>
+                    </div>
+                </div>
+
+                <div class="record-actions">
+                    <button class="secondary-btn"
+                        onclick="printReceipt('${escapeHTML(record.studentId)}','${escapeHTML(record.recordKey)}','${escapeHTML(record.source)}')">
+                        Print
+                    </button>
+                    <button class="secondary-btn"
+                        onclick="editRecord('${escapeHTML(record.studentId)}','${escapeHTML(record.recordKey)}','${escapeHTML(record.source)}')">
+                        Edit
+                    </button>
+                    <button class="secondary-btn"
+                        onclick="deleteRecord('${escapeHTML(record.studentId)}','${escapeHTML(record.recordKey)}','${escapeHTML(record.source)}')">
+                        Delete
+                    </button>
+                </div>
+            </div>`;
+        }).join("");
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
+
+    document.getElementById("pageInfo").textContent =
+        `Showing ${filteredRecords.length ? start + 1 : 0}–${Math.min(start + pageSize, filteredRecords.length)} of ${filteredRecords.length}`;
+
+    document.getElementById("prevPage").disabled = currentPage <= 1;
+    document.getElementById("nextPage").disabled = currentPage >= totalPages;
 }
-async function nextReceiptNumber(){
- const ref=db.ref("metaProperties/receiptCounter");
- let receipt;
- await ref.transaction(current=>{receipt=(Number(current)||0)+1;return receipt;});
- return "DRS-"+String(receipt).padStart(5,"0");
+
+function changePage(direction) {
+    const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
+
+    currentPage = Math.min(
+        totalPages,
+        Math.max(1, currentPage + direction)
+    );
+
+    renderRecords();
 }
-async function savePayment(event){
- event.preventDefault();
- if(!db){toast("Firebase is not connected.");return;}
- const id=$("studentId").value.trim(),student=studentsCache[id]||activeStudent;
- if(!id){toast("Enter student admission ID.");return;}
- if(!student){toast("Student admission ID was not found.");return;}
- const month=$("feeMonth").value,year=$("financialYear").value,amount=Number($("feeAmount").value);
- if(!month||!year||!Number.isFinite(amount)||amount<0){toast("Check month, year and amount.");return;}
- const status=$("feeStatus").value,mode=$("feeMode").value;
- const data={studentId:id,studentName:$("studentName").value||student.name||student.studentName||"Unknown Student",className:$("studentClass").value||student.class||student.className||"",financialYear:year,month,amount,status,paymentMode:mode,upiRef:$("upiRef").value.trim(),remarks:$("remarks").value.trim(),timestamp:editingOriginal?.timestamp||Date.now(),updatedAt:Date.now()};
- setBusy(true);
- try{
-  let key=editingKey,receipt=editingOriginal?.receiptNo||editingOriginal?.receiptNumber||editingOriginal?.receipt;
-  if(!key){receipt= status==="paid" ? await nextReceiptNumber() : "";data.receiptNo=receipt;data.createdAt=Date.now();const newRef=db.ref("cashPayments").push();key=newRef.key;await newRef.set(data);}
-  else{data.receiptNo=receipt||"";await db.ref("cashPayments/"+key).update(data);}
-  // Keep the existing per-student monthly fee record in sync. Update only
-  // the selected month key; unrelated student and fee data are not replaced.
-  const feeRecord={amount,status,paymentStatus:status,financialYear:year,month,paymentMode:mode,receiptNo:receipt||"",upiRef:data.upiRef,remarks:data.remarks,updatedAt:Date.now()};
-  await db.ref("students/"+id+"/fees/"+month).update(feeRecord);
-  toast(editingKey?"Payment updated.":"Payment saved.");
-  hideModal();await loadData();
- }catch(e){console.error(e);toast("Save failed: "+(e.message||"Check Firebase rules."));}
- finally{setBusy(false);}
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+function openAddModal() {
+    editingRecord = null;
+
+    document.getElementById("feeForm").reset();
+    document.getElementById("modalTitle").textContent = "Collect Fee";
+    document.getElementById("saveButton").textContent = "Save Payment";
+    document.getElementById("studentId").readOnly = false;
+    document.getElementById("academicYear").value = "2026-27";
+
+    clearMessage();
+    toggleUPI();
+
+    document.getElementById("feeModal").classList.add("show");
 }
-function editPayment(key){
- const p=payments.find(x=>x.key===key);if(!p)return;
- editingKey=key;editingOriginal=p.raw;activeStudent=studentsCache[p.studentId]||null;
- $("feeForm").reset();$("modalTitle").textContent="Edit Payment";$("saveFeeBtn").textContent="Update Payment";
- $("studentId").value=p.studentId;$("studentName").value=p.name;$("studentClass").value=p.className;$("financialYear").value=p.year;$("feeMonth").value=p.month;$("feeAmount").value=p.amount;$("feeStatus").value=p.status;$("feeMode").value=p.mode;$("upiRef").value=p.upiRef;$("remarks").value=p.remarks;$("studentLookup").textContent="Existing student record.";toggleUpi();showModal();
+
+function closeModal() {
+    document.getElementById("feeModal").classList.remove("show");
+    editingRecord = null;
 }
-async function deletePayment(key){
- const p=payments.find(x=>x.key===key);if(!p)return;
- if(!confirm(`Delete payment ${p.receipt||key} for ${p.name}? This removes the ledger entry only. The student's monthly fee record is not automatically deleted.`))return;
- try{await db.ref("cashPayments/"+key).remove();toast("Ledger entry deleted.");await loadData();}
- catch(e){console.error(e);toast("Could not delete record. Check Firebase rules.");}
+
+function toggleUPI() {
+    const mode = document.getElementById("paymentMode").value;
+
+    document.getElementById("upiField").style.display =
+        mode === "UPI" ? "flex" : "none";
 }
-function printReceipt(key){
- const p=payments.find(x=>x.key===key);if(!p)return;
- const w=window.open("","_blank","width=750,height=800");if(!w){toast("Allow pop-ups to print receipts.");return;}
- w.document.write(`<!DOCTYPE html><html><head><title>Fee Receipt</title><style>body{font-family:Arial,sans-serif;padding:35px;color:#17243a}.receipt{max-width:650px;margin:auto;border:2px solid #123a70;padding:28px}.head{text-align:center;border-bottom:2px solid #d4af37;padding-bottom:15px}.head h2{margin:0;color:#123a70}.head p{margin:5px;font-size:12px}.title{text-align:center;margin:20px;font-weight:bold;letter-spacing:2px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:10px 2px;font-size:14px}.row b{color:#123a70}.amount{text-align:right;font-size:20px;font-weight:bold;margin-top:22px}.foot{margin-top:45px;display:flex;justify-content:space-between;font-size:12px}@media print{button{display:none}}</style></head><body><div class="receipt"><div class="head"><h2>SAI DRS KIDS SCHOOL</h2><p>Jonali, Zoo Road, Guwahati, Assam</p><p>Fee Payment Receipt</p></div><div class="title">OFFICIAL FEE RECEIPT</div><div class="row"><span>Receipt No.</span><b>${safe(p.receipt)}</b></div><div class="row"><span>Student Name</span><b>${safe(p.name)}</b></div><div class="row"><span>Admission ID</span><b>${safe(p.studentId)}</b></div><div class="row"><span>Class</span><b>${safe(p.className)}</b></div><div class="row"><span>Fee Month</span><b>${safe(p.month)} ${safe(p.year)}</b></div><div class="row"><span>Payment Mode</span><b>${safe(p.mode)}</b></div><div class="row"><span>Status</span><b>${safe(p.status.toUpperCase())}</b></div><div class="amount">Amount: ${money(p.amount)}</div><div class="foot"><span>Thank you.</span><span>Authorised Signatory</span></div></div><script>window.onload=()=>window.print()<\/script></body></html>`);
- w.document.close();
-}
-function exportCsv(){
- const rows=[["Receipt No","Student","Admission ID","Class","Month","Financial Year","Amount","Status","Payment Mode","UPI Reference","Remarks"],...filteredPayments.map(p=>[p.receipt,p.name,p.studentId,p.className,p.month,p.year,p.amount,p.status,p.mode,p.upiRef,p.remarks])];
- const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
- const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="sai-drs-fee-ledger.csv";a.click();URL.revokeObjectURL(url);
-}
-function toggleUpi(){$("upiField").style.display=$("feeMode").value==="UPI"?"block":"none";}
-document.addEventListener("DOMContentLoaded",()=>{
- $("menuBtn").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
- $("navigation").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b)showPage(b.dataset.page)});
- document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",hideModal));
- $("feeModal").addEventListener("click",e=>{if(e.target===$("feeModal"))hideModal()});
- $("collectBtn").addEventListener("click",openNewPayment);$("refreshBtn").addEventListener("click",loadData);$("logoutBtn").addEventListener("click",()=>{if(confirm("Log out of this page?")){sessionStorage.removeItem("saiDrsLedgerLoggedIn");location.reload()}});
- $("feeForm").addEventListener("submit",savePayment);$("studentId").addEventListener("change",lookupStudent);$("studentId").addEventListener("blur",lookupStudent);$("feeMode").addEventListener("change",toggleUpi);
- ["searchInput","classFilter","monthFilter","statusFilter","modeFilter","yearFilter","sortFilter"].forEach(id=>$(id).addEventListener("input",applyFilters));
- $("advancedBtn").addEventListener("click",()=>{$("advancedFilters").classList.toggle("show");$("advancedBtn").textContent=$("advancedFilters").classList.contains("show")?"− Hide advanced filters":"＋ Advanced filters"});
- $("clearFilters").addEventListener("click",()=>{["searchInput","classFilter","monthFilter","statusFilter","modeFilter","yearFilter"].forEach(id=>$(id).value="");$("sortFilter").value="newest";applyFilters()});
- $("prevPage").addEventListener("click",()=>{if(currentPage>1){currentPage--;renderLedger()}});
- $("nextPage").addEventListener("click",()=>{if(currentPage<Math.ceil(filteredPayments.length/PAGE_SIZE)){currentPage++;renderLedger()}});
- $("exportBtn").addEventListener("click",exportCsv);
- initFirebase();
+
+/* =====================================================
+   STUDENT LOOKUP
+===================================================== */
+
+document.getElementById("studentId").addEventListener("change", async function() {
+    const id = this.value.trim();
+
+    if (!id) return;
+
+    try {
+        const snapshot = await db.ref(`${STUDENTS_PATH}/${id}`).once("value");
+
+        if (!snapshot.exists()) {
+            document.getElementById("studentName").value = "";
+            document.getElementById("studentClass").value = "";
+            showMessage("Student admission ID not found.");
+            return;
+        }
+
+        const student = snapshot.val();
+
+        document.getElementById("studentName").value =
+            student.name || "";
+
+        document.getElementById("studentClass").value =
+            student.class || "";
+
+        clearMessage();
+    } catch (error) {
+        console.error(error);
+        showMessage("Unable to find student. Check your connection.");
+    }
 });
+
+/* =====================================================
+   RECEIPT NUMBER
+===================================================== */
+
+async function generateReceiptNumber() {
+    const counterRef = db.ref(COUNTER_PATH);
+
+    const result = await counterRef.transaction(current => {
+        return (Number(current) || 0) + 1;
+    });
+
+    if (!result.committed) {
+        throw new Error("Unable to generate receipt number.");
+    }
+
+    return "VCH-" + String(result.snapshot.val()).padStart(6, "0");
+}
+
+/* =====================================================
+   SAVE PAYMENT
+===================================================== */
+
+async function saveFee(event) {
+    event.preventDefault();
+
+    const studentId = document.getElementById("studentId").value.trim();
+    const month = document.getElementById("feeMonth").value;
+    const amount = Number(document.getElementById("amount").value);
+    const paymentMode = document.getElementById("paymentMode").value;
+    const status = document.getElementById("status").value;
+
+    if (!studentId || !month || !amount || amount < 0) {
+        showMessage("Please enter valid student and payment details.");
+        return;
+    }
+
+    const student = studentCache[studentId];
+
+    if (!student) {
+        showMessage("Student not found. Please check the admission ID.");
+        return;
+    }
+
+    const feePath = `${STUDENTS_PATH}/${studentId}/fees/${month}`;
+
+    if (!editingRecord) {
+        const existing = await db.ref(feePath).once("value");
+
+        if (existing.exists()) {
+            showMessage(
+                "A fee record already exists for this student and month. Edit the existing record instead."
+            );
+            return;
+        }
+    }
+
+    const button = document.getElementById("saveButton");
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try {
+        let receiptNo;
+        let paymentId;
+
+        if (editingRecord) {
+            receiptNo = editingRecord.record.receiptNo || "";
+            paymentId = editingRecord.record.paymentId || "";
+        } else {
+            receiptNo = await generateReceiptNumber();
+            paymentId = db.ref(CASH_PATH).push().key;
+        }
+
+        const data = {
+            amount,
+            status,
+            paymentMode,
+            month,
+            receiptNo,
+            paymentId,
+            studentId,
+            studentName: student.name || "",
+            class: student.class || "",
+            academicYear: document.getElementById("academicYear").value,
+            upiRefId: document.getElementById("upiRefId").value.trim(),
+            collectedBy: currentUser,
+            remarks: document.getElementById("remarks").value.trim(),
+            transactionDate: new Date().toISOString()
+        };
+
+        if (editingRecord) {
+            const old = editingRecord;
+
+            if (old.source === "students") {
+                const oldPath =
+                    `${STUDENTS_PATH}/${old.studentId}/fees/${old.recordKey}`;
+
+                if (oldPath !== feePath) {
+                    const target = await db.ref(feePath).once("value");
+
+                    if (target.exists()) {
+                        throw new Error(
+                            "A fee record already exists for the selected month."
+                        );
+                    }
+
+                    const updates = {};
+
+                    updates[oldPath] = null;
+                    updates[feePath] = data;
+
+                    if (old.record.paymentId) {
+                        updates[`${CASH_PATH}/${old.record.paymentId}`] = data;
+                    }
+
+                    await db.ref().update(updates);
+                } else {
+                    const updates = {};
+                    updates[feePath] = data;
+
+                    if (paymentId) {
+                        updates[`${CASH_PATH}/${paymentId}`] = data;
+                    }
+
+                    await db.ref().update(updates);
+                }
+            } else {
+                const updates = {};
+
+                updates[feePath] = data;
+                updates[`${CASH_PATH}/${old.recordKey}`] = data;
+
+                await db.ref().update(updates);
+            }
+        } else {
+            const updates = {};
+
+            updates[feePath] = data;
+            updates[`${CASH_PATH}/${paymentId}`] = data;
+
+            await db.ref().update(updates);
+        }
+
+        closeModal();
+        await loadData();
+
+        alert("Fee record saved successfully.");
+
+    } catch (error) {
+        console.error(error);
+        showMessage(error.message || "Unable to save payment.");
+    } finally {
+        button.disabled = false;
+        button.textContent = editingRecord ? "Update Payment" : "Save Payment";
+    }
+}
+
+/* =====================================================
+   EDIT PAYMENT
+===================================================== */
+
+function editRecord(studentId, recordKey, source) {
+    const record = allRecords.find(item =>
+        item.studentId === studentId &&
+        item.recordKey === recordKey &&
+        item.source === source
+    );
+
+    if (!record) {
+        alert("Record not found.");
+        return;
+    }
+
+    editingRecord = {
+        studentId,
+        recordKey,
+        source,
+        record
+    };
+
+    document.getElementById("feeForm").reset();
+
+    document.getElementById("modalTitle").textContent = "Edit Fee Record";
+    document.getElementById("saveButton").textContent = "Update Payment";
+
+    document.getElementById("studentId").value = studentId;
+    document.getElementById("studentId").readOnly = true;
+
+    document.getElementById("studentName").value =
+        record.studentName || "";
+
+    document.getElementById("studentClass").value =
+        record.studentClass || "";
+
+    document.getElementById("academicYear").value =
+        record.academicYear || "2026-27";
+
+    document.getElementById("feeMonth").value =
+        record.month || "";
+
+    document.getElementById("amount").value =
+        record.amount || "";
+
+    document.getElementById("paymentMode").value =
+        record.paymentMode || "Cash";
+
+    document.getElementById("status").value =
+        String(record.status || "paid").toLowerCase();
+
+    document.getElementById("upiRefId").value =
+        record.upiRefId || "";
+
+    document.getElementById("remarks").value =
+        record.remarks || "";
+
+    toggleUPI();
+    clearMessage();
+
+    document.getElementById("feeModal").classList.add("show");
+}
+
+/* =====================================================
+   DELETE PAYMENT
+===================================================== */
+
+async function deleteRecord(studentId, recordKey, source) {
+    const record = allRecords.find(item =>
+        item.studentId === studentId &&
+        item.recordKey === recordKey &&
+        item.source === source
+    );
+
+    if (!record) return;
+
+    if (!confirm(
+        `Delete the fee record for ${record.studentName} (${record.month})? This cannot be undone.`
+    )) return;
+
+    try {
+        const updates = {};
+
+        if (source === "students") {
+            updates[
+                `${STUDENTS_PATH}/${studentId}/fees/${recordKey}`
+            ] = null;
+
+            if (record.paymentId) {
+                updates[`${CASH_PATH}/${record.paymentId}`] = null;
+            }
+        } else {
+            updates[`${CASH_PATH}/${recordKey}`] = null;
+        }
+
+        await db.ref().update(updates);
+
+        await loadData();
+
+        alert("Fee record deleted successfully.");
+
+    } catch (error) {
+        console.error(error);
+        alert("Unable to delete record: " + error.message);
+    }
+}
+
+/* =====================================================
+   PRINT RECEIPT
+===================================================== */
+
+function printReceipt(studentId, recordKey, source) {
+    const record = allRecords.find(item =>
+        item.studentId === studentId &&
+        item.recordKey === recordKey &&
+        item.source === source
+    );
+
+    if (!record) {
+        alert("Receipt record not found.");
+        return;
+    }
+
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+        alert("Please allow pop-ups to print receipts.");
+        return;
+    }
+
+    const receipt = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Fee Receipt - ${escapeHTML(record.receiptNo)}</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                padding: 30px;
+                color: #17243a;
+            }
+            .receipt {
+                max-width: 650px;
+                margin: auto;
+                border: 2px solid #123a70;
+                padding: 25px;
+            }
+            .header {
+                text-align: center;
+                border-bottom: 2px solid #d4af37;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+            h2 {
+                color: #123a70;
+                margin: 0 0 7px;
+            }
+            .subtitle {
+                font-size: 12px;
+                color: #666;
+            }
+            .receipt-title {
+                text-align: center;
+                font-weight: bold;
+                margin: 18px 0;
+                letter-spacing: 2px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            td {
+                padding: 12px 8px;
+                border-bottom: 1px solid #ddd;
+                font-size: 14px;
+            }
+            td:first-child {
+                font-weight: bold;
+                width: 42%;
+            }
+            .amount {
+                font-size: 22px;
+                color: #123a70;
+                font-weight: bold;
+            }
+            .footer {
+                margin-top: 35px;
+                display: flex;
+                justify-content: space-between;
+                font-size: 12px;
+            }
+            .signature {
+                border-top: 1px solid #333;
+                padding-top: 8px;
+                margin-top: 35px;
+                text-align: center;
+                width: 170px;
+            }
+            @media print {
+                body { padding: 0; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="receipt">
+            <div class="header">
+                <h2>SAI DRS KIDS SCHOOL</h2>
+                <div class="subtitle">Jonali, Zoo Road, Guwahati</div>
+                <div class="subtitle">Fee Payment Receipt</div>
+            </div>
+
+            <div class="receipt-title">PAYMENT RECEIPT</div>
+
+            <table>
+                <tr>
+                    <td>Receipt Number</td>
+                    <td>${escapeHTML(record.receiptNo || "—")}</td>
+                </tr>
+                <tr>
+                    <td>Student Name</td>
+                    <td>${escapeHTML(record.studentName)}</td>
+                </tr>
+                <tr>
+                    <td>Admission ID</td>
+                    <td>${escapeHTML(record.studentId)}</td>
+                </tr>
+                <tr>
+                    <td>Class</td>
+                    <td>${escapeHTML(record.studentClass || "—")}</td>
+                </tr>
+                <tr>
+                    <td>Academic Session</td>
+                    <td>${escapeHTML(record.academicYear || "—")}</td>
+                </tr>
+                <tr>
+                    <td>Fee Month</td>
+                    <td>${escapeHTML(record.month || "—")}</td>
+                </tr>
+                <tr>
+                    <td>Payment Method</td>
+                    <td>${escapeHTML(record.paymentMode || "—")}</td>
+                </tr>
+                <tr>
+                    <td>UPI Reference</td>
+                    <td>${escapeHTML(record.upiRefId || "—")}</td>
+                </tr>
+                <tr>
+                    <td>Payment Status</td>
+                    <td>${escapeHTML(String(record.status || "").toUpperCase())}</td>
+                </tr>
+                <tr>
+                    <td>Amount</td>
+                    <td class="amount">${money(record.amount)}</td>
+                </tr>
+                <tr>
+                    <td>Collected By</td>
+                    <td>${escapeHTML(record.collectedBy || "—")}</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td>${escapeHTML(record.transactionDate || "—")}</td>
+                </tr>
+            </table>
+
+            <div class="footer">
+                <div>Thank you.</div>
+                <div class="signature">Authorised Signature</div>
+            </div>
+        </div>
+
+        <script>
+            window.onload = function() {
+                window.print();
+            };
+        <\/script>
+    </body>
+    </html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(receipt);
+    printWindow.document.close();
+}
+
+/* =====================================================
+   START
+===================================================== */
+
+loadData();
+
+/*
+ * Listen for database changes so the dashboard refreshes
+ * when fee records are changed elsewhere.
+ */
+
+db.ref().on("value", function() {
+    loadData();
+}, function(error) {
+    console.error("Firebase listener error:", error);
+});
+
 </script>
+
 </body>
-</html>
+ </html>
