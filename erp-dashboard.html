@@ -2,1874 +2,270 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAI DRS KIDS SCHOOL ERP – Financial Ledger Suite</title>
-
-<script>
-const isLoggedIn = localStorage.getItem("isLoggedIn");
-if(isLoggedIn !== "true"){
-    window.location.href = "index.html";
-}
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123a70">
+<title>SAI DRS | Financial Ledger</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
-:root {
-    --primary: #1E3A5F;
-    --primary-hover: #152942;
-    --primary-light: #F0F4F8;
-    --sidebar-bg: #0B132B;
-    --sidebar-hover: rgba(255, 255, 255, 0.06);
-    --secondary: #334155;
-    --accent-gold: #D97706;
-    --success: #10B981;
-    --success-bg: #D1FAE5;
-    --success-text: #065F46;
-    --danger: #EF4444;
-    --danger-bg: #FEE2E2;
-    --danger-text: #991B1B;
-    --warning-bg: #FEF3C7;
-    --warning-text: #92400E;
-    --bg-main: #F8FAFC;
-    --bg-card: #FFFFFF;
-    --border-color: #E2E8F0;
-    --text-primary: #0F172A;
-    --text-muted: #64748B;
-    --sidebar-width: 250px;
-    --topbar-height: 64px;
-    --radius-card: 14px;
-    --radius-btn: 8px;
-    --shadow-subtle: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-    --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-}
-
-body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    min-height: 100vh;
-    overflow-x: hidden;
-    line-height: 1.5;
-}
-
-/* APP WRAPPER LAYOUT */
-.app-wrapper {
-    display: flex;
-    width: 100%;
-    min-height: 100vh;
-}
-
-/* FIXED NAVIGATION SIDEBAR */
-.sidebar {
-    width: var(--sidebar-width);
-    background-color: var(--sidebar-bg);
-    color: #F8FAFC;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 150;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid rgba(255,255,255,0.06);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-brand {
-    height: var(--topbar-height);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.sidebar-brand img {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-.sidebar-brand .title-block h2 {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    color: #FFFFFF;
-    line-height: 1.2;
-}
-
-.sidebar-brand .title-block p {
-    font-size: 10px;
-    color: #94A3B8;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.sidebar-menu {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 12px;
-}
-
-.menu-section-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: #64748B;
-    padding: 14px 12px 6px;
-    font-weight: 700;
-}
-
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #94A3B8;
-    text-decoration: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 4px;
-    transition: all 0.2s ease;
-}
-
-.sidebar-menu a i {
-    width: 18px;
-    text-align: center;
-    font-size: 14px;
-}
-
-.sidebar-menu a:hover {
-    color: #FFFFFF;
-    background-color: var(--sidebar-hover);
-}
-
-.sidebar-menu a.active {
-    color: #FFFFFF;
-    background-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.4);
-}
-
-/* OFF-CANVAS MOBILE DRAWER BACKDROP */
-.sidebar-backdrop {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 140;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-}
-
-.sidebar-backdrop.active {
-    display: block;
-    opacity: 1;
-}
-
-/* CORE MAIN CONTAINER CONTAINER */
-.main-content {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition: margin-left 0.25s ease, width 0.25s ease;
-}
-
-/* TOP ACCOUNTING CONTROL BAR (DESKTOP) */
-.topbar {
-    height: var(--topbar-height);
-    background-color: var(--bg-card);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 32px;
-    position: sticky;
-    top: 0;
-    z-index: 90;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-}
-
-.topbar-context h1 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.2px;
-}
-
-.topbar-context p {
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-.topbar-meta-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.meta-info-pill {
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--secondary);
-}
-
-.meta-info-pill span {
-    color: var(--text-muted);
-}
-
-.icon-trigger-btn {
-    background: none;
-    border: 1px solid var(--border-color);
-    font-size: 14px;
-    color: var(--secondary);
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.icon-trigger-btn:hover {
-    background-color: var(--bg-main);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-/* WORKSPACE CONTAINER */
-.workspace-wrapper {
-    padding: 28px 32px;
-    flex: 1;
-}
-
-/* FINANCIAL DASHBOARD METRIC GRID */
-.kpi-dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-.kpi-card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-card);
-    padding: 20px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    box-shadow: var(--shadow-subtle);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px -5px rgba(15, 23, 42, 0.08);
-}
-
-.kpi-card-details h3 {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    font-weight: 600;
-}
-
-.kpi-card-details h2 {
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-    letter-spacing: -0.5px;
-}
-
-.kpi-trend {
-    font-size: 11px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.kpi-trend.up { color: var(--success-text); }
-.kpi-trend.neutral { color: var(--text-muted); }
-
-.kpi-icon-wrapper {
-    background-color: var(--primary-light);
-    color: var(--primary);
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-}
-
-.kpi-card.collected-active .kpi-icon-wrapper {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-}
-
-.kpi-card.collected-active h2 { color: var(--success-text); }
-
-.kpi-card.outstanding-active .kpi-icon-wrapper {
-    background-color: var(--warning-bg);
-    color: var(--warning-text);
-}
-
-.kpi-card.outstanding-active h2 { color: var(--warning-text); }
-
-/* PROFESSIONAL ACTION PANEL BUTTONS */
-.action-ribbon {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    gap: 16px;
-}
-
-.btn-group {
-    display: flex;
-    gap: 12px;
-}
-
-.btn-corporate {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: var(--radius-btn);
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-    background-color: var(--bg-card);
-    min-height: 44px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.btn-corporate-primary {
-    background-color: var(--primary);
-    color: #FFFFFF;
-}
-.btn-corporate-primary:hover { 
-    background-color: var(--primary-hover);
-    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
-}
-
-.btn-corporate-secondary {
-    background-color: var(--bg-card);
-    border-color: var(--border-color);
-    color: var(--secondary);
-}
-.btn-corporate-secondary:hover { 
-    background-color: var(--bg-main); 
-    border-color: #CBD5E1;
-}
-
-.btn-corporate-danger {
-    background-color: #FEF2F2;
-    border-color: #FCA5A5;
-    color: var(--danger);
-}
-.btn-corporate-danger:hover { 
-    background-color: var(--danger);
-    color: #FFFFFF;
-    border-color: var(--danger);
-}
-
-/* ENTERPRISE SEARCH & FILTER CONTROLS GRID */
-.search-control-panel {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-card);
-    padding: 20px;
-    margin-bottom: 24px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    box-shadow: var(--shadow-subtle);
-}
-
-.control-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.control-input-group label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-control-field {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 13px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-btn);
-    background-color: #FFFFFF;
-    color: var(--text-primary);
-    outline: none;
-    min-height: 44px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.form-control-field:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
-}
-
-/* LEDGER CONTAINER & AUDIT TABLE */
-.ledger-container-block {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-card);
-    overflow: hidden;
-    box-shadow: var(--shadow-subtle);
-}
-
-.ledger-block-header {
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #FFFFFF;
-}
-
-.ledger-block-header h2 {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.table-scroll-frame {
-    overflow-x: auto;
-    width: 100%;
-}
-
-.corporate-ledger-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 13px;
-}
-
-.corporate-ledger-table th {
-    background-color: var(--bg-main);
-    color: var(--text-muted);
-    font-weight: 600;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border-color);
-    white-space: nowrap;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    position: sticky;
-    top: 0;
-}
-
-.corporate-ledger-table td {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border-color);
-    white-space: nowrap;
-    vertical-align: middle;
-}
-
-.corporate-ledger-table tbody tr {
-    transition: background-color 0.15s;
-}
-
-.corporate-ledger-table tbody tr:hover {
-    background-color: #F8FAFC;
-}
-
-/* MOBILE CARD VIEW FOR TABLE RECORDS */
-.mobile-ledger-cards {
-    display: none;
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-    background-color: var(--bg-main);
-}
-
-.mobile-ledger-card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.mobile-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.mobile-card-student {
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--text-primary);
-}
-
-.mobile-card-meta {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.mobile-card-mid {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-top: 1px dashed var(--border-color);
-    border-bottom: 1px dashed var(--border-color);
-}
-
-.mobile-card-amount {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.mobile-card-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 2px;
-}
-
-/* MODERNIZED PILL STATUS BADGES */
-.badge-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: capitalize;
-    letter-spacing: 0.2px;
-}
-
-.badge-status.paid {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-}
-
-.badge-status.unpaid {
-    background-color: var(--danger-bg);
-    color: var(--danger-text);
-}
-
-/* TABLE ACTION BUTTONS */
-.table-inline-actions {
-    display: flex;
-    gap: 6px;
-    justify-content: flex-end;
-}
-
-.btn-table-action {
-    background: var(--bg-main);
-    border: 1px solid var(--border-color);
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--secondary);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-}
-
-.btn-table-action:hover {
-    background-color: var(--primary-light);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-.btn-table-action.delete-row:hover {
-    background-color: var(--danger-bg);
-    color: var(--danger);
-    border-color: #FCA5A5;
-}
-
-/* PAGINATION COMPONENT */
-.ledger-pagination-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background-color: #FFFFFF;
-    border-top: 1px solid var(--border-color);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.pagination-metrics-text {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-/* MOBILE VOUCHER MODAL CANVAS */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.modal-overlay.active {
-    display: flex;
-    opacity: 1;
-}
-
-.voucher-modal-canvas {
-    background-color: var(--bg-card);
-    border-radius: var(--radius-card);
-    width: 100%;
-    max-width: 750px;
-    box-shadow: var(--shadow-modal);
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    overflow: hidden;
-    transform: translateY(10px);
-    transition: transform 0.2s ease;
-}
-
-.modal-overlay.active .voucher-modal-canvas {
-    transform: translateY(0);
-}
-
-.voucher-modal-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
-    background-color: #FFFFFF;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.voucher-modal-header h2 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.close-modal-trigger {
-    background: none;
-    border: none;
-    font-size: 18px;
-    color: var(--text-muted);
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.15s;
-}
-
-.close-modal-trigger:hover {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-}
-
-.voucher-modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.voucher-form-section-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--primary);
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    margin-bottom: 14px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.voucher-form-layout-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.span-all-columns {
-    grid-column: span 2;
-}
-
-.voucher-modal-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-color);
-    background-color: var(--bg-main);
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-/* APP ENGINE GLOBAL LOADING OVERLAY */
-.spinner-overlay {
-    display: none;
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
-    background-color: rgba(255,255,255,0.7);
-    backdrop-filter: blur(2px);
-    z-index: 3000;
-    justify-content: center;
-    align-items: center;
-}
-
-.spinner-element {
-    width: 44px;
-    height: 44px;
-    border: 3.5px solid var(--border-color);
-    border-top: 3.5px solid var(--primary);
-    border-radius: 50%;
-    animation: corporateSpin 0.75s linear infinite;
-}
-
-@keyframes corporateSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* ENTERPRISE ALERT TOAST NOTIFICATION STACK */
-.notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 320px;
-    max-width: calc(100vw - 40px);
-}
-
-.toast {
-    padding: 12px 16px;
-    border-radius: var(--radius-btn);
-    color: white;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: corporateSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.toast.toast-success { background-color: var(--success); }
-.toast.toast-error { background-color: var(--danger); }
-.toast.toast-info { background-color: var(--primary); }
-
-@keyframes corporateSlideIn {
-    from { transform: translateX(110%); }
-    to { transform: translateX(0); }
-}
-
-/* COMPACT STICKY MOBILE HEADER BAR */
-.mobile-header-bar {
-    display: none;
-    background-color: var(--sidebar-bg);
-    color: white;
-    padding: 12px 16px;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 101;
-    height: 56px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.mobile-header-bar .brand-title {
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.drawer-trigger-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-}
-
-.drawer-trigger-btn:active {
-    background-color: rgba(255,255,255,0.1);
-}
-
-/* PRINT-SPECIFIC INVOICE STYLING OVERRIDES */
-@media print {
-    body * { visibility: hidden; }
-    #printableReceipt, #printableReceipt * { visibility: visible; }
-    #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; }
-    .no-pdf-print { display: none !important; }
-}
-
-#printableReceipt {
-    display: none;
-    background: #FFFFFF;
-    color: #000000;
-    padding: 24px;
-}
-
-/* RESPONSIVE BREAKPOINTS (320px - 1024px) */
-@media (max-width: 1024px) {
-    .kpi-dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 992px) {
-    .mobile-header-bar { display: flex; }
-    
-    .sidebar {
-        transform: translateX(-100%);
-        top: 0;
-        height: 100vh;
-        z-index: 150;
-    }
-    
-    .sidebar.open { 
-        transform: translateX(0); 
-    }
-
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .topbar { display: none; }
-    
-    .workspace-wrapper {
-        padding: 16px;
-    }
-    
-    .search-control-panel { 
-        grid-template-columns: 1fr; 
-        padding: 16px; 
-    }
-
-    /* MOBILE LEDGER TRANSFORMATION */
-    .table-scroll-frame { display: none; }
-    .mobile-ledger-cards { display: flex; }
-
-    /* ACTION BUTTONS MOBILE STACK */
-    .action-ribbon {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .btn-group {
-        width: 100%;
-        flex-direction: column;
-    }
-    .btn-corporate {
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* VOUCHER MODAL MOBILE OPTIMIZATION */
-    .modal-overlay {
-        padding: 0;
-        align-items: flex-end;
-    }
-    .voucher-modal-canvas {
-        max-height: 90vh;
-        width: 100%;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-    .voucher-modal-header {
-        padding: 16px 20px;
-    }
-    .voucher-modal-body {
-        padding: 16px;
-    }
-    .voucher-form-layout-grid { 
-        grid-template-columns: 1fr; 
-        gap: 12px; 
-        margin-bottom: 16px;
-    }
-    .span-all-columns { grid-column: span 1; }
-
-    .voucher-modal-footer {
-        padding: 12px 16px;
-        position: sticky;
-        bottom: 0;
-        background-color: var(--bg-card);
-        border-top: 1px solid var(--border-color);
-        flex-direction: column-reverse;
-    }
-    .voucher-modal-footer button {
-        width: 100%;
-    }
-}
-
-@media (max-width: 640px) {
-    .kpi-dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .ledger-pagination-bar {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .ledger-pagination-bar .btn-group {
-        flex-direction: row;
-        width: 100%;
-    }
-    
-    .ledger-pagination-bar .btn-group button {
-        flex: 1;
-    }
-}
+:root{--blue:#123a70;--navy:#0b1f3e;--gold:#d4af37;--bg:#f4f7fb;--ink:#17243a;--muted:#718096;--line:#e5eaf1;--green:#138653;--red:#bd382e;--white:#fff;--shadow:0 7px 24px rgba(18,58,112,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:var(--navy);color:#fff;padding:21px 14px;display:flex;flex-direction:column;z-index:20;transition:transform .2s}.brand{display:flex;gap:10px;align-items:center;padding:4px 9px 21px;border-bottom:1px solid #ffffff22}.brand-mark{width:42px;height:42px;border-radius:12px;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-weight:900}.brand strong{display:block;font-size:13px;letter-spacing:.3px}.brand small{color:#b8c8dc;font-size:10px}.nav-label{margin:21px 10px 7px;color:#91a6c2;text-transform:uppercase;font-size:10px;letter-spacing:1.2px}.nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:8px;background:transparent;color:#cbd6e5;text-align:left;margin:2px 0;font-weight:600;font-size:12px}.nav button:hover,.nav button.active{background:#ffffff18;color:white}.nav button.active{box-shadow:inset 3px 0 var(--gold)}.ico{width:18px;text-align:center;font-size:15px}.side-bottom{margin-top:auto;padding:14px 9px 3px;border-top:1px solid #ffffff22;color:#9fb0c6;font-size:10px}.main{margin-left:245px;min-height:100vh}.topbar{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}.top-left{display:flex;align-items:center;gap:12px}.topbar h1{font-size:17px;margin:0;color:var(--navy)}.subhead{font-size:10px;color:var(--muted);margin-top:2px}.user-chip{display:flex;align-items:center;gap:9px;color:#53647b;font-size:11px}.avatar{width:33px;height:33px;border-radius:50%;background:#eaf0f8;color:var(--blue);display:grid;place-items:center;font-weight:800}.menu-btn{display:none;border:0;background:#edf2f8;border-radius:8px;padding:8px 10px;color:var(--blue)}.content{padding:25px 28px 40px;max-width:1550px;margin:auto}.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:19px}.page-heading h2{font-size:21px;margin:0 0 4px;color:var(--navy)}.page-heading p{margin:0;color:var(--muted);font-size:11px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;color:var(--blue);padding:9px 13px;border-radius:8px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.gold{background:var(--gold);color:var(--navy);border-color:var(--gold)}.btn.danger{color:var(--red)}.btn:disabled{opacity:.5;cursor:not-allowed}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:17px 18px;box-shadow:var(--shadow)}.stat-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px;font-weight:700}.stat-icon{width:33px;height:33px;border-radius:9px;background:#edf3fa;color:var(--blue);display:grid;place-items:center;font-size:15px}.stat strong{display:block;font-size:24px;margin-top:8px;color:var(--navy)}.stat small{color:var(--muted);font-size:10px}.toolbar,.table-wrap,.page-panel{background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}.toolbar{padding:15px;margin-bottom:14px}.filter-grid{display:grid;grid-template-columns:2fr repeat(3,minmax(125px,1fr));gap:9px;align-items:end}.field label{display:block;font-size:9px;font-weight:800;color:#64748b;margin:0 0 5px;letter-spacing:.2px}.field input,.field select,.field textarea{width:100%;border:1px solid #dce3ec;border-radius:7px;padding:9px 10px;background:#fff;color:var(--ink);outline:none;min-height:38px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#7395c1;box-shadow:0 0 0 3px #123a7010}.advanced{display:none;border-top:1px solid var(--line);padding-top:12px;margin-top:12px;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.advanced.show{display:grid}.filter-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.text-btn{border:0;background:none;color:var(--blue);font-size:10px;font-weight:800;padding:4px}.table-head{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;border-bottom:1px solid var(--line)}.table-head h3{margin:0;font-size:13px;color:var(--navy)}.table-head small{color:var(--muted);font-size:10px}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:740px}th{text-align:left;background:#f8fafc;color:#64748b;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:11px 13px;white-space:nowrap}td{padding:12px 13px;border-top:1px solid #edf0f5;font-size:11px;vertical-align:middle}tbody tr:hover{background:#fbfcfe}.student-cell strong{display:block;color:#20314b;font-size:11px}.student-cell small{color:var(--muted);font-size:9px}.amount{font-weight:800;color:var(--navy);white-space:nowrap}.badge{display:inline-block;border-radius:20px;padding:4px 8px;font-size:9px;font-weight:800}.paid{background:#e5f5ed;color:#13784b}.unpaid{background:#fdecea;color:#b83227}.row-actions{display:flex;gap:5px}.icon-btn{border:1px solid var(--line);background:#fff;border-radius:6px;width:28px;height:28px;color:#53647b}.icon-btn:hover{border-color:#9db2ce;color:var(--blue)}.empty,.loading{padding:35px 12px;text-align:center;color:var(--muted)}.mobile-list{display:none}.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.pagination .btn{padding:6px 9px}.overlay{position:fixed;inset:0;background:#08182c70;z-index:40;display:none;align-items:center;justify-content:center;padding:15px}.overlay.open{display:flex}.modal{background:#fff;border-radius:13px;width:min(540px,100%);max-height:92vh;overflow:auto;box-shadow:0 20px 60px #08182c40}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 19px;border-bottom:1px solid var(--line)}.modal-head h3{margin:0;color:var(--navy);font-size:15px}.close{border:0;background:#f1f4f8;border-radius:7px;width:29px;height:29px;font-size:18px;color:#52647c}.modal-body{padding:18px 19px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field.full{grid-column:1/-1}.modal-foot{padding:13px 19px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}.hint{font-size:10px;color:var(--muted);margin-top:4px}.notice{padding:9px 11px;border-radius:7px;background:#f0f5fb;color:#31557f;font-size:10px;margin-bottom:12px}.toast{position:fixed;right:18px;bottom:18px;background:#122c4d;color:#fff;padding:11px 15px;border-radius:8px;box-shadow:var(--shadow);z-index:100;font-size:11px;display:none}.toast.show{display:block}.page-panel{padding:23px}.page-panel h3{margin:0 0 7px;color:var(--navy)}.page-panel p{color:var(--muted);font-size:11px}.login{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}.login-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:26px;width:min(360px,100%);box-shadow:var(--shadow)}.login-card h2{color:var(--navy);margin:0 0 5px}.login-card p{color:var(--muted);font-size:11px;margin:0 0 18px}.login-card .field{margin-bottom:13px}.login-card button{width:100%}
+@media(max-width:1000px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.search-field{grid-column:1/-1}}
+@media(max-width:700px){.sidebar{transform:translateX(-100%);width:265px}.sidebar.open{transform:translateX(0);box-shadow:15px 0 40px #06152c55}.main{margin-left:0}.menu-btn{display:inline-block}.topbar{height:60px;padding:0 13px}.topbar h1{font-size:14px}.content{padding:16px 12px 28px}.page-heading{display:block}.page-heading .actions{margin-top:12px}.cards{grid-template-columns:1fr;gap:8px}.stat{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}.stat strong{font-size:20px;margin-top:2px}.stat small{display:none}.stat-icon{order:2}.toolbar{padding:11px}.filter-grid{grid-template-columns:1fr 1fr;gap:8px}.search-field{grid-column:1/-1}.field label{font-size:8px}.field input,.field select{font-size:11px;padding:8px}.advanced.show{grid-template-columns:1fr 1fr}.table-scroll{display:none}.mobile-list{display:block}.mobile-card{padding:13px;border-bottom:1px solid var(--line)}.mobile-card:last-child{border-bottom:0}.mobile-card-top{display:flex;justify-content:space-between;gap:8px}.mobile-card strong{font-size:12px;color:var(--navy)}.mobile-meta{font-size:9px;color:var(--muted);margin-top:3px}.mobile-card-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px}.mobile-actions{display:flex;gap:5px}.table-head{padding:13px}.pagination{padding:10px 12px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.overlay{padding:0;align-items:flex-end}.modal{border-radius:14px 14px 0 0;max-height:93vh}.modal-body{padding:15px}.modal-head,.modal-foot{padding:13px 15px}.user-chip span{display:none}.advanced.show{grid-template-columns:1fr 1fr}}
+@media(max-width:370px){.filter-grid,.advanced.show{grid-template-columns:1fr}.search-field{grid-column:auto}.actions .btn{flex:1}}
 </style>
 </head>
-
 <body>
-
-<div class="spinner-overlay" id="loadingSpinner">
-    <div class="spinner-element"></div>
-</div>
-
-<div class="notification-container" id="toastContainer"></div>
-
-<!-- OFF-CANVAS MOBILE DRAWER BACKDROP -->
-<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
-
-<!-- STICKY MOBILE HEADER BAR -->
-<div class="mobile-header-bar">
-    <button class="drawer-trigger-btn" onclick="toggleSidebar()" aria-label="Open Navigation">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-    <div class="brand-title">
-        <i class="fa-solid fa-graduation-cap" style="color: var(--accent-gold);"></i>
-        <span>SAI DRS KIDS SCHOOL ERP</span>
-    </div>
-    <button class="drawer-trigger-btn" onclick="openPaymentModal('create')" aria-label="Quick Action">
-        <i class="fa-solid fa-plus"></i>
-    </button>
-</div>
-
-<div class="app-wrapper">
-
-    <!-- DESKTOP / MOBILE NAVIGATION SIDEBAR -->
-    <div class="sidebar" id="appSidebar">
-        <div class="sidebar-brand">
-            <img src="logo.jpeg" alt="ERP Logo" onerror="this.src='https://via.placeholder.com/34/1e3a5f/ffffff?text=ERP'">
-            <div class="title-block">
-                <h2>SAI DRS KIDS SCHOOL</h2>
-                <p>Accounting Suite</p>
-            </div>
-        </div>
-
-        <div class="sidebar-menu">
-            <div class="menu-section-label">General Ledger</div>
-            <a href="erp-dashboard.html" onclick="closeSidebar()"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Control</span></a>
-            <a href="students.html" onclick="closeSidebar()"><i class="fa-solid fa-address-book"></i> <span>Student Subsidiary Ledger</span></a>
-            <a href="defaulters.html" onclick="closeSidebar()"><i class="fa-solid fa-triangle-exclamation"></i> <span>Accounts Receivable</span></a>
-            <a href="fine.html" onclick="closeSidebar()"><i class="fa-solid fa-receipt"></i> <span>Fine Manager</span></a>
-
-            <div class="menu-section-label">Operations & Payroll</div>
-            <a href="payroll.html" onclick="closeSidebar()"><i class="fa-solid fa-money-check-dollar"></i> <span>Payroll Disbursements</span></a>
-            <a href="reports.html" onclick="closeSidebar()"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Financial Statements</span></a>
-            <a href="master-setup.html" onclick="closeSidebar()"><i class="fa-solid fa-gears"></i> <span>System Master Config</span></a>
-            <a href="add-staff.html" onclick="closeSidebar()"><i class="fa-solid fa-user-plus"></i> <span>Add Staff</span></a>
-            <a href="receipt.html" class="active" onclick="closeSidebar()"><i class="fa-solid fa-receipt"></i> <span>Receipt Generator</span></a>
-            <a href="Add-Student.html" onclick="closeSidebar()"><i class="fa-solid fa-user-graduate"></i> <span>Add Student</span></a>
-        </div>
-    </div>
-
-    <div class="main-content">
-
-        <!-- DESKTOP TOP BAR -->
-        <div class="topbar">
-            <div class="topbar-context">
-                <h1>Accounts & Fees</h1>
-                <p>Centralized Receipt Book Transactions & Multi-channel Audits</p>
-            </div>
-
-            <div class="topbar-meta-actions">
-                <div class="meta-info-pill">
-                    <span>F.Y.</span> <strong>2026-2027</strong>
-                </div>
-                <div class="meta-info-pill">
-                    <i class="fa-solid fa-user-tie"></i> <strong id="topbarUserEmail">Admin</strong>
-                </div>
-                <button class="icon-trigger-btn" title="Global Variables Config">
-                    <i class="fa-solid fa-sliders"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="workspace-wrapper">
-
-            <!-- KPI DASHBOARD METRIC GRID -->
-            <div class="kpi-dashboard-grid">
-                <div class="kpi-card collected-active">
-                    <div class="kpi-card-details">
-                        <h3>Total Receipts Realized</h3>
-                        <h2 id="totalCollected">₹0.00</h2>
-                        <div class="kpi-trend up"><i class="fa-solid fa-circle-up"></i> Net Cash Realized</div>
-                    </div>
-                    <div class="kpi-icon-wrapper"><i class="fa-solid fa-vault"></i></div>
-                </div>
-                <div class="kpi-card outstanding-active">
-                    <div class="kpi-card-details">
-                        <h3>Outstanding Receivables</h3>
-                        <h2 id="totalOutstanding">₹0.00</h2>
-                        <div class="kpi-trend"><i class="fa-solid fa-clock"></i> Pending Settlement</div>
-                    </div>
-                    <div class="kpi-icon-wrapper"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-card-details">
-                        <h3>Voucher Counter</h3>
-                        <h2 id="totalTransactions">0</h2>
-                        <div class="kpi-trend neutral">Total Processed Logs</div>
-                    </div>
-                    <div class="kpi-icon-wrapper"><i class="fa-solid fa-folder-open"></i></div>
-                </div>
-            </div>
-
-            <!-- ACTION BUTTONS RIBBON -->
-            <div class="action-ribbon">
-                <div class="btn-group">
-                    <button class="btn-corporate btn-corporate-primary" onclick="openPaymentModal('create')">
-                        <i class="fa-solid fa-file-circle-plus"></i> Collect New Fee Voucher
-                    </button>
-                </div>
-                <div class="btn-group">
-                    <button class="btn-corporate btn-corporate-danger" onclick="logout()">
-                        <i class="fa-solid fa-power-off"></i> Terminate Session
-                    </button>
-                </div>
-            </div>
-
-            <!-- SEARCH & FILTERS CONTAINER -->
-            <div class="search-control-panel">
-                <div class="control-input-group">
-                    <label>Identity / Receipt Lookup</label>
-                    <input type="text" id="feeSearch" class="form-control-field" placeholder="Search ID, Name, Receipt..." oninput="filterAndPaginateData()">
-                </div>
-
-                <div class="control-input-group">
-                    <label>Class Segment</label>
-                    <select id="classFilter" class="form-control-field" onchange="filterAndPaginateData()">
-                        <option value="">All Classes (Unfiltered)</option>
-                        <option value="IK-1">IK-1</option>
-                        <option value="IK-2">IK-2</option>
-                        <option value="IK-3">IK-3</option>
-                        <option value="1">Class 1</option>
-                        <option value="2">Class 2</option>
-                        <option value="3">Class 3</option>
-                        <option value="4">Class 4</option>
-                        <option value="5">Class 5</option>
-                    </select>
-                </div>
-
-                <div class="control-input-group">
-                    <label>Allocation Month</label>
-                    <select id="monthFilter" class="form-control-field" onchange="filterAndPaginateData()">
-                        <option value="">All Months</option>
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                </div>
-
-                <div class="control-input-group">
-                    <label>Cash/Bank Ledger</label>
-                    <select id="modeFilter" class="form-control-field" onchange="filterAndPaginateData()">
-                        <option value="">All Modes</option>
-                        <option value="Cash">Cash Account</option>
-                        <option value="UPI">UPI Electronic Clearing</option>
-                        <option value="Bank Transfer">Bank Transfer / NEFT</option>
-                        <option value="Cheque">Cheque Settlement Pool</option>
-                    </select>
-                </div>
-
-                <div class="control-input-group">
-                    <label>Financial Year</label>
-                    <select id="yearFilter" class="form-control-field" onchange="filterAndPaginateData()">
-                        <option value="">All Years</option>
-                        <option value="2025-2026">2025-2026</option>
-                        <option value="2026-2027">2026-2027</option>
-                    </select>
-                </div>
-
-                <div class="control-input-group">
-                    <label>Realization Status</label>
-                    <select id="statusFilter" class="form-control-field" onchange="filterAndPaginateData()">
-                        <option value="">All Statuses</option>
-                        <option value="paid">Paid / Cleared</option>
-                        <option value="unpaid">Unpaid / Accrued</option>
-                    </select>
-                </div>
-
-                <div class="control-input-group">
-                    <label>Chronological Sort</label>
-                    <select id="dateSortFilter" class="form-control-field" onchange="filterAndPaginateData()">
-                        <option value="latest">Latest First</option>
-                        <option value="oldest">Oldest First</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- CENTRAL LEDGER DISPLAY -->
-            <div class="ledger-container-block" id="pdfReportContainer">
-                <div class="ledger-block-header">
-                    <h2>Central Fee Collection Register Ledger</h2>
-                    <div class="meta-info-pill no-pdf-print" style="font-size:11px;">
-                        <i class="fa-solid fa-arrows-rotate"></i> Realtime Sync Active
-                    </div>
-                </div>
-
-                <!-- DESKTOP AUDIT TABLE -->
-                <div class="table-scroll-frame">
-                    <table class="corporate-ledger-table">
-                        <thead>
-                            <tr>
-                                <th>Receipt No</th>
-                                <th>Admission ID</th>
-                                <th>Student Full Name</th>
-                                <th>Classification Group</th>
-                                <th>Accounting Month</th>
-                                <th style="text-align: right;">Amount Face (₹)</th>
-                                <th>Asset Clearing Mode</th>
-                                <th>Ledger Status</th>
-                                <th class="no-pdf-print" style="text-align: right; width: 120px;">Audits & Controls</th>
-                            </tr>
-                        </thead>
-                        <tbody id="masterFeesTable">
-                            <tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 30px;"><i class="fa-solid fa-spinner fa-spin"></i> Instantiating dynamic distributed memory cells...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- MOBILE CARD VIEW -->
-                <div class="mobile-ledger-cards" id="masterFeesCards"></div>
-
-                <!-- PAGINATION BAR -->
-                <div class="ledger-pagination-bar no-pdf-print">
-                    <div class="pagination-metrics-text" id="paginationDisplayInfo">Showing logs 0-0 of 0</div>
-                    <div class="btn-group">
-                        <button class="btn-corporate btn-corporate-secondary" id="prevPageBtn" onclick="changePaginationPage(-1)" style="min-height: 38px; padding: 6px 14px; font-size: 12px;"><i class="fa-solid fa-chevron-left"></i> Previous</button>
-                        <button class="btn-corporate btn-corporate-secondary" id="nextPageBtn" onclick="changePaginationPage(1)" style="min-height: 38px; padding: 6px 14px; font-size: 12px;">Next <i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- VOUCHER MODAL CONTAINER -->
-<div class="modal-overlay" id="feeModal">
-    <div class="voucher-modal-canvas">
-        <div class="voucher-modal-header">
-            <h2 id="modalActionTitle"><i class="fa-solid fa-file-invoice"></i> Post Financial Revenue Receipt Voucher</h2>
-            <button class="close-modal-trigger" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <form id="feeForm" onsubmit="handleFormSubmission(event)">
-            <input type="hidden" id="editPaymentId">
-            <input type="hidden" id="editReceiptNo">
-
-            <div class="voucher-modal-body">
-
-                <div class="voucher-form-section-title">I. Customer / Student Mapping Profile</div>
-                <div class="voucher-form-layout-grid">
-                    <div class="control-input-group span-all-columns">
-                        <label for="modalStudentId">Student Key Mapping Reference (Admission ID / Mobile) *</label>
-                        <input type="text" id="modalStudentId" class="form-control-field" required placeholder="e.g. Enter valid master database mapping key reference...">
-                    </div>
-                </div>
-
-                <div class="voucher-form-section-title">II. Fiscal Period Allocation Parameters</div>
-                <div class="voucher-form-layout-grid">
-                    <div class="control-input-group">
-                        <label for="modalYear">Target Academic Financial Year *</label>
-                        <select id="modalYear" class="form-control-field" required>
-                            <option value="2025-2026">2025-2026</option>
-                            <option value="2026-2027" selected>2026-2027</option>
-                        </select>
-                    </div>
-                    <div class="control-input-group">
-                        <label for="modalMonth">Revenue Cycle Allocation Month *</label>
-                        <select id="modalMonth" class="form-control-field" required>
-                            <option value="January">January</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                            <option value="April">April</option>
-                            <option value="May">May</option>
-                            <option value="June">June</option>
-                            <option value="July">July</option>
-                            <option value="August">August</option>
-                            <option value="September">September</option>
-                            <option value="October">October</option>
-                            <option value="November">November</option>
-                            <option value="December">December</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="voucher-form-section-title">III. Asset Valuation & Realization Strategy</div>
-                <div class="voucher-form-layout-grid">
-                    <div class="control-input-group">
-                        <label for="modalAmount">Face Payment Value (₹ Net Amount) *</label>
-                        <input type="number" id="modalAmount" class="form-control-field" min="0" step="0.01" required placeholder="0.00">
-                    </div>
-                    <div class="control-input-group">
-                        <label for="modalStatus">Clearing Realization Status *</label>
-                        <select id="modalStatus" class="form-control-field" required>
-                            <option value="paid">Paid / Cleared Value</option>
-                            <option value="unpaid">Unpaid / Deferred Receivable</option>
-                        </select>
-                    </div>
-                    <div class="control-input-group span-all-columns">
-                        <label for="modalPaymentMode">Target Asset Ledger Pool *</label>
-                        <select id="modalPaymentMode" class="form-control-field" required onchange="toggleUpiReferenceField()">
-                            <option value="Cash">Cash Account Balance</option>
-                            <option value="UPI">UPI Electronic Liquid Pool</option>
-                            <option value="Bank Transfer">Bank Transfer Vault Clearance</option>
-                            <option value="Cheque">Cheque / Clearing House Queue</option>
-                        </select>
-                    </div>
-
-                    <div class="control-input-group span-all-columns" id="modalUpiRefGroup" style="display: none;">
-                        <label for="modalUpiRefId">UPI Payment / Transaction Ref ID *</label>
-                        <input type="text" id="modalUpiRefId" class="form-control-field" placeholder="Enter UPI Transaction / Ref ID (e.g., 401234567890)">
-                    </div>
-
-                    <div class="control-input-group span-all-columns">
-                        <label for="modalRemarks">Transaction Narration / Audit Notes</label>
-                        <textarea id="modalRemarks" class="form-control-field" rows="2" placeholder="Provide formal transaction narration trail or clearing reference notes here..."></textarea>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="voucher-modal-footer">
-                <button type="button" class="btn-corporate btn-corporate-secondary" onclick="closeModal()">Discard Entry</button>
-                <button type="submit" class="btn-corporate btn-corporate-primary" id="modalSubmitButton">Commit Ledger Transaction</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="printableReceipt"></div>
-
+<aside class="sidebar" id="sidebar">
+ <div class="brand"><div class="brand-mark">DRS</div><div><strong>SAI DRS KIDS SCHOOL</strong><small>Financial Ledger Suite</small></div></div>
+ <div class="nav-label">Workspace</div>
+ <nav class="nav" id="navigation">
+  <button class="active" data-page="ledger"><span class="ico">▦</span>Dashboard</button>
+  <button data-page="students"><span class="ico">♙</span>Students</button>
+  <button data-page="defaulters"><span class="ico">◷</span>Defaulters</button>
+  <button data-page="fine"><span class="ico">₹</span>Fine Manager</button>
+  <button data-page="payroll"><span class="ico">▤</span>Payroll</button>
+  <button data-page="reports"><span class="ico">▥</span>Financial Reports</button>
+ </nav>
+ <div class="nav-label">Management</div>
+ <nav class="nav">
+  <button data-page="staff"><span class="ico">♧</span>Staff Management</button>
+  <button data-page="receipts"><span class="ico">▣</span>Fee Receipts</button>
+ </nav>
+ <div class="side-bottom">SAI DRS KIDS SCHOOL<br>Academic Session 2026–27</div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="top-left"><button class="menu-btn" id="menuBtn">☰</button><div><h1>Financial Ledger</h1><div class="subhead">Fee collection and receivables</div></div></div><div class="user-chip"><div class="avatar">AD</div><span>Administrator</span><button class="btn" id="logoutBtn">Logout</button></div></header>
+<section class="content" id="mainContent">
+ <div class="page-heading"><div><h2>Fee Overview</h2><p>Monitor collections, outstanding fees and recent transactions.</p></div><div class="actions"><button class="btn" id="refreshBtn">↻ Refresh</button><button class="btn primary" id="collectBtn">＋ Collect Fee</button></div></div>
+ <div class="cards">
+  <div class="stat"><div><div class="stat-top">Total Collected <span class="stat-icon">₹</span></div><strong id="totalCollected">₹0</strong><small>Recorded successful payments</small></div></div>
+  <div class="stat"><div><div class="stat-top">Pending Fees <span class="stat-icon">◷</span></div><strong id="totalPending">₹0</strong><small>Outstanding amount in student fee records</small></div></div>
+  <div class="stat"><div><div class="stat-top">Total Receipts <span class="stat-icon">▤</span></div><strong id="receiptCount">0</strong><small>Recorded payment entries</small></div></div>
+ </div>
+ <div class="toolbar">
+  <div class="filter-grid">
+   <div class="field search-field"><label>SEARCH STUDENT / RECEIPT</label><input id="searchInput" placeholder="Name, admission ID or receipt number..."></div>
+   <div class="field"><label>CLASS</label><select id="classFilter"><option value="">All Classes</option><option>Daycare</option><option>Playgroup</option><option>IK-1</option><option>IK-2</option><option>IK-3</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+   <div class="field"><label>MONTH</label><select id="monthFilter"><option value="">All Months</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option><option>January</option><option>February</option><option>March</option></select></div>
+   <div class="field"><label>PAYMENT STATUS</label><select id="statusFilter"><option value="">All Statuses</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></div>
+  </div>
+  <div class="filter-foot"><button class="text-btn" id="advancedBtn">＋ Advanced filters</button><button class="text-btn" id="clearFilters">Clear filters</button></div>
+  <div class="advanced" id="advancedFilters">
+   <div class="field"><label>PAYMENT MODE</label><select id="modeFilter"><option value="">All Modes</option><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
+   <div class="field"><label>FINANCIAL YEAR</label><select id="yearFilter"><option value="">All Years</option><option>2026-27</option><option>2025-26</option><option>2024-25</option></select></div>
+   <div class="field"><label>SORT ORDER</label><select id="sortFilter"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="high">Amount: high to low</option><option value="low">Amount: low to high</option></select></div>
+  </div>
+ </div>
+ <div class="table-wrap">
+  <div class="table-head"><div><h3>Transaction Ledger</h3><small id="resultCount">Loading records...</small></div><button class="btn" id="exportBtn">↓ Export CSV</button></div>
+  <div class="table-scroll"><table><thead><tr><th>Receipt No.</th><th>Student</th><th>Class</th><th>Month</th><th>Amount</th><th>Status</th><th>Payment Mode</th><th>Actions</th></tr></thead><tbody id="ledgerBody"><tr><td colspan="8" class="loading">Connecting to database...</td></tr></tbody></table></div>
+  <div class="mobile-list" id="mobileList"></div>
+  <div class="pagination"><span id="pageInfo">Page 1</span><div style="display:flex;gap:6px"><button class="btn" id="prevPage">Previous</button><button class="btn" id="nextPage">Next</button></div></div>
+ </div>
+</section>
+</main>
+<div class="overlay" id="feeModal"><div class="modal">
+ <div class="modal-head"><h3 id="modalTitle">Collect Fee</h3><button class="close" data-close="feeModal">×</button></div>
+ <form id="feeForm"><div class="modal-body">
+  <div class="notice">Enter the student's admission ID. Student name and class are looked up from the existing students database.</div>
+  <div class="form-grid">
+   <div class="field full"><label>STUDENT ADMISSION ID *</label><input id="studentId" required autocomplete="off" placeholder="Enter admission ID"><div class="hint" id="studentLookup">Student details will appear here.</div></div>
+   <div class="field"><label>STUDENT NAME</label><input id="studentName" readonly placeholder="Auto-filled"></div>
+   <div class="field"><label>CLASS</label><input id="studentClass" readonly placeholder="Auto-filled"></div>
+   <div class="field"><label>FINANCIAL YEAR *</label><select id="financialYear" required><option>2026-27</option><option>2025-26</option><option>2024-25</option></select></div>
+   <div class="field"><label>FEE MONTH *</label><select id="feeMonth" required><option value="">Select month</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option><option>January</option><option>February</option><option>March</option></select></div>
+   <div class="field"><label>AMOUNT (₹) *</label><input id="feeAmount" type="number" min="0" step="0.01" required placeholder="0.00"></div>
+   <div class="field"><label>PAYMENT STATUS *</label><select id="feeStatus"><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></div>
+   <div class="field"><label>PAYMENT MODE</label><select id="feeMode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
+   <div class="field" id="upiField" style="display:none"><label>UPI / TRANSACTION REFERENCE</label><input id="upiRef" placeholder="Transaction reference"></div>
+   <div class="field full"><label>REMARKS</label><textarea id="remarks" rows="2" placeholder="Optional notes"></textarea></div>
+  </div>
+ </div><div class="modal-foot"><button type="button" class="btn" data-close="feeModal">Cancel</button><button type="submit" class="btn primary" id="saveFeeBtn">Save Payment</button></div></form>
+</div></div>
+<div class="toast" id="toast"></div>
 <script>
-/* FIREBASE REALTIME DATABASE CONFIGURATION */
-firebase.initializeApp({
-    apiKey: "AIzaSyC31nwqHDXPRC7WW0iEc5BImAqNa2-dTbc",
-    authDomain: "students-6e271.firebaseapp.com",
-    databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
-    projectId: "students-6e271"
+/* ------------------------------------------------------------------
+   FIREBASE SETUP
+   Replace the placeholder values below with the SAME firebaseConfig
+   from your existing working SAI DRS application. Do not create a new
+   Firebase project. This version keeps the existing database paths:
+   students/{studentId}, students/{studentId}/fees/{month},
+   cashPayments and metaProperties/receiptCounter.
+------------------------------------------------------------------- */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_EXISTING_API_KEY",
+  authDomain: "students-6e271.firebaseapp.com",
+  databaseURL: "https://students-6e271-default-rtdb.firebaseio.com",
+  projectId: "students-6e271",
+  storageBucket: "students-6e271.appspot.com",
+  messagingSenderId: "PASTE_YOUR_EXISTING_MESSAGING_SENDER_ID",
+  appId: "PASTE_YOUR_EXISTING_APP_ID"
+};
+
+const CURRENT_SESSION = "2026-27";
+const PAGE_SIZE = 12;
+let db, studentsCache = {}, payments = [], filteredPayments = [], currentPage = 1;
+let editingKey = null, editingOriginal = null, activeStudent = null;
+const $ = id => document.getElementById(id);
+const money = value => "₹" + (Number(value)||0).toLocaleString("en-IN",{maximumFractionDigits:2});
+const safe = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = value => String(value ?? "").trim().toLowerCase();
+
+function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),3000)}
+function setBusy(busy){$("saveFeeBtn").disabled=busy;$("saveFeeBtn").textContent=busy?"Saving...":(editingKey?"Update Payment":"Save Payment")}
+function showModal(){ $("feeModal").classList.add("open"); }
+function hideModal(){ $("feeModal").classList.remove("open"); }
+function showPage(page){
+ document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+ $("sidebar").classList.remove("open");
+ if(page==="ledger"||page==="receipts"){ $("mainContent").style.display=""; $("collectBtn").style.display=""; $("mainContent").querySelector(".page-heading h2").textContent=page==="receipts"?"Fee Receipts":"Fee Overview"; applyFilters(); return; }
+ $("collectBtn").style.display="none";
+ $("mainContent").innerHTML=`<div class="page-heading"><div><h2>${safe(({students:"Students",defaulters:"Defaulters",fine:"Fine Manager",payroll:"Payroll",reports:"Financial Reports",staff:"Staff Management"})[page]||"Management")}</h2><p>Choose the relevant management module.</p></div><button class="btn" onclick="location.reload()">Back to Dashboard</button></div><div class="page-panel"><h3>This section is not connected in this ledger page</h3><p>This redesigned page focuses on fee collection and the existing Firebase fee ledger. The other modules can remain in your current ERP or be connected separately without changing your student/payment database.</p></div>`;
+}
+function initFirebase(){
+ if(!window.firebase){$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">Firebase library could not load. Check your internet connection.</td></tr>';return;}
+ if(firebaseConfig.apiKey.startsWith("PASTE_")){$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">Add your existing Firebase API key, messagingSenderId and appId in firebaseConfig to connect this page.</td></tr>';return;}
+ try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.database();loadData();}
+ catch(e){console.error(e);toast("Firebase initialization failed.");}
+}
+async function loadData(){
+ $("ledgerBody").innerHTML='<tr><td colspan="8" class="loading">Loading ledger...</td></tr>';
+ try{
+  const [studentSnap,paymentSnap]=await Promise.all([db.ref("students").once("value"),db.ref("cashPayments").once("value")]);
+  studentsCache=studentSnap.val()||{};
+  const raw=paymentSnap.val()||{};
+  payments=Object.entries(raw).map(([key,p])=>normalizePayment(key,p)).filter(Boolean);
+  updateSummary();applyFilters();
+ }catch(e){console.error(e);$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">Unable to read Firebase data. Check database URL and Firebase rules.</td></tr>';toast("Could not load records.");}
+}
+function normalizePayment(key,p){
+ if(!p||typeof p!=="object")return null;
+ const studentId=String(p.studentId||p.admissionId||p.studentID||"");
+ const student=studentsCache[studentId]||{};
+ const status=norm(p.status||p.paymentStatus||"paid")==="unpaid"?"unpaid":"paid";
+ const amount=Number(p.amount??p.feeAmount??p.paidAmount??0);
+ return {key,studentId,name:p.studentName||p.name||student.name||student.studentName||"Unknown Student",className:p.className||p.class||student.class||student.className||"",month:p.month||p.feeMonth||"",year:p.financialYear||p.session||CURRENT_SESSION,amount,status,mode:p.paymentMode||p.mode||"—",receipt:p.receiptNo||p.receiptNumber||p.receipt||key,date:Number(p.timestamp||p.createdAt||p.dateMillis||0),upiRef:p.upiRef||p.transactionId||"",remarks:p.remarks||"",raw:p};
+}
+function updateSummary(){
+ const collected=payments.filter(p=>p.status==="paid").reduce((s,p)=>s+p.amount,0);
+ let pending=0;
+ Object.entries(studentsCache).forEach(([id,student])=>{
+  const fees=student&&student.fees;
+  if(!fees||typeof fees!=="object")return;
+  Object.values(fees).forEach(f=>{
+   if(!f||typeof f!=="object")return;
+   const status=norm(f.status||f.paymentStatus||"");
+   if(status==="unpaid"||status==="pending")pending+=Number(f.amount??f.feeAmount??f.dueAmount??0);
+  });
+ });
+ $("totalCollected").textContent=money(collected);
+ $("totalPending").textContent=money(pending);
+ $("receiptCount").textContent=payments.filter(p=>p.status==="paid").length.toLocaleString("en-IN");
+}
+function applyFilters(){
+ const q=norm($("searchInput")?.value),cl=$("classFilter")?.value||"",mo=$("monthFilter")?.value||"",st=$("statusFilter")?.value||"",mode=$("modeFilter")?.value||"",yr=$("yearFilter")?.value||"";
+ filteredPayments=payments.filter(p=>(!q||[p.name,p.studentId,p.receipt].some(v=>norm(v).includes(q)))&&(!cl||String(p.className)===cl)&&(!mo||p.month===mo)&&(!st||p.status===st)&&(!mode||p.mode===mode)&&(!yr||p.year===yr));
+ const sort=$("sortFilter")?.value||"newest";
+ filteredPayments.sort((a,b)=>sort==="oldest"?a.date-b.date:sort==="high"?b.amount-a.amount:sort==="low"?a.amount-b.amount:b.date-a.date);
+ currentPage=1;renderLedger();
+}
+function renderLedger(){
+ const total=filteredPayments.length,pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+ currentPage=Math.min(currentPage,pages);
+ const start=(currentPage-1)*PAGE_SIZE,rows=filteredPayments.slice(start,start+PAGE_SIZE);
+ $("resultCount").textContent=`${total} transaction${total===1?"":"s"} found`;
+ $("pageInfo").textContent=`Page ${currentPage} of ${pages}`;
+ $("prevPage").disabled=currentPage<=1;$("nextPage").disabled=currentPage>=pages;
+ if(!rows.length){$("ledgerBody").innerHTML='<tr><td colspan="8" class="empty">No transactions match these filters.</td></tr>';$("mobileList").innerHTML='<div class="empty">No transactions found.</div>';return;}
+ $("ledgerBody").innerHTML=rows.map(p=>`<tr>
+ <td><strong>${safe(p.receipt)}</strong></td>
+ <td class="student-cell"><strong>${safe(p.name)}</strong><small>${safe(p.studentId)}</small></td>
+ <td>${safe(p.className||"—")}</td><td>${safe(p.month||"—")}<br><small>${safe(p.year)}</small></td>
+ <td class="amount">${money(p.amount)}</td><td><span class="badge ${p.status}">${p.status==="paid"?"PAID":"UNPAID"}</span></td><td>${safe(p.mode)}</td>
+ <td><div class="row-actions"><button class="icon-btn" title="Print receipt" onclick="printReceipt('${safe(p.key)}')">▤</button><button class="icon-btn" title="Edit" onclick="editPayment('${safe(p.key)}')">✎</button><button class="icon-btn" title="Delete" onclick="deletePayment('${safe(p.key)}')">×</button></div></td></tr>`).join("");
+ $("mobileList").innerHTML=rows.map(p=>`<div class="mobile-card"><div class="mobile-card-top"><div><strong>${safe(p.name)}</strong><div class="mobile-meta">${safe(p.studentId)} · ${safe(p.className||"—")} · ${safe(p.month)} ${safe(p.year)}</div></div><span class="badge ${p.status}">${p.status==="paid"?"PAID":"UNPAID"}</span></div><div class="mobile-card-bottom"><div><strong class="amount">${money(p.amount)}</strong><div class="mobile-meta">${safe(p.receipt)} · ${safe(p.mode)}</div></div><div class="mobile-actions"><button class="icon-btn" onclick="printReceipt('${safe(p.key)}')" title="Print">▤</button><button class="icon-btn" onclick="editPayment('${safe(p.key)}')" title="Edit">✎</button><button class="icon-btn" onclick="deletePayment('${safe(p.key)}')" title="Delete">×</button></div></div></div>`).join("");
+}
+function openNewPayment(){
+ editingKey=null;editingOriginal=null;activeStudent=null;$("feeForm").reset();$("modalTitle").textContent="Collect Fee";$("saveFeeBtn").textContent="Save Payment";$("financialYear").value=CURRENT_SESSION;$("studentName").value="";$("studentClass").value="";$("studentLookup").textContent="Student details will appear here.";$("upiField").style.display="none";showModal();
+}
+async function lookupStudent(){
+ const id=$("studentId").value.trim();activeStudent=null;$("studentName").value="";$("studentClass").value="";
+ if(!id){$("studentLookup").textContent="Enter an admission ID.";return;}
+ const student=studentsCache[id];
+ if(student){activeStudent=student;$("studentName").value=student.name||student.studentName||student.fullName||"";$("studentClass").value=student.class||student.className||student.grade||"";$("studentLookup").textContent="Student found.";return;}
+ try{const snap=await db.ref("students/"+id).once("value");const found=snap.val();if(found){studentsCache[id]=found;activeStudent=found;$("studentName").value=found.name||found.studentName||found.fullName||"";$("studentClass").value=found.class||found.className||found.grade||"";$("studentLookup").textContent="Student found."; }else{$("studentLookup").textContent="No student found with this admission ID.";}}
+ catch(e){$("studentLookup").textContent="Could not verify student. Check database connection.";}
+}
+async function nextReceiptNumber(){
+ const ref=db.ref("metaProperties/receiptCounter");
+ let receipt;
+ await ref.transaction(current=>{receipt=(Number(current)||0)+1;return receipt;});
+ return "DRS-"+String(receipt).padStart(5,"0");
+}
+async function savePayment(event){
+ event.preventDefault();
+ if(!db){toast("Firebase is not connected.");return;}
+ const id=$("studentId").value.trim(),student=studentsCache[id]||activeStudent;
+ if(!id){toast("Enter student admission ID.");return;}
+ if(!student){toast("Student admission ID was not found.");return;}
+ const month=$("feeMonth").value,year=$("financialYear").value,amount=Number($("feeAmount").value);
+ if(!month||!year||!Number.isFinite(amount)||amount<0){toast("Check month, year and amount.");return;}
+ const status=$("feeStatus").value,mode=$("feeMode").value;
+ const data={studentId:id,studentName:$("studentName").value||student.name||student.studentName||"Unknown Student",className:$("studentClass").value||student.class||student.className||"",financialYear:year,month,amount,status,paymentMode:mode,upiRef:$("upiRef").value.trim(),remarks:$("remarks").value.trim(),timestamp:editingOriginal?.timestamp||Date.now(),updatedAt:Date.now()};
+ setBusy(true);
+ try{
+  let key=editingKey,receipt=editingOriginal?.receiptNo||editingOriginal?.receiptNumber||editingOriginal?.receipt;
+  if(!key){receipt= status==="paid" ? await nextReceiptNumber() : "";data.receiptNo=receipt;data.createdAt=Date.now();const newRef=db.ref("cashPayments").push();key=newRef.key;await newRef.set(data);}
+  else{data.receiptNo=receipt||"";await db.ref("cashPayments/"+key).update(data);}
+  // Keep the existing per-student monthly fee record in sync. Update only
+  // the selected month key; unrelated student and fee data are not replaced.
+  const feeRecord={amount,status,paymentStatus:status,financialYear:year,month,paymentMode:mode,receiptNo:receipt||"",upiRef:data.upiRef,remarks:data.remarks,updatedAt:Date.now()};
+  await db.ref("students/"+id+"/fees/"+month).update(feeRecord);
+  toast(editingKey?"Payment updated.":"Payment saved.");
+  hideModal();await loadData();
+ }catch(e){console.error(e);toast("Save failed: "+(e.message||"Check Firebase rules."));}
+ finally{setBusy(false);}
+}
+function editPayment(key){
+ const p=payments.find(x=>x.key===key);if(!p)return;
+ editingKey=key;editingOriginal=p.raw;activeStudent=studentsCache[p.studentId]||null;
+ $("feeForm").reset();$("modalTitle").textContent="Edit Payment";$("saveFeeBtn").textContent="Update Payment";
+ $("studentId").value=p.studentId;$("studentName").value=p.name;$("studentClass").value=p.className;$("financialYear").value=p.year;$("feeMonth").value=p.month;$("feeAmount").value=p.amount;$("feeStatus").value=p.status;$("feeMode").value=p.mode;$("upiRef").value=p.upiRef;$("remarks").value=p.remarks;$("studentLookup").textContent="Existing student record.";toggleUpi();showModal();
+}
+async function deletePayment(key){
+ const p=payments.find(x=>x.key===key);if(!p)return;
+ if(!confirm(`Delete payment ${p.receipt||key} for ${p.name}? This removes the ledger entry only. The student's monthly fee record is not automatically deleted.`))return;
+ try{await db.ref("cashPayments/"+key).remove();toast("Ledger entry deleted.");await loadData();}
+ catch(e){console.error(e);toast("Could not delete record. Check Firebase rules.");}
+}
+function printReceipt(key){
+ const p=payments.find(x=>x.key===key);if(!p)return;
+ const w=window.open("","_blank","width=750,height=800");if(!w){toast("Allow pop-ups to print receipts.");return;}
+ w.document.write(`<!DOCTYPE html><html><head><title>Fee Receipt</title><style>body{font-family:Arial,sans-serif;padding:35px;color:#17243a}.receipt{max-width:650px;margin:auto;border:2px solid #123a70;padding:28px}.head{text-align:center;border-bottom:2px solid #d4af37;padding-bottom:15px}.head h2{margin:0;color:#123a70}.head p{margin:5px;font-size:12px}.title{text-align:center;margin:20px;font-weight:bold;letter-spacing:2px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:10px 2px;font-size:14px}.row b{color:#123a70}.amount{text-align:right;font-size:20px;font-weight:bold;margin-top:22px}.foot{margin-top:45px;display:flex;justify-content:space-between;font-size:12px}@media print{button{display:none}}</style></head><body><div class="receipt"><div class="head"><h2>SAI DRS KIDS SCHOOL</h2><p>Jonali, Zoo Road, Guwahati, Assam</p><p>Fee Payment Receipt</p></div><div class="title">OFFICIAL FEE RECEIPT</div><div class="row"><span>Receipt No.</span><b>${safe(p.receipt)}</b></div><div class="row"><span>Student Name</span><b>${safe(p.name)}</b></div><div class="row"><span>Admission ID</span><b>${safe(p.studentId)}</b></div><div class="row"><span>Class</span><b>${safe(p.className)}</b></div><div class="row"><span>Fee Month</span><b>${safe(p.month)} ${safe(p.year)}</b></div><div class="row"><span>Payment Mode</span><b>${safe(p.mode)}</b></div><div class="row"><span>Status</span><b>${safe(p.status.toUpperCase())}</b></div><div class="amount">Amount: ${money(p.amount)}</div><div class="foot"><span>Thank you.</span><span>Authorised Signatory</span></div></div><script>window.onload=()=>window.print()<\/script></body></html>`);
+ w.document.close();
+}
+function exportCsv(){
+ const rows=[["Receipt No","Student","Admission ID","Class","Month","Financial Year","Amount","Status","Payment Mode","UPI Reference","Remarks"],...filteredPayments.map(p=>[p.receipt,p.name,p.studentId,p.className,p.month,p.year,p.amount,p.status,p.mode,p.upiRef,p.remarks])];
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="sai-drs-fee-ledger.csv";a.click();URL.revokeObjectURL(url);
+}
+function toggleUpi(){$("upiField").style.display=$("feeMode").value==="UPI"?"block":"none";}
+document.addEventListener("DOMContentLoaded",()=>{
+ $("menuBtn").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+ $("navigation").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b)showPage(b.dataset.page)});
+ document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",hideModal));
+ $("feeModal").addEventListener("click",e=>{if(e.target===$("feeModal"))hideModal()});
+ $("collectBtn").addEventListener("click",openNewPayment);$("refreshBtn").addEventListener("click",loadData);$("logoutBtn").addEventListener("click",()=>{if(confirm("Log out of this page?")){sessionStorage.removeItem("saiDrsLedgerLoggedIn");location.reload()}});
+ $("feeForm").addEventListener("submit",savePayment);$("studentId").addEventListener("change",lookupStudent);$("studentId").addEventListener("blur",lookupStudent);$("feeMode").addEventListener("change",toggleUpi);
+ ["searchInput","classFilter","monthFilter","statusFilter","modeFilter","yearFilter","sortFilter"].forEach(id=>$(id).addEventListener("input",applyFilters));
+ $("advancedBtn").addEventListener("click",()=>{$("advancedFilters").classList.toggle("show");$("advancedBtn").textContent=$("advancedFilters").classList.contains("show")?"− Hide advanced filters":"＋ Advanced filters"});
+ $("clearFilters").addEventListener("click",()=>{["searchInput","classFilter","monthFilter","statusFilter","modeFilter","yearFilter"].forEach(id=>$(id).value="");$("sortFilter").value="newest";applyFilters()});
+ $("prevPage").addEventListener("click",()=>{if(currentPage>1){currentPage--;renderLedger()}});
+ $("nextPage").addEventListener("click",()=>{if(currentPage<Math.ceil(filteredPayments.length/PAGE_SIZE)){currentPage++;renderLedger()}});
+ $("exportBtn").addEventListener("click",exportCsv);
+ initFirebase();
 });
-
-const db = firebase.database();
-let activeRealtimeListenerRef = null;
-let masterCashPaymentsDataset = [];
-let filteredDataset = [];
-
-let currentPage = 1;
-const recordsPerPage = 10;
-
-document.addEventListener("DOMContentLoaded", () => {
-    initializeRealtimeLedger();
-});
-
-/* SIDEBAR & DRAWER MANAGEMENT */
-function toggleSidebar() {
-    const sidebar = document.getElementById("appSidebar");
-    const backdrop = document.getElementById("sidebarBackdrop");
-    sidebar.classList.toggle("open");
-    if(sidebar.classList.contains("open")) {
-        backdrop.classList.add("active");
-    } else {
-        backdrop.classList.remove("active");
-    }
-}
-
-function closeSidebar() {
-    document.getElementById("appSidebar").classList.remove("open");
-    document.getElementById("sidebarBackdrop").classList.remove("active");
-}
-
-function showSpinner() { document.getElementById("loadingSpinner").style.display = "flex"; }
-function hideSpinner() { document.getElementById("loadingSpinner").style.display = "none"; }
-
-function showToast(message, type = "success") {
-    const container = document.getElementById("toastContainer");
-    if (!container) return;
-    const toast = document.createElement("div");
-    toast.className = `toast toast-${type}`;
-
-    let baseIcon = '<i class="fa-solid fa-circle-check"></i> ';
-    if (type === 'error') baseIcon = '<i class="fa-solid fa-triangle-exclamation"></i> ';
-    if (type === 'info') baseIcon = '<i class="fa-solid fa-circle-info"></i> ';
-
-    toast.innerHTML = baseIcon + '<span>' + message + '</span>';
-    container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 4000);
-}
-
-function toggleUpiReferenceField() {
-    const selectedMode = document.getElementById("modalPaymentMode").value;
-    const upiGroup = document.getElementById("modalUpiRefGroup");
-    const upiInput = document.getElementById("modalUpiRefId");
-
-    if (selectedMode === "UPI") {
-        upiGroup.style.display = "flex";
-        upiInput.required = true;
-    } else {
-        upiGroup.style.display = "none";
-        upiInput.required = false;
-        upiInput.value = "";
-    }
-}
-
-function logout() {
-    if (activeRealtimeListenerRef) {
-        activeRealtimeListenerRef.off();
-        activeRealtimeListenerRef = null;
-    }
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userEmail");
-    window.location.href = "index.html";
-}
-
-function initializeRealtimeLedger() {
-    showSpinner();
-
-    const cachedUser = localStorage.getItem("userEmail") || "System Accountant";
-    const userDisplayNode = document.getElementById("topbarUserEmail");
-    if(userDisplayNode) userDisplayNode.innerText = cachedUser;
-
-    if (activeRealtimeListenerRef) {
-        activeRealtimeListenerRef.off();
-    }
-
-    activeRealtimeListenerRef = db.ref();
-    activeRealtimeListenerRef.on("value", snapshot => {
-        masterCashPaymentsDataset = [];
-        let runningCollected = 0;
-        let runningOutstanding = 0;
-        let totalCount = 0;
-
-        const rootData = snapshot.val() || {};
-        const studentsData = rootData.students || {};
-        const legacyPaymentsData = rootData.cashPayments || {};
-
-        const seenKeys = new Set();
-
-        Object.keys(studentsData).forEach(studentKey => {
-            const data = studentsData[studentKey];
-            if (!data || typeof data !== "object") return;
-
-            if (data.fees && typeof data.fees === "object") {
-                Object.keys(data.fees).forEach(monthKey => {
-                    const txn = data.fees[monthKey];
-                    if (!txn || typeof txn !== "object") return;
-
-                    const amt = Number(txn.amount || data.monthlyfee || 0);
-                    const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
-                    const pId = txn.paymentIdLink || `vch_${studentKey}_${monthKey}`;
-
-                    if (currentStatus === "paid") {
-                        runningCollected += amt;
-                    } else {
-                        runningOutstanding += amt;
-                    }
-                    totalCount++;
-                    seenKeys.add(pId);
-
-                    masterCashPaymentsDataset.push({
-                        paymentId: pId,
-                        receiptNo: txn.receiptNo || "LEGACY_VCH",
-                        studentId: studentKey,
-                        studentName: data.name || studentKey,
-                        class: data.class || "N/A",
-                        academicYear: txn.academicYear || data.academicYear || "2026-2027",
-                        month: monthKey,
-                        amount: amt,
-                        paymentMode: txn.paymentMode || "Cash",
-                        upiRefId: txn.upiRefId || "",
-                        status: currentStatus,
-                        collectedBy: txn.collectedBy || "System Admin",
-                        transactionDate: txn.transactionDate || 1741132800000,
-                        remarks: txn.remarks || ""
-                    });
-                });
-            }
-        });
-
-        Object.keys(legacyPaymentsData).forEach(payKey => {
-            if (seenKeys.has(payKey)) return;
-            const txn = legacyPaymentsData[payKey];
-            if (!txn || typeof txn !== "object") return;
-
-            const amt = Number(txn.amount || 0);
-            const currentStatus = (txn.status || "unpaid").toLowerCase().trim();
-
-            if (currentStatus === "paid") {
-                runningCollected += amt;
-            } else {
-                runningOutstanding += amt;
-            }
-            totalCount++;
-
-            masterCashPaymentsDataset.push({
-                paymentId: payKey,
-                receiptNo: txn.receiptNo || "LEGACY_VCH",
-                studentId: txn.studentId || "N/A",
-                studentName: txn.studentName || txn.studentId || "N/A",
-                class: txn.class || "N/A",
-                academicYear: txn.academicYear || "2025-2026",
-                month: txn.month || "N/A",
-                amount: amt,
-                paymentMode: txn.paymentMode || "Cash",
-                upiRefId: txn.upiRefId || "",
-                status: currentStatus,
-                collectedBy: txn.collectedBy || "System Admin",
-                transactionDate: txn.transactionDate || 1741132800000,
-                remarks: txn.remarks || ""
-            });
-        });
-
-        updateDashboardUI(runningCollected, runningOutstanding, totalCount);
-        filterAndPaginateData();
-        hideSpinner();
-    }, error => {
-        hideSpinner();
-        showToast("Ledger structural sync failure: " + error.message, "error");
-    });
-}
-
-function updateDashboardUI(collected, outstanding, totalCount) {
-    document.getElementById("totalCollected").innerText = "₹" + collected.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById("totalOutstanding").innerText = "₹" + outstanding.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById("totalTransactions").innerText = totalCount;
-}
-
-function filterAndPaginateData() {
-    const searchVal = document.getElementById("feeSearch").value.toLowerCase().trim();
-    const classVal = document.getElementById("classFilter").value;
-    const monthVal = document.getElementById("monthFilter").value;
-    const modeVal = document.getElementById("modeFilter").value;
-    const yearVal = document.getElementById("yearFilter").value;
-    const statusVal = document.getElementById("statusFilter").value;
-    const dateSortOrder = document.getElementById("dateSortFilter").value;
-
-    filteredDataset = masterCashPaymentsDataset.filter(item => {
-        const matchesSearch = !searchVal || 
-            (item.studentName && item.studentName.toLowerCase().includes(searchVal)) ||
-            (item.studentId && item.studentId.toLowerCase().includes(searchVal)) ||
-            (item.receiptNo && item.receiptNo.toLowerCase().includes(searchVal)) ||
-            (item.upiRefId && item.upiRefId.toLowerCase().includes(searchVal));
-
-        const matchesClass = !classVal || String(item.class) === String(classVal);
-        const matchesMonth = !monthVal || item.month === monthVal;
-        const matchesMode = !modeVal || item.paymentMode === modeVal;
-        const matchesYear = !yearVal || item.academicYear === yearVal;
-        const matchesStatus = !statusVal || item.status === statusVal;
-
-        return matchesSearch && matchesClass && matchesMonth && matchesMode && matchesYear && matchesStatus;
-    });
-
-    filteredDataset.sort((a, b) => {
-        const timeA = a.transactionDate || 0;
-        const timeB = b.transactionDate || 0;
-        return dateSortOrder === "latest" ? timeB - timeA : timeA - timeB;
-    });
-
-    currentPage = 1; 
-    renderPaginatedTable();
-}
-
-function renderPaginatedTable() {
-    const tbody = document.getElementById("masterFeesTable");
-    const cardsContainer = document.getElementById("masterFeesCards");
-    tbody.innerHTML = "";
-    cardsContainer.innerHTML = "";
-
-    const totalRecords = filteredDataset.length;
-    if (totalRecords === 0) {
-        const emptyStateText = `<div style="text-align:center; color: var(--text-muted); padding: 40px; font-weight: 500;">No records found matching your filters.</div>`;
-        tbody.innerHTML = `<tr><td colspan="9">${emptyStateText}</td></tr>`;
-        cardsContainer.innerHTML = emptyStateText;
-
-        document.getElementById("paginationDisplayInfo").innerText = "Showing logs 0 to 0 of 0";
-        document.getElementById("prevPageBtn").disabled = true;
-        document.getElementById("nextPageBtn").disabled = true;
-        return;
-    }
-
-    const startIndex = (currentPage - 1) * recordsPerPage;
-    const endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
-    const paginatedSlice = filteredDataset.slice(startIndex, endIndex);
-
-    paginatedSlice.forEach(row => {
-        const modeDisplay = row.paymentMode === 'UPI' && row.upiRefId 
-            ? `<i class="fa-solid fa-mobile-screen"></i> UPI <span style="font-size:11px; color: var(--text-muted); font-family: monospace;">(${row.upiRefId})</span>` 
-            : `<i class="fa-solid fa-building-columns"></i> ${row.paymentMode}`;
-
-        /* 1. Desktop Table Row */
-        tbody.innerHTML += `
-            <tr>
-                <td><strong style="color: var(--primary); font-family: monospace; font-size: 13px;">${row.receiptNo || '-'}</strong></td>
-                <td><span style="color: var(--text-muted); font-family: monospace; font-weight: 600;">${row.studentId}</span></td>
-                <td><strong style="color: var(--text-primary); font-weight: 600;">${row.studentName || 'N/A'}</strong></td>
-                <td>Class ${row.class} <span style="color: var(--text-muted); font-size: 11px;">(${row.academicYear})</span></td>
-                <td><span style="font-weight: 500;">${row.month}</span></td>
-                <td style="text-align: right; font-weight: 700; color: var(--text-primary);">₹${Number(row.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                <td><span style="font-size: 12px; font-weight: 500; color: var(--secondary);">${modeDisplay}</span></td>
-                <td><span class="badge-status ${row.status}">${row.status}</span></td>
-                <td class="no-pdf-print">
-                    <div class="table-inline-actions">
-                        <button class="btn-table-action" onclick="actionPrintReceipt('${row.paymentId}')" title="Print Receipt"><i class="fa-solid fa-print"></i></button>
-                        <button class="btn-table-action" onclick="openPaymentModal('edit', '${row.paymentId}')" title="Modify Voucher"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-table-action delete-row" onclick="actionDeletePayment('${row.paymentId}')" title="Delete Record"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                </td>
-            </tr>
-        `;
-
-        /* 2. Mobile Responsive Card Item */
-        cardsContainer.innerHTML += `
-            <div class="mobile-ledger-card">
-                <div class="mobile-card-top">
-                    <div>
-                        <div class="mobile-card-student">${row.studentName || 'N/A'}</div>
-                        <div class="mobile-card-meta">
-                            <span>Receipt: <strong style="color: var(--primary); font-family: monospace;">${row.receiptNo || '-'}</strong></span>
-                            <span>•</span>
-                            <span>ID: ${row.studentId}</span>
-                        </div>
-                    </div>
-                    <span class="badge-status ${row.status}">${row.status}</span>
-                </div>
-                <div class="mobile-card-mid">
-                    <div style="font-size: 12px; color: var(--text-muted);">
-                        <div>Class ${row.class} (${row.academicYear})</div>
-                        <div style="font-weight: 500; color: var(--text-primary); margin-top: 2px;">${row.month}</div>
-                    </div>
-                    <div class="mobile-card-amount">₹${Number(row.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
-                </div>
-                <div class="mobile-card-bottom">
-                    <div style="font-size: 12px; color: var(--secondary);">${modeDisplay}</div>
-                    <div class="table-inline-actions">
-                        <button class="btn-table-action" onclick="actionPrintReceipt('${row.paymentId}')" title="Print Receipt"><i class="fa-solid fa-print"></i></button>
-                        <button class="btn-table-action" onclick="openPaymentModal('edit', '${row.paymentId}')" title="Modify Voucher"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-table-action delete-row" onclick="actionDeletePayment('${row.paymentId}')" title="Delete Record"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-
-    document.getElementById("paginationDisplayInfo").innerText = `Showing entries ${startIndex + 1} to ${endIndex} of ${totalRecords}`;
-    document.getElementById("prevPageBtn").disabled = currentPage === 1;
-    document.getElementById("nextPageBtn").disabled = endIndex >= totalRecords;
-}
-
-function changePaginationPage(direction) {
-    currentPage += direction;
-    renderPaginatedTable();
-}
-
-function openPaymentModal(mode, paymentId = null) {
-    const form = document.getElementById("feeForm");
-    form.reset();
-    toggleUpiReferenceField();
-
-    if (mode === 'create') {
-        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> Process Financial Fee Voucher';
-        document.getElementById("editPaymentId").value = "";
-        document.getElementById("editReceiptNo").value = "";
-        document.getElementById("modalStudentId").disabled = false;
-        document.getElementById("modalSubmitButton").innerText = "Commit Ledger Transaction";
-    } else if (mode === 'edit' && paymentId) {
-        document.getElementById("modalActionTitle").innerHTML = '<i class="fa-solid fa-file-pen"></i> Amortize / Modify Voucher Record';
-        document.getElementById("modalStudentId").disabled = true;
-        document.getElementById("modalSubmitButton").innerText = "Save Modifications";
-
-        const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
-        if (target) {
-            document.getElementById("editPaymentId").value = target.paymentId;
-            document.getElementById("editReceiptNo").value = target.receiptNo || "";
-            document.getElementById("modalStudentId").value = target.studentId;
-            document.getElementById("modalYear").value = target.academicYear;
-            document.getElementById("modalMonth").value = target.month;
-            document.getElementById("modalAmount").value = target.amount;
-            document.getElementById("modalStatus").value = target.status;
-            document.getElementById("modalPaymentMode").value = target.paymentMode;
-
-            toggleUpiReferenceField();
-            if (target.paymentMode === 'UPI') {
-                document.getElementById("modalUpiRefId").value = target.upiRefId || "";
-            }
-
-            document.getElementById("modalRemarks").value = target.remarks || "";
-        }
-    }
-    
-    const modal = document.getElementById("feeModal");
-    modal.classList.add("active");
-}
-
-function closeModal() {
-    const modal = document.getElementById("feeModal");
-    modal.classList.remove("active");
-    document.getElementById("feeForm").reset();
-    toggleUpiReferenceField();
-}
-
-async function handleFormSubmission(e) {
-    e.preventDefault();
-    showSpinner();
-
-    const paymentId = document.getElementById("editPaymentId").value;
-    const studentId = document.getElementById("modalStudentId").value.trim();
-    const year = document.getElementById("modalYear").value;
-    const month = document.getElementById("modalMonth").value;
-    const amount = Number(document.getElementById("modalAmount").value);
-    const status = document.getElementById("modalStatus").value;
-    const mode = document.getElementById("modalPaymentMode").value;
-    const upiRefId = mode === 'UPI' ? document.getElementById("modalUpiRefId").value.trim() : "";
-    const remarks = document.getElementById("modalRemarks").value.trim();
-
-    if (!studentId || isNaN(amount) || amount < 0) {
-        hideSpinner();
-        showToast("Voucher submission rejected: Invalid values in fields.", "error");
-        return;
-    }
-
-    if (mode === 'UPI' && !upiRefId) {
-        hideSpinner();
-        showToast("Please enter a valid UPI Payment Transaction Reference ID.", "error");
-        return;
-    }
-
-    try {
-        const studentSnapshot = await db.ref(`students/${studentId}`).once("value");
-        if (!studentSnapshot.exists()) {
-            hideSpinner();
-            showToast("Validation Exception: Student identity mapping not found.", "error");
-            return;
-        }
-
-        const monthNodeSnapshot = await db.ref(`students/${studentId}/fees/${month}`).once("value");
-        const existingTxn = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
-
-        if (monthNodeSnapshot.exists() && (!existingTxn || existingTxn.month !== month)) {
-            hideSpinner();
-            showToast(`Audit Protection: An active ledger node already exists for ${month}. Overwrites are prohibited.`, "error");
-            return;
-        }
-
-        let assignedReceiptNo = document.getElementById("editReceiptNo").value;
-
-        if (!assignedReceiptNo || assignedReceiptNo === "LEGACY_VCH") {
-            const currentCounterRef = db.ref("metaProperties/receiptCounter");
-            const counterTransaction = await currentCounterRef.transaction(current => (current || 0) + 1);
-            const serialNumber = counterTransaction.snapshot.val();
-            assignedReceiptNo = "VCH-" + String(serialNumber).padStart(6, '0');
-        }
-
-        const currentUserEmail = localStorage.getItem("userEmail") || "System Administrator Tool";
-        const targetTimestamp = existingTxn ? (existingTxn.transactionDate || Date.now()) : Date.now();
-        const assignedPaymentIdLink = `vch_${studentId}_${month}`;
-
-        const atomicBatchedUpdates = {};
-
-        if (existingTxn && existingTxn.month !== month) {
-            atomicBatchedUpdates[`/students/${studentId}/fees/${existingTxn.month}`] = null;
-        }
-
-        atomicBatchedUpdates[`/students/${studentId}/fees/${month}`] = {
-            amount: amount,
-            status: status,
-            paymentIdLink: assignedPaymentIdLink,
-            receiptNo: assignedReceiptNo,
-            paymentMode: mode,
-            upiRefId: upiRefId,
-            academicYear: year,
-            collectedBy: currentUserEmail,
-            remarks: remarks,
-            transactionDate: targetTimestamp
-        };
-
-        if (paymentId) {
-            atomicBatchedUpdates[`/cashPayments/${paymentId}`] = null;
-        }
-        atomicBatchedUpdates[`/cashPayments/${assignedPaymentIdLink}`] = null;
-
-        await db.ref().update(atomicBatchedUpdates);
-
-        closeModal();
-        showToast(`Transaction Voucher ${assignedReceiptNo} successfully written to ledger for ${month}.`);
-    } catch (err) {
-        showToast("Atomic update error: " + err.message, "error");
-    } finally {
-        hideSpinner();
-    }
-}
-
-async function actionDeletePayment(paymentId) {
-    const confirmation = confirm("Are you certain you want to permanently purge this financial entry?");
-    if (!confirmation) return;
-
-    showSpinner();
-    try {
-        const target = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
-        if (!target) throw new Error("Target node context tracking failed.");
-
-        const purgeBatchedUpdates = {};
-        purgeBatchedUpdates[`/students/${target.studentId}/fees/${target.month}`] = null;
-        purgeBatchedUpdates[`/cashPayments/${paymentId}`] = null;
-
-        await db.ref().update(purgeBatchedUpdates);
-        showToast("Voucher record purged from ledger successfully.");
-    } catch (e) {
-        showToast("Purge execution failed: " + e.message, "error");
-    } finally {
-        hideSpinner();
-    }
-}
-
-function actionPrintReceipt(paymentId) {
-    const record = masterCashPaymentsDataset.find(p => p.paymentId === paymentId);
-    if (!record) {
-        showToast("Unable to find record for receipt output.", "error");
-        return;
-    }
-
-    const tDate = record.transactionDate && typeof record.transactionDate === 'number'
-        ? new Date(record.transactionDate).toLocaleDateString('en-IN')
-        : new Date().toLocaleDateString('en-IN');
-
-    const printContainer = document.getElementById("printableReceipt");
-    printContainer.innerHTML = `
-        <div style="border:2px solid #0F172A; padding:24px; font-family:'Inter', sans-serif; max-width:600px; margin:auto; border-radius: 8px;">
-            <div style="text-align:center; border-bottom:2px solid #E2E8F0; padding-bottom:16px; margin-bottom:20px;">
-                <h2 style="margin:0; font-size:20px; color: #1E3A5F; text-transform: uppercase; letter-spacing: 0.5px;">SAI DRS KIDS SCHOOL</h2>
-                <p style="margin:4px 0 0; font-size:12px; color: #64748B; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Official Fee Realization Receipt</p>
-            </div>
-            <table style="width:100%; font-size:13px; line-height:2.0; border-collapse: collapse;">
-                <tr><td style="color: #64748B;">Receipt No:</td><td style="text-align:right;"><strong style="font-family: monospace; font-size: 14px; color: #1E3A5F;">${record.receiptNo || '-'}</strong></td></tr>
-                <tr><td style="color: #64748B;">Date of Realization:</td><td style="text-align:right;"><strong>${tDate}</strong></td></tr>
-                <tr><td style="color: #64748B;">Admission ID:</td><td style="text-align:right;"><strong style="font-family: monospace;">${record.studentId}</strong></td></tr>
-                <tr><td style="color: #64748B;">Student Full Name:</td><td style="text-align:right;"><strong>${record.studentName}</strong></td></tr>
-                <tr><td style="color: #64748B;">Classification Group:</td><td style="text-align:right;"><strong>Class ${record.class}</strong></td></tr>
-                <tr><td style="color: #64748B;">Allocation Period:</td><td style="text-align:right;"><strong>${record.month} (${record.academicYear})</strong></td></tr>
-                <tr><td style="color: #64748B;">Asset Clearing Mode:</td><td style="text-align:right;"><strong>${record.paymentMode}</strong></td></tr>
-                ${record.paymentMode === 'UPI' ? `<tr><td style="color: #64748B;">UPI Reference ID:</td><td style="text-align:right;"><strong style="font-family: monospace;">${record.upiRefId || 'N/A'}</strong></td></tr>` : ''}
-                <tr style="border-top:2px solid #E2E8F0; border-bottom:2px solid #E2E8F0;"><td style="padding: 10px 0; font-size: 15px;"><strong>Total Face Amount Paid:</strong></td><td style="text-align:right; padding: 10px 0; font-size: 18px; color: #10B981;"><strong>₹${Number(record.amount).toFixed(2)}</strong></td></tr>
-                <tr><td style="color: #64748B;">Clearing Status:</td><td style="text-align:right;"><strong style="color: #10B981; text-transform: uppercase;">${record.status.toUpperCase()}</strong></td></tr>
-            </table>
-            <div style="margin-top:40px; display: flex; justify-content: space-between; align-items: flex-end; font-size:12px; color: #64748B;">
-                <div>Computer Generated Record</div>
-                <div style="text-align:center;">
-                    <div style="border-bottom: 1px solid #0F172A; width: 150px; margin-bottom: 4px;"></div>
-                    <p style="color: #0F172A; font-weight: 600;">Authorized Signatory</p>
-                </div>
-            </div>
-        </div>
-    `;
-
-    printContainer.style.display = "block";
-    window.print();
-    printContainer.style.display = "none";
-}
 </script>
 </body>
 </html>
